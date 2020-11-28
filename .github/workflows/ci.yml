@@ -34,13 +34,13 @@ jobs:
 
       - name: Build new docker image
         if: env.MATCHED_FILES
-        run: docker build --no-cache . -t nfcore/metapep:dev
+        run: docker build --no-cache . -t skrakau/metapep:dev
 
       - name: Pull docker image
         if: ${{ !env.MATCHED_FILES }}
         run: |
-          docker pull nfcore/metapep:dev
-          docker tag nfcore/metapep:dev nfcore/metapep:dev
+          docker pull skrakau/metapep:dev
+          docker tag skrakau/metapep:dev skrakau/metapep:dev
 
       - name: Install Nextflow
         env:
