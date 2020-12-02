@@ -21,13 +21,15 @@ def helpMessage() {
     nextflow run nf-core/metapep --input '*_R{1,2}.fastq.gz' -profile docker
 
     Mandatory arguments:
-      --input [file]                  Path to input data (must be surrounded with quotes)
+      --input [file]                  Path to input file containing taxon IDs.
       -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
                                       Available: conda, docker, singularity, test, awsbatch, <institute> and more
 
     Options:
       --genome [str]                  Name of iGenomes reference
       --single_end [bool]             Specifies that the input is single-end reads
+      --ncbi_key [str]                NCBI key for faster download from Entrez databases.
+      --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
 
     References                        If not specified in the configuration file or you wish to overwrite any of the references
       --fasta [file]                  Path to fasta reference
@@ -97,25 +99,13 @@ ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 /*
  * Create a channel for input read files
  */
-if (params.input_paths) {
-    if (params.single_end) {
-        Channel
-            .from(params.input_paths)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, "params.input_paths was empty - no input files supplied" }
-            .into { ch_read_files_fastqc; ch_read_files_trimming }
-    } else {
-        Channel
-            .from(params.input_paths)
-            .map { row -> [ row[0], [ file(row[1][0], checkIfExists: true), file(row[1][1], checkIfExists: true) ] ] }
-            .ifEmpty { exit 1, "params.input_paths was empty - no input files supplied" }
-            .into { ch_read_files_fastqc; ch_read_files_trimming }
-    }
-} else {
+if (params.input) {
     Channel
-        .fromFilePairs(params.input, size: params.single_end ? 1 : 2)
-        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input}\nNB: Path needs to be enclosed in quotes!\nIf this is single-end data, please specify --single_end on the command line." }
-        .into { ch_read_files_fastqc; ch_read_files_trimming }
+        .fromPath(params.input, checkIfExists: true)
+        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
+        .set { ch_taxon_ids }
+} else {
+    exit 1, "Missing input. Please specify --input."
 }
 
 // Header log info
@@ -192,6 +182,33 @@ process get_software_versions {
     scrape_software_versions.py &> software_versions_mqc.yaml
     """
 }
+
+
+/*
+ * Download proteins from entrez
+ */
+process download_proteins {
+    publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    file taxon_ids from ch_taxon_ids
+
+    output:
+    file "taxa_assembly.tsv"
+    file "proteins.fasta"
+    file "proteinid_assemblyids.txt"
+
+    script:
+    def key = params.ncbi_key
+    def email = params.ncbi_email
+    """
+    # provide new home dir to avoid permission errors with Docker and other artefacts
+    export HOME="\${PWD}/HOME"
+    download_proteins_entrez.py --email $email --key $key --taxid_input $taxon_ids
+    """
+}
+
 
 /*
  * Output Description HTML
