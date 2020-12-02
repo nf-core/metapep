@@ -195,8 +195,8 @@ process download_proteins {
     file taxon_ids from ch_taxon_ids
 
     output:
+    file "proteins.fasta" into ch_proteins
     file "taxa_assembly.tsv"
-    file "proteins.fasta"
     file "proteinid_assemblyids.txt"
 
     script:
