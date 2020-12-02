@@ -23,7 +23,7 @@ import sys
 import gzip
 import csv
 import xml.etree.ElementTree as ET
-import tqdm
+#import tqdm
 import io
 import argparse
 import time
