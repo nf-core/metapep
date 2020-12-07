@@ -223,7 +223,7 @@ process generate_peptides {
     file proteins from ch_proteins
 
     output:
-    file "peptides.tsv" into ch_peptides
+    file "peptides.tsv.gz" into ch_peptides
     file "protein_lengths.tsv"
 
     script:
