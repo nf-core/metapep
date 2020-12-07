@@ -209,6 +209,33 @@ process download_proteins {
     """
 }
 
+/*
+ * Generate peptides
+ */
+// TODO think about output format
+process generate_peptides {
+    publishDir "${params.outdir}/peptides", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    file proteins from ch_proteins
+
+    output:
+    file "peptides.tsv" into ch_peptides
+    file "protein_lengths.tsv"
+
+    script:
+    def min_pep_len = params.min_pep_len
+    def max_pep_len = params.max_pep_len
+    """
+    generate_peptides.py --proteins $proteins \
+                         --min_len $min_pep_len \
+                         --max_len $max_pep_len \
+                         --peptides "peptides.tsv.gz" \
+                         --prot_lengths "protein_lengths.tsv"
+    """
+}
+
 
 /*
  * Output Description HTML
