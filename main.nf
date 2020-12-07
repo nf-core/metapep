@@ -30,6 +30,8 @@ def helpMessage() {
       --single_end [bool]             Specifies that the input is single-end reads
       --ncbi_key [str]                NCBI key for faster download from Entrez databases.
       --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
+      --min_pep_len [int]             Min. peptide length to generate.
+      --max_pep_len [int]             Max. peptide length to generate.
 
     References                        If not specified in the configuration file or you wish to overwrite any of the references
       --fasta [file]                  Path to fasta reference
@@ -206,6 +208,33 @@ process download_proteins {
     # provide new home dir to avoid permission errors with Docker and other artefacts
     export HOME="\${PWD}/HOME"
     download_proteins_entrez.py --email $email --key $key --taxid_input $taxon_ids
+    """
+}
+
+/*
+ * Generate peptides
+ */
+// TODO think about output format
+process generate_peptides {
+    publishDir "${params.outdir}/peptides", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    file proteins from ch_proteins
+
+    output:
+    file "peptides.tsv.gz" into ch_peptides
+    file "protein_lengths.tsv"
+
+    script:
+    def min_pep_len = params.min_pep_len
+    def max_pep_len = params.max_pep_len
+    """
+    generate_peptides.py --proteins $proteins \
+                         --min_len $min_pep_len \
+                         --max_len $max_pep_len \
+                         --peptides "peptides.tsv.gz" \
+                         --prot_lengths "protein_lengths.tsv"
     """
 }
 
