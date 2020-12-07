@@ -53,5 +53,8 @@ jobs:
         # TODO nf-core: You can customise CI pipeline run tests as required
         # For example: adding multiple test runs with different parameters
         # Remember that you can parallelise this by using strategy.matrix
+        env:
+          NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
+          NCBI_KEY: ${{ secrets.NCBI_KEY }}
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --ncbi_email "$NCBI_EMAIL" --ncbi_key "$NCBI_KEY"
