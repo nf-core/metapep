@@ -67,10 +67,10 @@ def main(args=None):
     out = pd.DataFrame([], columns = ['sequence','id','proteins','counts'])
     out.to_csv(args.peptides, sep="\t", index=False, compression='gzip')
 
-    # each k (TODO after each other to save mem)
+    # for each k
     for k in range(args.min_len, args.max_len + 1):
         print("Generate peptides of length ", k, " ...", flush=True)
-        # for each protein generate all peptides of length ks
+        # for each protein generate all peptides of length k
         prot_peptides = pd.DataFrame(
             [ (it.protein, pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.sequence, k) ],
             columns = ['protein','peptides']
@@ -83,9 +83,9 @@ def main(args=None):
         # aggregate for each peptide: -> pep_id     pep_seq    'prot1','prot2',..    3,6,0,..
         results = prot_peptides.groupby('peptides').agg(list)
         results = results.reset_index()
-        results = results.assign(id=["P_k" + str(k) + "_" + str(id) for id in results.index]) # TODO add k
+        results = results.assign(id=["P_k" + str(k) + "_" + str(id) for id in results.index])
         # rename column names
-        results.columns = ['sequence', 'proteins', 'counts', 'id']  # TODO only once?
+        results.columns = ['sequence', 'proteins', 'counts', 'id']
         # convert to string and then joint to get rid of brackets and quotes
         results["proteins"] = results["proteins"].str.join(",") 
         results["counts"] = results["counts"].apply(lambda x : ','.join([ str(e) for e in  x]))
