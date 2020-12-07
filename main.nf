@@ -30,6 +30,8 @@ def helpMessage() {
       --single_end [bool]             Specifies that the input is single-end reads
       --ncbi_key [str]                NCBI key for faster download from Entrez databases.
       --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
+      --min_pep_len [int]             Min. peptide length to generate.
+      --max_pep_len [int]             Max. peptide length to generate.
 
     References                        If not specified in the configuration file or you wish to overwrite any of the references
       --fasta [file]                  Path to fasta reference
