@@ -255,5 +255,21 @@
         {
             "$ref": "#/definitions/institutional_config_options"
         }
-    ]
+    ],
+    "properties": {
+        "ncbi_key": {
+            "type": "string"
+        },
+        "ncbi_email": {
+            "type": "string"
+        },
+        "min_pep_len": {
+            "type": "integer",
+            "default": 9
+        },
+        "max_pep_len": {
+            "type": "integer",
+            "default": 11
+        }
+    }
 }
