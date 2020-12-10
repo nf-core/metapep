@@ -14,3 +14,4 @@ dependencies:
   - bioconda::fastqc=0.11.8
   - bioconda::multiqc=1.7
   - conda-forge::biopython=1.78
+  - bioconda::prodigal=2.6.3
