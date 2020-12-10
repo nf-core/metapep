@@ -22,12 +22,14 @@ def helpMessage() {
 
     Mandatory arguments:
       --input [file]                  Path to input file. Txt file containing taxon IDs or FASTA file containing proteins.
+      --input_assembly [file]         Alternative input. FASTA file containing nucleotide sequences.
       -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
                                       Available: conda, docker, singularity, test, awsbatch, <institute> and more
 
     Options:
       --genome [str]                  Name of iGenomes reference
       --single_end [bool]             Specifies that the input is single-end reads
+      --prodigal_mode [str]           Prodigal mode, 'meta' or 'single'. Default: 'meta'.
       --ncbi_key [str]                NCBI key for faster download from Entrez databases.
       --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
       --min_pep_len [int]             Min. peptide length to generate.
@@ -113,8 +115,14 @@ if (params.input && hasExtension(params.input, "txt") ) {
         .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
         .set { ch_proteins }
     ch_taxon_ids = Channel.empty()
+} else if (params.input_assembly ) {
+    Channel
+        .fromPath(params.input_assembly, checkIfExists: true)
+        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input_assembly}" }
+        .set { ch_assembly }
+    ch_taxon_ids = Channel.empty()
 } else {
-    exit 1, "Missing input. Please specify --input."
+    exit 1, "Missing input. Please specify --input or --input_assembly."
 }
 
 // Header log info
@@ -124,6 +132,7 @@ if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
 // TODO nf-core: Report custom parameters here
 summary['Input']            = params.input
+summary['Input Assembly']   = params.input_assembly
 summary['Fasta Ref']        = params.fasta
 summary['Data Type']        = params.single_end ? 'Single-End' : 'Paired-End'
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
@@ -216,6 +225,35 @@ if (hasExtension(params.input, "txt")) {
         # provide new home dir to avoid permission errors with Docker and other artefacts
         export HOME="\${PWD}/HOME"
         download_proteins_entrez.py --email $email --key $key --taxid_input $taxon_ids
+        """
+    }
+}
+
+/*
+ * Predict proteins from contigs
+ */
+ // optional: in anonymous or normal mode (the later assumes one genome or closely related genomes only)
+ // TODO add pipeline parameter
+if (params.input_assembly) {
+    process predict_proteins {
+        publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
+            saveAs: {filename -> "$filename" }
+
+        input:
+        file assembly from ch_assembly
+
+        output:
+        file "proteins.fasta" into ch_proteins
+        file "coords.gff"
+
+        script:
+        def mode = params.prodigal_mode
+        """
+        gzip -c -d $assembly | prodigal \
+                 -f gff \
+                 -o coords.gff \
+                 -a proteins.fasta \
+                 -p $mode
         """
     }
 }
