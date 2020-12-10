@@ -232,8 +232,6 @@ if (hasExtension(params.input, "txt")) {
 /*
  * Predict proteins from contigs
  */
- // optional: in anonymous or normal mode (the later assumes one genome or closely related genomes only)
- // TODO add pipeline parameter
 if (params.input_assembly) {
     process predict_proteins {
         publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
