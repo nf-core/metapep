@@ -277,6 +277,9 @@
         "prodigal_mode": {
             "type": "string",
             "default": "meta"
+        },
+        "contig_depths": {
+            "type": "string"
         }
     }
 }
