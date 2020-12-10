@@ -11,6 +11,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 
 - [#1](https://github.com/skrakau/metapep/pull/1) - Download of proteins from NCBI's Entrez databases
 - [#2](https://github.com/skrakau/metapep/pull/2) - Add peptide generationfrom proteins
+- [#9](https://github.com/skrakau/metapep/pull/9),[#10](https://github.com/skrakau/metapep/pull/10) - Add protein prediction using `Prodigal v2.6.3`
 
 ### `Fixed`
 
