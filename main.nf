@@ -125,6 +125,14 @@ if (params.input && hasExtension(params.input, "txt") ) {
     exit 1, "Missing input. Please specify --input or --input_assembly."
 }
 
+ch_contig_depths = Channel.empty()
+if (params.contig_depths) {
+    Channel
+        .fromPath(params.contig_depths, checkIfExists: true)
+        .ifEmpty { exit 1, "Cannot find any file matching: ${params.contig_depths}" }
+        .set { ch_contig_depths }
+}
+
 // Header log info
 log.info nfcoreHeader()
 def summary = [:]
@@ -252,6 +260,27 @@ if (params.input_assembly) {
                  -o coords.gff \
                  -a proteins.fasta \
                  -p $mode
+        """
+    }
+
+    (ch_proteins, ch_proteins_get_abundances) = ch_proteins.into(2)
+
+    // only based on taxonomic abundances, not on protein expression!
+    // rename, "weight"?
+    process assign_protein_abundances {
+        publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
+            saveAs: {filename -> "$filename" }
+
+        input:
+        file contig_depths from ch_contig_depths
+        file proteins from ch_proteins_get_abundances
+
+        output:
+        file "protein_abundances.tsv"   // place somewhere else ?
+
+        script:
+        """
+        get_abundance.py --proteins $proteins --depths $contig_depths --output "protein_abundances.tsv"
         """
     }
 }
