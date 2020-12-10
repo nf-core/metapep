@@ -225,6 +225,7 @@ if (hasExtension(params.input, "txt")) {
         file "proteins.fasta" into ch_proteins
         file "taxa_assembly.tsv"
         file "proteinid_assemblyids.txt"
+        file "protein_weight.tsv"
 
         script:
         def key = params.ncbi_key

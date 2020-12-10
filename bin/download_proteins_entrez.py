@@ -44,7 +44,7 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', "--taxid_input", required=True, help="File containing list with taxonomy IDs.")
+    parser.add_argument('-t', "--taxid_input", required=True, metavar='FILE', type=argparse.FileType('r'), help="File containing list with taxonomy IDs.")
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
     return parser.parse_args(args)
@@ -74,6 +74,18 @@ def get_assembly_length(assembly_id):
     return root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text
 
 
+# get protein weight based on taxonomic abundances (if occuring in multiple taxa -> sum)
+# NOTE multiple occurences of a protein within one assembly are not counted!
+def get_protein_weight(proteinId, dict_proteinid_assemblyids, dict_taxid_assemblyids, taxid_abundance):
+    weight = 0.0
+    for assembly in dict_proteinid_assemblyids[proteinId]:
+        for taxid, assembly2 in dict_taxid_assemblyids.items():
+            if assembly == assembly2:
+                weight += taxid_abundance[taxid]
+            break
+    return weight
+
+
 def main(args=None):
     args = parse_args(args)
 
@@ -86,10 +98,18 @@ def main(args=None):
     fasta_output = "proteins.fasta"
     prot_assembly_id_output = "proteinid_assemblyids.txt"
 
-    with open(args.taxid_input, 'rt') as in_file:
-        taxids = [ row[0] for row in csv.reader(in_file) ]
+    reader = csv.reader(args.taxid_input)
+    header = next(reader)
+    if header[0] != "taxid":
+        print("ERROR: header is ", header)
+        sys.exit("Format of taxid_input wrong!")
+    if len(header) == 2:
+        taxid_abundance = { row[0]:row[1] for row in reader }
+    else:
+        taxid_abundance = { row[0]:1 for row in reader }
 
     print("Processing the following taxonmy IDs:")
+    taxids = taxid_abundance.keys()
     print(taxids)
 
     ####################################################################################################
@@ -119,7 +139,7 @@ def main(args=None):
 
     # 2) for each taxon -> select one assembly (largest for now)
     print("get assembly lengths and select largest assembly for each taxon ...")
-    dict_taxid_assemblyids = {}
+    dict_taxid_assemblyids = {} # TODO rename? only one assemlbyid per taxon
     for tax_record in assembly_results:
         taxid = tax_record["IdList"][0]
         if len(tax_record["LinkSetDb"]) > 0:
@@ -259,6 +279,12 @@ def main(args=None):
                 raise
     if not success:
             sys.exit("Entrez download failed!")
+
+    # 6) write out protein weights obtained from taxonomic abundances
+    out_file = open("protein_weight.tsv", 'w')
+    for proteinid in proteinIds:
+        print(proteinid, get_protein_weight(proteinid, dict_proteinid_assemblyids, dict_taxid_assemblyids, taxid_abundance), file = out_file, flush=True)
+    out_file.close()
 
     print("Done!")
 
