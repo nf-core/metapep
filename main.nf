@@ -21,7 +21,7 @@ def helpMessage() {
     nextflow run nf-core/metapep --input '*_R{1,2}.fastq.gz' -profile docker
 
     Mandatory arguments:
-      --input [file]                  Path to input file containing taxon IDs.
+      --input [file]                  Path to input file. Txt file containing taxon IDs or FASTA file containing proteins.
       -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
                                       Available: conda, docker, singularity, test, awsbatch, <institute> and more
 
@@ -99,13 +99,20 @@ ch_output_docs = file("$projectDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 
 /*
- * Create a channel for input read files
+ * Create a channel for input files
  */
-if (params.input) {
+
+if (params.input && hasExtension(params.input, "txt") ) {
     Channel
         .fromPath(params.input, checkIfExists: true)
         .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
         .set { ch_taxon_ids }
+} else if (params.input  && (hasExtension(params.input, "fasta") || hasExtension(params.input, "fa") || hasExtension(params.input, "faa"))) {
+    Channel
+        .fromPath(params.input, checkIfExists: true)
+        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
+        .set { ch_proteins }
+    ch_taxon_ids = Channel.empty()
 } else {
     exit 1, "Missing input. Please specify --input."
 }
@@ -189,26 +196,28 @@ process get_software_versions {
 /*
  * Download proteins from entrez
  */
-process download_proteins {
-    publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
-        saveAs: {filename -> "$filename" }
+if (hasExtension(params.input, "txt")) {
+    process download_proteins {
+        publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
+            saveAs: {filename -> "$filename" }
 
-    input:
-    file taxon_ids from ch_taxon_ids
+        input:
+        file taxon_ids from ch_taxon_ids
 
-    output:
-    file "proteins.fasta" into ch_proteins
-    file "taxa_assembly.tsv"
-    file "proteinid_assemblyids.txt"
+        output:
+        file "proteins.fasta" into ch_proteins
+        file "taxa_assembly.tsv"
+        file "proteinid_assemblyids.txt"
 
-    script:
-    def key = params.ncbi_key
-    def email = params.ncbi_email
-    """
-    # provide new home dir to avoid permission errors with Docker and other artefacts
-    export HOME="\${PWD}/HOME"
-    download_proteins_entrez.py --email $email --key $key --taxid_input $taxon_ids
-    """
+        script:
+        def key = params.ncbi_key
+        def email = params.ncbi_email
+        """
+        # provide new home dir to avoid permission errors with Docker and other artefacts
+        export HOME="\${PWD}/HOME"
+        download_proteins_entrez.py --email $email --key $key --taxid_input $taxon_ids
+        """
+    }
 }
 
 /*
@@ -404,4 +413,9 @@ def checkHostname() {
             }
         }
     }
+}
+
+// Check file extension
+def hasExtension(it, extension) {
+    it.toString().toLowerCase().endsWith(extension.toLowerCase())
 }
