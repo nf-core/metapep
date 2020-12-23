@@ -36,24 +36,24 @@ def parse_args(args=None):
     parser.add_argument('-o', "--output", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file.")
     return parser.parse_args(args)
 
-def get_prot_depth(protein_id, contig_depths):
+def get_prot_depth(proteinId, dict_contig_depths):
     # get contig id the protein is originating from ("contigid_*")
-    contig_id = protein_id.rsplit('_', 1)[0]
-    return contig_depths[contig_id]
+    contig_id = proteinId.rsplit('_', 1)[0]
+    return dict_contig_depths[contig_id]
 
 
 def main(args=None):
     args = parse_args(args)
 
-    protein_ids = [ str(record.id) for record in SeqIO.parse(args.proteins, 'fasta') ]
+    proteinIds = [ str(record.id) for record in SeqIO.parse(args.proteins, 'fasta') ]
 
-    contig_depths = { row[0]:row[1] for row in csv.reader(args.depths, delimiter='\t') }
-    print(contig_depths)
+    dict_contig_depths = { row[0]:row[1] for row in csv.reader(args.depths, delimiter='\t') }
+    print(dict_contig_depths)
 
-    protein_depths = { id:get_prot_depth(id, contig_depths) for id in protein_ids }
+    dict_protein_depths = { id:get_prot_depth(id, dict_contig_depths) for id in proteinIds }
     print("protein", "abundance", sep='\t', file=args.output)
-    for prot in protein_depths:
-        print(prot, protein_depths[prot], sep='\t', file=args.output, flush=True)
+    for prot in dict_protein_depths:
+        print(prot, dict_protein_depths[prot], sep='\t', file=args.output, flush=True)
 
 
 if __name__ == "__main__":
