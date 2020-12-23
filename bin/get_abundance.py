@@ -51,9 +51,9 @@ def main(args=None):
     print(contig_depths)
 
     protein_depths = { id:get_prot_depth(id, contig_depths) for id in protein_ids }
-    print("protein\tabundance", file=args.output)
+    print("protein", "abundance", sep='\t', file=args.output)
     for prot in protein_depths:
-        print(f"{prot}\t{protein_depths[prot]}", file=args.output, flush=True)
+        print(prot, protein_depths[prot], sep='\t', file=args.output, flush=True)
 
 
 if __name__ == "__main__":

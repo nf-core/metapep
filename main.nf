@@ -224,7 +224,7 @@ if (hasExtension(params.input, "txt")) {
         output:
         file "proteins.fasta" into ch_proteins
         file "taxa_assembly.tsv"
-        file "proteinid_assemblyids.txt"
+        file "proteinid_assemblyids.tsv"
         file "protein_weight.tsv"
 
         script:
