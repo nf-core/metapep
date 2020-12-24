@@ -224,7 +224,7 @@ if (hasExtension(params.input, "txt")) {
         output:
         file "proteins.fasta" into ch_proteins
         file "taxa_assembly.tsv"
-        file "proteinid_assemblyids.tsv"
+        file "protein_assemblies.tsv"
         file "protein_weight.tsv"
 
         script:
@@ -233,7 +233,13 @@ if (hasExtension(params.input, "txt")) {
         """
         # provide new home dir to avoid permission errors with Docker and other artefacts
         export HOME="\${PWD}/HOME"
-        download_proteins_entrez.py --email $email --key $key --taxid_input $taxon_ids
+        download_proteins_entrez.py --email $email \
+                                    --key $key \
+                                    --taxid_input $taxon_ids \
+                                    --proteins proteins.fasta \
+                                    --tax_ass_out taxa_assembly.tsv \
+                                    --prot_ass_out protein_assemblies.tsv \
+                                    --prot_weight_out protein_weight.tsv
         """
     }
 }

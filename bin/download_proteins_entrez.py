@@ -47,6 +47,10 @@ def parse_args(args=None):
     parser.add_argument('-t', "--taxid_input", required=True, metavar='FILE', type=argparse.FileType('r'), help="File containing list with taxonomy IDs.")
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
+    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', type=argparse.FileType('w'), help="FASTA output file containing proteins.")
+    parser.add_argument('-ta', "--tax_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing taxon - assembly mappings.")
+    parser.add_argument('-pa', "--prot_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing protein - assemblies mappings.")
+    parser.add_argument('-pw', "--prot_weight_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing protein weights.")
     return parser.parse_args(args)
 
 
@@ -93,11 +97,7 @@ def main(args=None):
     Entrez.api_key = args.key
     Entrez.email = args.email
 
-    # output filenames
-    taxon_assembly_output = "taxa_assembly.tsv"
-    fasta_output = "proteins.fasta"
-    protein_assemblies_output = "proteinId_assemblyIds.tsv"
-
+    # read taxonomic ids for download (together with abundances)
     reader = csv.reader(args.taxid_input)
     header = next(reader)
     if header[0] != "taxid":
@@ -155,11 +155,9 @@ def main(args=None):
     # print(dict_taxId_assemblyid)
 
     # write taxId - assemblyId out (-> results!)
-    out_file = open(taxon_assembly_output,'w')
-    print("taxon", "assembly", sep='\t', file = out_file, flush=True)
+    print("taxon", "assembly", sep='\t', file=args.tax_ass_out, flush=True)
     for taxon in dict_taxId_assemblyid.keys():
-            print(taxon, dict_taxId_assemblyid[taxon], sep='\t', file = out_file, flush=True)
-    out_file.close()
+            print(taxon, dict_taxId_assemblyid[taxon], sep='\t', file=args.tax_ass_out, flush=True)
 
     # 3) (selected) assembly -> nucleotide sequences
     # (maybe split here)
@@ -253,11 +251,9 @@ def main(args=None):
     # -> # proteins with refseq source (<= # IPG proteins)
 
     # protein_id, assembly_ids
-    out_file = open(protein_assemblies_output,'w')
-    print("protein", "assemblies", sep='\t', file = out_file)
+    print("protein", "assemblies", sep='\t', file=args.prot_ass_out)
     for proteinId in proteinIds:
-        print(proteinId, ','.join(dict_proteinId_assemblyIds[proteinId]), sep='\t', file = out_file, flush=True)
-    out_file.close()
+        print(proteinId, ','.join(dict_proteinId_assemblyIds[proteinId]), sep='\t', file=args.prot_ass_out, flush=True)
 
     # 5) download protein FASTAs
     # print("    download proteins ...")
@@ -266,9 +262,8 @@ def main(args=None):
     for attempt in range(3):
         try:
             with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
-                with open(fasta_output, "w") as out_handle:
-                    out_handle.write(entrez_handle.read().replace('\n\n', '\n'))
-                    # ... and get rid of additional blank lines between records (not sure why they are there)
+                args.proteins.write(entrez_handle.read().replace('\n\n', '\n'))
+                # ... and get rid of additional blank lines between records (not sure why they are there)
             time.sleep(1)   # avoid getting blocked by ncbi
             success = True
             break
@@ -283,11 +278,9 @@ def main(args=None):
             sys.exit("Entrez download failed!")
 
     # 6) write out protein weights obtained from taxonomic abundances
-    out_file = open("protein_weight.tsv", 'w')
-    print("protein", "weight", sep='\t', file = out_file, flush=True)
+    print("protein", "weight", sep='\t', file=args.prot_weight_out, flush=True)
     for proteinId in proteinIds:
-        print(proteinId, get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyid, dic_taxId_abundance), sep='\t', file = out_file, flush=True)
-    out_file.close()
+        print(proteinId, get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyid, dic_taxId_abundance), sep='\t', file=args.prot_weight_out, flush=True)
 
     print("Done!")
 
