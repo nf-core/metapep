@@ -216,13 +216,13 @@ process get_software_versions {
 if (hasExtension(params.input, "txt")) {
     process download_proteins {
         publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
-            saveAs: {filename -> "$filename" }
+            saveAs: {filename -> filename.indexOf(".fasta") == -1 ? "$filename" : null }
 
         input:
         file taxon_ids from ch_taxon_ids
 
         output:
-        file "proteins.fasta" into ch_proteins
+        file "proteins.fasta.gz" into ch_proteins
         file "taxa_assembly.tsv"
         file "protein_assemblies.tsv"
         file "protein_weight.tsv"
@@ -236,7 +236,7 @@ if (hasExtension(params.input, "txt")) {
         download_proteins_entrez.py --email $email \
                                     --key $key \
                                     --taxid_input $taxon_ids \
-                                    --proteins proteins.fasta \
+                                    --proteins proteins.fasta.gz \
                                     --tax_ass_out taxa_assembly.tsv \
                                     --prot_ass_out protein_assemblies.tsv \
                                     --prot_weight_out protein_weight.tsv
@@ -256,7 +256,7 @@ if (params.input_assembly) {
         file assembly from ch_assembly
 
         output:
-        file "proteins.fasta" into ch_proteins
+        file "proteins.fasta.gz" into ch_proteins
         file "coords.gff"
 
         script:
@@ -267,6 +267,7 @@ if (params.input_assembly) {
                  -o coords.gff \
                  -a proteins.fasta \
                  -p $mode
+        gzip proteins.fasta
         """
     }
 

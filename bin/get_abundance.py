@@ -31,7 +31,7 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', type=argparse.FileType('r'), help="File containing list with protein IDs.")
+    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="File containing list with protein IDs.")
     parser.add_argument('-d', "--depths", required=True, metavar='FILE', type=argparse.FileType('r'), help="File containing contig depths.")
     parser.add_argument('-o', "--output", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file.")
     return parser.parse_args(args)
@@ -45,7 +45,8 @@ def get_prot_depth(proteinId, dict_contig_depths):
 def main(args=None):
     args = parse_args(args)
 
-    proteinIds = [ str(record.id) for record in SeqIO.parse(args.proteins, 'fasta') ]
+    with gzip.open(args.proteins, "rt") as handle:
+        proteinIds = [ str(record.id) for record in SeqIO.parse(handle, 'fasta') ]
 
     dict_contig_depths = { row[0]:row[1] for row in csv.reader(args.depths, delimiter='\t') }
     print(dict_contig_depths)

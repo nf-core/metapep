@@ -47,7 +47,7 @@ def parse_args(args=None):
     parser.add_argument('-t', "--taxid_input", required=True, metavar='FILE', type=argparse.FileType('r'), help="File containing list with taxonomy IDs.")
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
-    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', type=argparse.FileType('w'), help="FASTA output file containing proteins.")
+    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed FASTA output file containing proteins.")
     parser.add_argument('-ta', "--tax_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing taxon - assembly mappings.")
     parser.add_argument('-pa', "--prot_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing protein - assemblies mappings.")
     parser.add_argument('-pw', "--prot_weight_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing protein weights.")
@@ -262,7 +262,8 @@ def main(args=None):
     for attempt in range(3):
         try:
             with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
-                args.proteins.write(entrez_handle.read().replace('\n\n', '\n'))
+                with gzip.open(args.proteins, 'wt') as out_handle:
+                    out_handle.write(entrez_handle.read().replace('\n\n', '\n'))
                 # ... and get rid of additional blank lines between records (not sure why they are there)
             time.sleep(1)   # avoid getting blocked by ncbi
             success = True
