@@ -31,7 +31,7 @@ import time
 from Bio import Entrez, SeqIO
 from pprint import pprint
 from datetime import datetime
-from collections import Counter
+from collections import Counter, defaultdict
 from urllib.error import HTTPError
 
 import sys
@@ -188,14 +188,11 @@ def main(args=None):
     ### for each assembly get list of sequence ids
     # seq_ids = [ record["Id"] for assembly_record in nucleotide_results for record in assembly_record["LinkSetDb"][0]["Link"] ]
 
-    dict_seqId_assemblyIds = {}
+    dict_seqId_assemblyIds = defaultdict(lambda : [])
     for assembly_record in nucleotide_results:
         assemblyid = assembly_record["IdList"][0]
         for record in assembly_record["LinkSetDb"][0]["Link"]:
-            if record["Id"] not in dict_seqId_assemblyIds:
-                dict_seqId_assemblyIds[record["Id"]] = [assemblyid]
-            else:
-                dict_seqId_assemblyIds[record["Id"]].append(assemblyid)
+            dict_seqId_assemblyIds[record["Id"]].append(assemblyid)
 
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
