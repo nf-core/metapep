@@ -80,10 +80,10 @@ def get_assembly_length(assemblyId):
 
 # get protein weight based on taxonomic abundances (if occuring in multiple taxa -> sum)
 # NOTE multiple occurences of a protein within one assembly are not counted!
-def get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyid, dic_taxId_abundance):
+def get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_abundance):
     weight = 0.0
     for assembly in dict_proteinId_assemblyIds[proteinId]:
-        for taxId, assembly2 in dict_taxId_assemblyid.items():
+        for taxId, assembly2 in dict_taxId_assemblyId.items():
             if assembly == assembly2:
                 weight += dic_taxId_abundance[taxId]
             break
@@ -139,7 +139,7 @@ def main(args=None):
 
     # 2) for each taxon -> select one assembly (largest for now)
     print("get assembly lengths and select largest assembly for each taxon ...")
-    dict_taxId_assemblyid = {} # TODO rename? only one assemlbyid per taxon
+    dict_taxId_assemblyId = {}
     for tax_record in assembly_results:
         taxId = tax_record["IdList"][0]
         if len(tax_record["LinkSetDb"]) > 0:
@@ -149,19 +149,19 @@ def main(args=None):
             lengths = [get_assembly_length(id) for id in ids]
             # get id for largest assembly
             selected_assemblyId = ids[lengths.index(max(lengths))]
-            dict_taxId_assemblyid[taxId] = selected_assemblyId
+            dict_taxId_assemblyId[taxId] = selected_assemblyId
 
     # print("dict")
-    # print(dict_taxId_assemblyid)
+    # print(dict_taxId_assemblyId)
 
     # write taxId - assemblyId out (-> results!)
     print("taxon", "assembly", sep='\t', file=args.tax_ass_out, flush=True)
-    for taxon in dict_taxId_assemblyid.keys():
-            print(taxon, dict_taxId_assemblyid[taxon], sep='\t', file=args.tax_ass_out, flush=True)
+    for taxon in dict_taxId_assemblyId.keys():
+            print(taxon, dict_taxId_assemblyId[taxon], sep='\t', file=args.tax_ass_out, flush=True)
 
     # 3) (selected) assembly -> nucleotide sequences
     # (maybe split here)
-    assemblyIds = dict_taxId_assemblyid.values()
+    assemblyIds = dict_taxId_assemblyId.values()
     print("# selected assemblies: ", len(assemblyIds))
     print("for each assembly get nucloetide sequence IDs...")
 
@@ -190,9 +190,9 @@ def main(args=None):
 
     dict_seqId_assemblyIds = defaultdict(lambda : [])
     for assembly_record in nucleotide_results:
-        assemblyid = assembly_record["IdList"][0]
+        assemblyId = assembly_record["IdList"][0]
         for record in assembly_record["LinkSetDb"][0]["Link"]:
-            dict_seqId_assemblyIds[record["Id"]].append(assemblyid)
+            dict_seqId_assemblyIds[record["Id"]].append(assemblyId)
 
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
@@ -278,7 +278,7 @@ def main(args=None):
     # 6) write out protein weights obtained from taxonomic abundances
     print("protein", "weight", sep='\t', file=args.prot_weight_out, flush=True)
     for proteinId in proteinIds:
-        print(proteinId, get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyid, dic_taxId_abundance), sep='\t', file=args.prot_weight_out, flush=True)
+        print(proteinId, get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_abundance), sep='\t', file=args.prot_weight_out, flush=True)
 
     print("Done!")
 
