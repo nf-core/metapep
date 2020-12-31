@@ -102,7 +102,7 @@ def main(args=None):
     header = next(reader)
     if header[0] != "taxid":
         print("ERROR: header is ", header)
-        sys.exit("Format of taxid_input wrong!")
+        sys.exit("The format of the file provided with --taxid_input is invalid!")
     if len(header) == 2:
         dic_taxId_abundance = { row[0]:row[1] for row in reader }
     else:
