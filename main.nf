@@ -125,6 +125,14 @@ if (params.input && hasExtension(params.input, "txt") ) {
     exit 1, "Missing input. Please specify --input or --input_assembly."
 }
 
+ch_contig_depths = Channel.empty()
+if (params.contig_depths) {
+    Channel
+        .fromPath(params.contig_depths, checkIfExists: true)
+        .ifEmpty { exit 1, "Cannot find any file matching: ${params.contig_depths}" }
+        .set { ch_contig_depths }
+}
+
 // Header log info
 log.info nfcoreHeader()
 def summary = [:]
@@ -208,15 +216,16 @@ process get_software_versions {
 if (hasExtension(params.input, "txt")) {
     process download_proteins {
         publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
-            saveAs: {filename -> "$filename" }
+            saveAs: {filename -> filename.indexOf(".fasta") == -1 ? "$filename" : null }
 
         input:
         file taxon_ids from ch_taxon_ids
 
         output:
-        file "proteins.fasta" into ch_proteins
+        file "proteins.fasta.gz" into ch_proteins
         file "taxa_assembly.tsv"
-        file "proteinid_assemblyids.txt"
+        file "protein_assemblies.tsv"
+        file "protein_weight.tsv"
 
         script:
         def key = params.ncbi_key
@@ -224,7 +233,13 @@ if (hasExtension(params.input, "txt")) {
         """
         # provide new home dir to avoid permission errors with Docker and other artefacts
         export HOME="\${PWD}/HOME"
-        download_proteins_entrez.py --email $email --key $key --taxid_input $taxon_ids
+        download_proteins_entrez.py --email $email \
+                                    --key $key \
+                                    --taxid_input $taxon_ids \
+                                    --proteins proteins.fasta.gz \
+                                    --tax_ass_out taxa_assembly.tsv \
+                                    --prot_ass_out protein_assemblies.tsv \
+                                    --prot_weight_out protein_weight.tsv
         """
     }
 }
@@ -241,7 +256,7 @@ if (params.input_assembly) {
         file assembly from ch_assembly
 
         output:
-        file "proteins.fasta" into ch_proteins
+        file "proteins.fasta.gz" into ch_proteins
         file "coords.gff"
 
         script:
@@ -252,6 +267,28 @@ if (params.input_assembly) {
                  -o coords.gff \
                  -a proteins.fasta \
                  -p $mode
+        gzip proteins.fasta
+        """
+    }
+
+    (ch_proteins, ch_proteins_get_abundances) = ch_proteins.into(2)
+
+    // only based on taxonomic abundances, not on protein expression!
+    // rename, "weight"?
+    process assign_protein_abundances {
+        publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
+            saveAs: {filename -> "$filename" }
+
+        input:
+        file contig_depths from ch_contig_depths
+        file proteins from ch_proteins_get_abundances
+
+        output:
+        file "protein_abundances.tsv"   // place somewhere else ?
+
+        script:
+        """
+        get_abundance.py --proteins $proteins --depths $contig_depths --output "protein_abundances.tsv"
         """
     }
 }

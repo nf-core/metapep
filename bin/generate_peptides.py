@@ -37,7 +37,7 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', type=argparse.FileType('r'), help="FASTA file containing proteins.")
+    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed FASTA file containing proteins.")
     parser.add_argument('-mn', "--min_len", required=True, metavar='N', type=int, help="Min. peptide length.")
     parser.add_argument('-mx', "--max_len", required=True, metavar='N', type=int, help="Max. peptide length.")
     parser.add_argument('-pp', '--peptides', required=True, metavar='FILE', help='Output file containing peptides.') # use str type to allow compression of output
@@ -51,11 +51,12 @@ def gen_peptides(prot_seq, k):
 def main(args=None):
     args = parse_args(args)
 
-    # get protein id, sequence, len
-    protid_protseq_protlen = pd.DataFrame(
-        [ (str(record.id), str(record.seq), len(record.seq)) for record in SeqIO.parse(args.proteins, 'fasta') ],
-        columns = ['protein','sequence', 'length']
-        )
+    with gzip.open(args.proteins, "rt") as handle:
+        # get protein id, sequence, len
+        protid_protseq_protlen = pd.DataFrame(
+            [ (str(record.id), str(record.seq), len(record.seq)) for record in SeqIO.parse(handle, 'fasta') ],
+            columns = ['protein','sequence', 'length']
+            )
     print("# proteins: ", len(protid_protseq_protlen))
 
     # write out protein lengths
