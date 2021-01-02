@@ -259,9 +259,6 @@
             "type": "integer",
             "default": 11
         },
-        "input_assembly": {
-            "type": "string"
-        },
         "prodigal_mode": {
             "type": "string",
             "default": "meta"

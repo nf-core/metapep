@@ -21,8 +21,7 @@ def helpMessage() {
     nextflow run nf-core/metapep --input '*_R{1,2}.fastq.gz' -profile docker
 
     Mandatory arguments:
-      --input [file]                  Path to input file. Txt file containing taxon IDs or FASTA file containing proteins.
-      --input_assembly [file]         Alternative input. FASTA file containing nucleotide sequences.
+      --input [file]                  Path to input TSV file containing: condition, type, path, alleles. Must contain a corresponding header.
       -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
                                       Available: conda, docker, singularity, test, awsbatch, <institute> and more
 
@@ -86,30 +85,86 @@ ch_output_docs = file("$projectDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 
 /*
- * Create a channel for input files
+ * Check and process input file
  */
+if (!params.input)
+    exit 1, "Missing input. Please specify --input."
+if (!hasExtension(params.input, "tsv"))
+    exit 1, "Input file specified with --input must have a '.tsv' extension."
 
-if (params.input && hasExtension(params.input, "txt") ) {
-    Channel
-        .fromPath(params.input, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
-        .set { ch_taxon_ids }
-} else if (params.input  && (hasExtension(params.input, "fasta") || hasExtension(params.input, "fa") || hasExtension(params.input, "faa"))) {
-    Channel
-        .fromPath(params.input, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
-        .set { ch_proteins }
-    ch_taxon_ids = Channel.empty()
-} else if (params.input_assembly ) {
-    Channel
-        .fromPath(params.input_assembly, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input_assembly}" }
-        .set { ch_assembly }
-    ch_taxon_ids = Channel.empty()
-} else {
-    exit 1, "Missing input. Please specify --input or --input_assembly."
-}
+ch_taxon_ids = Channel.empty()  // -> download_proteins
+ch_proteins = Channel.empty()   // -> generate_peptides
+ch_assembly = Channel.empty()   // -> predict_proteins
 
+Channel
+    .fromPath(params.input, checkIfExists: true)
+    .splitCsv(sep:'\t')
+    .map { row ->
+            if (row.size() == 4) {
+                def condition = row[0]
+                def type = row[1]
+                def in_file = file(row[2], checkIfExists: true)
+                def alleles = row[3].split(',')
+                return [ condition, type, in_file, alleles ]}
+            else {
+                exit 1, "Input TSV file contains row with ${row.size()} column(s). Expects 4."
+            }
+        }
+    .into { ch_input_all_validate; ch_input_all1; ch_input_all2; ch_input_all3 }
+
+// Check if condition names are unique
+ch_input_all_validate
+    .map { condition, type, in_file, alleles -> condition }
+    .toList()
+    .map{ it -> if( it.size() != it.unique().size() ) {exit 1, "ERROR: input contains duplicated conditions!" } }
+
+// Split input into corresponding channels dependent on type
+// type 'taxa'
+ch_input_all1
+    .map { condition, type, in_file, alleles ->
+            if (type == 'taxa'){
+                if (!hasExtension(in_file, "txt")){
+                    exit 1, "File ${in_file} of type 'taxa' has wrong file extension. Expects a '.txt' extension."
+                }
+                return [ in_file ]
+            }
+        }
+    .unique()
+    .into { ch_taxon_ids_check; ch_taxon_ids }
+
+// if (ch_taxon_ids_check).count().getVal() == 0)
+//     ch_entrez_proteins = Channel.empty()
+
+// type 'proteins'
+ch_input_all2
+    .map { condition, type, in_file, alleles ->
+            if (type == 'proteins'){
+                if (!hasExtension(in_file, "fasta")){  // TODO had other: ''.faa', ''.fa.gz' etc.
+                    exit 1, "File ${in_file} of type 'proteins' has wrong file extension. Expects a '.fasta' extension."
+                }
+                return[ in_file ]
+            }
+        }
+    .unique()
+    .set { ch_proteins }
+
+// type 'assembly'
+ch_input_all3
+    .map { condition, type, in_file, alleles ->
+            if (type == 'assembly'){
+                if (!hasExtension(in_file, "fasta")){  // TODO had other: ''.faa', ''.fa.gz' etc.
+                    exit 1, "File ${in_file} of type 'assembly' has wrong file extension. Expects a '.fasta' extension."
+                }
+                return[ in_file ]
+            }
+        }
+    .unique()
+    .into { ch_assembly_check; ch_assembly }
+
+// if (ch_assembly_check).count().getVal() == 0)
+//     ch_pred_proteins = Channel.empty()
+
+// Get contigs depths fopr assemblies
 ch_contig_depths = Channel.empty()
 if (params.contig_depths) {
     Channel
@@ -125,7 +180,6 @@ if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
 // TODO nf-core: Report custom parameters here
 summary['Input']            = params.input
-summary['Input Assembly']   = params.input_assembly
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
 summary['Output dir']       = params.outdir
@@ -192,89 +246,114 @@ process get_software_versions {
     """
 }
 
+/*
+ * Create database tables
+ */
+process create_db_tables {
+        publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
+            saveAs: {filename -> "$filename" }
+        input:
+        file input_file from Channel.value(file(params.input))
+
+        output: // value channels!
+        file "microbiomes.tsv" into ch_microbiomes_table                        // microbiome id - file path
+        file "condition_microbiome.tsv" into ch_condition_microbiome_table      // condition id - condition name - microbiome id
+        file "alleles.tsv"  into ch_alleles_table                               // allele id - allele name
+        file "condition_allele.tsv" into ch_condition_allele_table              // condition id - allele id
+
+        script:
+        """
+        create_db_tables.py -i ${input_file} \
+                            -m microbiomes.tsv \
+                            -cm condition_microbiome.tsv \
+                            -a alleles.tsv \
+                            -ca condition_allele.tsv
+        """
+    }
 
 /*
  * Download proteins from entrez
  */
-if (hasExtension(params.input, "txt")) {
-    process download_proteins {
-        publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
-            saveAs: {filename -> filename.indexOf(".fasta") == -1 ? "$filename" : null }
+process download_proteins {
+    publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
+        saveAs: {filename -> filename.indexOf(".fasta") == -1 ? "$filename" : null }
 
-        input:
-        file taxon_ids from ch_taxon_ids
+    input:
+    file taxon_ids from ch_taxon_ids
 
-        output:
-        file "proteins.fasta.gz" into ch_proteins
-        file "taxa_assembly.tsv"
-        file "protein_assemblies.tsv"
-        file "protein_weight.tsv"
+    output:
+    file "proteins.fasta.gz" into ch_entrez_proteins
+    file "taxa_assembly.tsv"
+    file "protein_assemblies.tsv"
+    file "protein_weight.tsv"
+    //file "protein_microbiome.tsv" //  protein_id   microbiome_sid
 
-        script:
-        def key = params.ncbi_key
-        def email = params.ncbi_email
-        """
-        # provide new home dir to avoid permission errors with Docker and other artefacts
-        export HOME="\${PWD}/HOME"
-        download_proteins_entrez.py --email $email \
-                                    --key $key \
-                                    --taxid_input $taxon_ids \
-                                    --proteins proteins.fasta.gz \
-                                    --tax_ass_out taxa_assembly.tsv \
-                                    --prot_ass_out protein_assemblies.tsv \
-                                    --prot_weight_out protein_weight.tsv
-        """
-    }
+    script:
+    def key = params.ncbi_key
+    def email = params.ncbi_email
+    """
+    # provide new home dir to avoid permission errors with Docker and other artefacts
+    export HOME="\${PWD}/HOME"
+    download_proteins_entrez.py --email $email \
+                                --key $key \
+                                --taxid_input $taxon_ids \
+                                --proteins proteins.fasta.gz \
+                                --tax_ass_out taxa_assembly.tsv \
+                                --prot_ass_out protein_assemblies.tsv \
+                                --prot_weight_out protein_weight.tsv
+    """
 }
 
 /*
  * Predict proteins from contigs
  */
-if (params.input_assembly) {
-    process predict_proteins {
-        publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
-            saveAs: {filename -> "$filename" }
+process predict_proteins {
+    publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
 
-        input:
-        file assembly from ch_assembly
+    input:
+    file assembly from ch_assembly
 
-        output:
-        file "proteins.fasta.gz" into ch_proteins
-        file "coords.gff"
+    output:
+    file "proteins.fasta.gz" into (ch_pred_proteins, ch_proteins_get_abundances)
+    file "coords.gff"
 
-        script:
-        def mode = params.prodigal_mode
-        """
-        gzip -c -d $assembly | prodigal \
-                 -f gff \
-                 -o coords.gff \
-                 -a proteins.fasta \
-                 -p $mode
-        gzip proteins.fasta
-        """
-    }
-
-    (ch_proteins, ch_proteins_get_abundances) = ch_proteins.into(2)
-
-    // only based on taxonomic abundances, not on protein expression!
-    // rename, "weight"?
-    process assign_protein_abundances {
-        publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
-            saveAs: {filename -> "$filename" }
-
-        input:
-        file contig_depths from ch_contig_depths
-        file proteins from ch_proteins_get_abundances
-
-        output:
-        file "protein_abundances.tsv"   // place somewhere else ?
-
-        script:
-        """
-        get_abundance.py --proteins $proteins --depths $contig_depths --output "protein_abundances.tsv"
-        """
-    }
+    script:
+    def mode = params.prodigal_mode
+    """
+    gzip -c -d $assembly | prodigal \
+                -f gff \
+                -o coords.gff \
+                -a proteins.fasta \
+                -p $mode
+    gzip proteins.fasta
+    """
 }
+
+// only based on taxonomic abundances, not on protein expression!
+// rename, "weight"?
+process assign_protein_abundances {
+    publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    file contig_depths from ch_contig_depths
+    file proteins from ch_proteins_get_abundances
+
+    output:
+    file "protein_abundances.tsv"   // place somewhere else ?
+
+    script:
+    """
+    get_abundance.py --proteins $proteins --depths $contig_depths --output "protein_abundances.tsv"
+    """
+}
+
+
+// TODO
+// protein generating processes -> output: microbiome id, proteins
+// merge and create unique potein ids (microbobiome proteins table)
+
 
 /*
  * Generate peptides
@@ -285,7 +364,7 @@ process generate_peptides {
         saveAs: {filename -> "$filename" }
 
     input:
-    file proteins from ch_proteins
+    file proteins from ch_proteins.mix(ch_entrez_proteins, ch_pred_proteins)
 
     output:
     file "peptides.tsv.gz" into ch_peptides
