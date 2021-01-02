@@ -259,6 +259,17 @@
             "type": "integer",
             "default": 11
         },
+        "pred_method": {
+            "type": "string",
+            "default": "syfpeithi",
+	    "description": "Epitope prediction method to use"
+        },
+        "pred_chunk_size": {
+            "type": "integer",
+            "default": 5000,
+	    "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
+        },
+
         "prodigal_mode": {
             "type": "string",
             "default": "meta"

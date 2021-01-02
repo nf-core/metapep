@@ -15,3 +15,9 @@ RUN conda env export --name nf-core-metapep-1.0dev > nf-core-metapep-1.0dev.yml
 # Instruct R processes to use these empty files instead of clashing with a local version
 RUN touch .Rprofile
 RUN touch .Renviron
+
+# Download MHCflurry models
+ENV MHCFLURRY_DATA_DIR /mhcflurry-data
+ENV MHCFLURRY_DOWNLOADS_CURRENT_RELEASE 1.4.0
+RUN mkdir -p "$MHCFLURRY_DATA_DIR"
+RUN mhcflurry-downloads fetch models_class1

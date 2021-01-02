@@ -32,6 +32,8 @@ def helpMessage() {
       --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
       --min_pep_len [int]             Min. peptide length to generate.
       --max_pep_len [int]             Max. peptide length to generate.
+      --pred_method [str]             Epitope prediction method to use. One of [syfpeithi, mhcflurry, mhcnuggets-class-1, mhcnuggets-class-2]. Default: syfpeithi.
+      --pred_chunk_size               Maximum chunk size (#peptides) for epitope prediction jobs
 
     Other options:
       --outdir [file]                 The output directory where the results will be saved
@@ -91,6 +93,23 @@ if (!params.input)
     exit 1, "Missing input. Please specify --input."
 if (!hasExtension(params.input, "tsv"))
     exit 1, "Input file specified with --input must have a '.tsv' extension."
+
+switch (params.pred_method) {
+    case "syfpeithi":
+        params.pred_method_version = "1.0";
+        break;
+    case "mhcflurry":
+        params.pred_method_version = "1.4.3";
+        break;
+    case "mhcnuggets-class-1":
+        params.pred_method_version = "2.3.2";
+        break;
+    case "mhcnuggets-class-2":
+        params.pred_method_version = "2.3.2";
+        break;
+    default:
+        exit 1, "Epitope prediction method specified with --pred_method not recognized."
+}
 
 // TODO for 'proteins' type
 // - allow weight input for type 'proteins' as well! (for now use equal weight ?)
@@ -342,7 +361,7 @@ process update_protein_ids {
 
     output:
     file "proteins.tsv.gz" into ch_proteins
-    file "proteins_microbiomes.tsv"
+    file "proteins_microbiomes.tsv" into ch_proteins_microbiomes
 
     script:
     """
@@ -352,7 +371,6 @@ process update_protein_ids {
                           --out_proteins_microbiomes proteins_microbiomes.tsv \
     """
 }
-
 
 /*
  * Generate peptides
@@ -365,8 +383,8 @@ process generate_peptides {
     file proteins from ch_proteins
 
     output:
-    file "peptides.tsv.gz" into ch_peptides     // peptide_id, peptide_sequence
-    file "proteins_peptides.tsv"                // protein_id, peptide_id, count
+    file "peptides.tsv.gz" into ch_peptides                // peptide_id, peptide_sequence
+    file "proteins_peptides.tsv" into ch_proteins_peptides // protein_id, peptide_id, count
     //file "proteins_lengths.tsv"
 
     script:
@@ -382,6 +400,108 @@ process generate_peptides {
     """
 }
 
+/*
+ * Split prediction tasks (peptide, allele) into chunks of peptides that are to
+ * be predicted against the same allele for parallel prediction
+ */
+process split_pred_tasks {
+    input:
+    path  peptides              from  ch_peptides
+    path  proteins_peptides     from  ch_proteins_peptides
+    path  microbiomes_proteins  from  ch_proteins_microbiomes
+    path  conditions            from  ch_condition_microbiome_table
+    path  conditions_alleles    from  ch_condition_allele_table
+    path  alleles               from  ch_alleles_table
+    // The tables are joined to map peptide -> protein -> microbiome -> condition -> allele
+    // and thus to enumerate, which (peptide, allele) combinations have to be predicted.
+
+    output:
+    path "peptides_*.txt" into ch_epitope_prediction_chunks
+
+    script:
+    def pred_chunk_size       = params.pred_chunk_size
+    """
+    gen_prediction_chunks.py --peptides "$peptides" \
+                             --protein-peptide-occ "$proteins_peptides" \
+                             --microbiome-protein-occ "$microbiomes_proteins" \
+                             --conditions "$conditions" \
+                             --condition-allele-map "$conditions_alleles" \
+                             --max-chunk-size $pred_chunk_size \
+                             --alleles "$alleles" \
+                             --outdir .
+    """
+}
+
+/*
+ * Perform epitope prediction
+ */
+process predict_epitopes {
+    input:
+    path peptides from ch_epitope_prediction_chunks.flatten()
+
+    output:
+    path "*predictions.tsv" into ch_epitope_predictions
+    path "*prediction_warnings.log" into ch_epitope_prediction_warnings
+
+    script:
+    def pred_method           = params.pred_method
+    def pred_method_version   = params.pred_method_version
+    """
+
+    # Extract allele name from file header
+    allele_name="\$(head -n1 "$peptides" | fgrep '#' | cut -f2 -d'#')"
+    allele_id="\$(head -n1 "$peptides" | fgrep '#' | cut -f3 -d'#')"
+
+    out_basename="\$(basename "$peptides" .txt)"
+    out_predictions="\$out_basename"_predictions.tsv
+    out_warnings="\$out_basename"_prediction_warnings.log
+
+    # Create output header
+    echo "peptide_id	prediction_score	allele_id" >"\$out_predictions"
+
+    # Process file
+    if ! epytope_predict.py --peptides "$peptides" \
+                       --method "$pred_method" \
+                       --method_version "$pred_method_version" \
+                       "\$allele_name" \
+                       2>stderr.log \
+                       | tail -n +2 \
+                       | cut -f 1,3 \
+                       | sed -e "s/\$/	\$allele_id/" \
+                       >>"\$out_basename"_predictions.tsv; then
+        cat stderr.log >&2
+        exit 1
+    fi
+
+    # Filter stderr for warnings and pass them on in the warnings channel
+    fgrep WARNING stderr.log  | sort -u >"\$out_warnings" || :
+    """
+}
+
+/*
+ * Merge prediction results from peptide chunks into one prediction result
+ */
+process merge_predictions {
+    publishDir "${params.outdir}", mode: params.publish_dir_mode,
+        saveAs: {filename -> filename.endsWith(".log") ? "logs/$filename" : "db_tables/$filename"}
+
+    input:
+    path predictions from ch_epitope_predictions.collect()
+    path prediction_warnings from ch_epitope_prediction_warnings.collect()
+
+    output:
+    path "predictions.tsv.gz"
+    path "prediction_warnings.log"
+
+    script:
+    def single = predictions instanceof Path ? 1 : predictions.size()
+    def merge = (single == 1) ? 'cat' : 'csvtk concat -t'
+
+    """
+    $merge $predictions | gzip > predictions.tsv.gz
+    sort -u $prediction_warnings > prediction_warnings.log
+    """
+}
 
 /*
  * Output Description HTML
@@ -504,7 +624,6 @@ workflow.onComplete {
     }
 
 }
-
 
 def nfcoreHeader() {
     // Log colors ANSI codes

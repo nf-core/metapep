@@ -15,3 +15,30 @@ dependencies:
   - bioconda::multiqc=1.7
   - conda-forge::biopython=1.78
   - bioconda::prodigal=2.6.3
+# epytope / FRED-2 core dependencies:
+  - bioconda::svmlight=6.02
+  - conda-forge::coincbc=2.10.5
+  - conda-forge::keras=2.3.1
+  - bioconda::csvtk=0.21.0
+  - pip
+  - pip:
+    - git+https://github.com/KohlbacherLab/epytope.git@a863afc5131a33d3510ba0a397cd34bbcaae6270
+    - h5py==2.10.0
+    - joblib==1.0.0
+    - mhcflurry==1.4.3
+    - mhcnames==0.4.8
+    - mhcnuggets==2.3.3
+    - np-utils==0.5.12.1
+    - numpy==1.18.5
+    - opt-einsum==3.3.0
+    - ply==3.11
+    - pymysql==0.10.1
+    - pyomo==5.7.2
+    - pyutilib==6.0.0
+    - pyvcf==0.6.8
+    - scikit-learn==0.24.0
+    - tensorboard==1.15.0
+    - tensorflow==1.15.4
+    - tensorflow-estimator==1.15.1
+    - threadpoolctl==2.1.0
+    - tqdm==4.55.1
