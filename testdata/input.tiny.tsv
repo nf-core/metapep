@@ -1,0 +1,2 @@
+cond_1	taxa	https://github.com/skrakau/metapep/raw/dev/testdata/taxids.small.txt	A*01:01
+cond_2	taxa	https://github.com/skrakau/metapep/raw/dev/testdata/taxids.small.txt	A*01:01,B*07:02
