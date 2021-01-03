@@ -268,6 +268,8 @@ ch_microbiomes_table
         }
     .set { ch_proteins_input }
 
+ch_input_proteins_microbiomes = Channel.empty()
+
 // type 'assembly' (-> predict_proteins)
 ch_assembly_input = Channel.empty()
 ch_microbiomes_table
@@ -373,10 +375,31 @@ process assign_protein_weights {
     """
 }
 
-ch_pred_proteins.
+ch_pred_proteins
     .map { row -> [row[1]]}
     .set { ch_pred_proteins }
 
+// concat files and assign new, unique ids for all proteins (from different sources)
+process update_protein_ids {
+    publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    file proteins from ch_proteins_input.files.concat(ch_entrez_proteins, ch_pred_proteins)
+    file proteins_microbiomes from ch_input_proteins_microbiomes.concat(ch_entrez_proteins_microbiomes, ch_pred_proteins_microbiomes)
+
+    output:
+    file "proteins.tsv.gz" into ch_proteins
+    file "proteins_microbiomes.tsv"
+
+    script:
+    """
+    update_protein_ids.py --in_proteins $proteins \
+                          --in_proteins_microbiomes $proteins_microbiomes \
+                          --out_proteins proteins.tsv.gz \
+                          --out_proteins_microbiomes proteins_microbiomes.tsv \
+    """
+}
 
 
 /*
@@ -388,7 +411,7 @@ process generate_peptides {
         saveAs: {filename -> "$filename" }
 
     input:
-    file proteins from ch_proteins_input.files.concat(ch_entrez_proteins, ch_pred_proteins)
+    file proteins from ch_proteins
 
     output:
     file "peptides.tsv.gz" into ch_peptides

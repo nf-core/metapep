@@ -73,7 +73,7 @@ def get_assembly_length(assemblyId):
             else:
                 raise
     if not success:
-        sys.exit("Entrez download failed!")
+        sys.exit("Entrez efetch download failed!")
 
     root = ET.fromstring("<root>" + str(assembly_stats['DocumentSummarySet']['DocumentSummary'][0]['Meta']) + "</root>")
     return root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text
@@ -140,7 +140,7 @@ def main(args=None):
             else:
                 raise
     if not success:
-        sys.exit("Entrez download failed!")
+        sys.exit("Entrez elink download failed!")
     # print("assembly_results: ")
     # print(assembly_results)
 
@@ -187,7 +187,7 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez download failed!")
+            sys.exit("Entrez elink download failed!")
     # print("nucleotide_results: ")
     # print(nucleotide_results)
 
@@ -222,7 +222,7 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez download failed!")
+            sys.exit("Entrez elink download failed!")
     # print("protein_results: ")
     # print(protein_results)
 
@@ -261,14 +261,38 @@ def main(args=None):
     # 5) download protein FASTAs, convert to TSV
     # print("    download proteins ...")
     # (or if mem problem: assembly-wise)
-    
+    # TODO check if max. number of item that can be returned by efetch (retmax)!? compare numbers!
+
+    # first retrieve mapping for protein UIDs and accession versions
+    success = False
+    for attempt in range(3):
+        try:
+            with Entrez.esummary(db="protein", id=",".join(proteinIds)) as entrez_handle:   # esummary doesn't work on python lists somehow
+                protein_summaries = Entrez.read(entrez_handle)
+            time.sleep(1)   # avoid getting blocked by ncbi
+            success = True
+            break
+        except HTTPError as err:
+            if 500 <= err.code <= 599:
+                print("Received error from server %s" % err)
+                print("Attempt %i of 3" % attempt)
+                time.sleep(10)
+            else:
+                raise
+    if not success:
+            sys.exit("Entrez esummary download failed!")
+
+    dict_protein_uid_acc = {}
+    for protein_summary in protein_summaries:
+        dict_protein_uid_acc[protein_summary["Id"]] = protein_summary["AccessionVersion"]
+
+    # download actual fasta records and write out
     success = False
     for attempt in range(3):
         try:
             with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
                 with gzip.open(args.proteins, 'wt') as out_handle:
                     print("protein_tmp_id", "protein_sequence", sep='\t', file=out_handle)
-                #     out_handle.write(entrez_handle.read().replace('\n\n', '\n'))
                     for record in SeqIO.parse(entrez_handle, "fasta"):
                         print(record.id, record.seq, sep='\t', file=out_handle, flush=True)
             time.sleep(1)   # avoid getting blocked by ncbi
@@ -282,7 +306,7 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez download failed!")
+            sys.exit("Entrez efetch download failed!")
 
     # 6) write out protein weights obtained from taxonomic abundances
     print("protein_tmp_id", "protein_weight", "microbiome_id", sep='\t', file=args.proteins_microbiomes, flush=True)
@@ -291,7 +315,8 @@ def main(args=None):
         dict_microbiomeId_proteinWeight = get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_microbiomeId_abundance)
         for microbiomeId in dict_microbiomeId_proteinWeight:
             weight = dict_microbiomeId_proteinWeight[microbiomeId]
-            print(proteinId, weight, microbiomeId, sep='\t', file=args.proteins_microbiomes, flush=True)
+            accVersion = dict_protein_uid_acc[proteinId]
+            print(accVersion, weight, microbiomeId, sep='\t', file=args.proteins_microbiomes, flush=True)
 
     print("Done!")
 
