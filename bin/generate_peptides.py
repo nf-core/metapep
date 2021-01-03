@@ -37,7 +37,7 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed FASTA file containing proteins.")
+    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed TSV file containing: protein_id, protein_sequence.")
     parser.add_argument('-mn', "--min_len", required=True, metavar='N', type=int, help="Min. peptide length.")
     parser.add_argument('-mx', "--max_len", required=True, metavar='N', type=int, help="Max. peptide length.")
     parser.add_argument('-pp', '--peptides', required=True, metavar='FILE', help='Output file containing peptides.') # use str type to allow compression of output
@@ -54,7 +54,7 @@ def main(args=None):
     with gzip.open(args.proteins, "rt") as handle:
         # get protein id, sequence, len
         protid_protseq_protlen = pd.DataFrame(
-            [ (str(record.id), str(record.seq), len(record.seq)) for record in SeqIO.parse(handle, 'fasta') ],
+            [ (row[0], row[1], len(row[1])) for row in csv.reader(handle, delimiter='\t') ],
             columns = ['protein','sequence', 'length']
             )
     print("# proteins: ", len(protid_protseq_protlen))

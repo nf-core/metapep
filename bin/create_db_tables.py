@@ -26,11 +26,11 @@ import argparse
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', "--input", required=True, metavar='FILE', type=argparse.FileType('r'), help="Input file containing: condition name, input data type, input data path and alleles.")
-    parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome id, path.")
-    parser.add_argument('-cm', "--condition_microbiome", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition id, microbiome id.")
-    parser.add_argument('-a', "--alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: allele id, allele name.")
-    parser.add_argument('-ca', "--condition_allele", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition id, allele.")
+    parser.add_argument('-i', "--input", required=True, metavar='FILE', type=argparse.FileType('r'), help="Input file containing: condition_name, microbiome_type, microbiome_path and allele_name(s).")
+    parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type.")
+    parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name, microbiome_id.")
+    parser.add_argument('-a', "--alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: allele_id, allele_name.")
+    parser.add_argument('-ca', "--condition_allele", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, allele_id.")
     return parser.parse_args(args)
 
 
@@ -39,20 +39,29 @@ def main(args=None):
 
     input_table = list(csv.reader(args.input, delimiter='\t'))
 
-    # microbiome_id - path
-    microbiome_paths = set([ row[2] for row in input_table ])
-    dict_microbiomes = {}
-    print("microbiome_id", "path", sep='\t', file=args.microbiomes)
-    for microbiome_id, microbiome_path in enumerate(microbiome_paths):
-        dict_microbiomes[microbiome_path] = microbiome_id
-        print(microbiome_id, microbiome_path, sep='\t', file=args.microbiomes, flush=True)
+    # microbiome_id - microbiome_path - microbiome_type
+    dict_microbiome_path_type = {}
+    for row in input_table:
+        if row[2] in dict_microbiome_path_type:
+            if dict_microbiome_path_type[row[2]] != row[1]:
+                print("ERROR: for microbiome path ", row[2], " different types '", dict_microbiome_path_type[row[2]], "' and '", row[1], "' were specified.", sep='')
+                sys.exit("Conflicting types were specified for microbiome file path!")
+        else:
+            dict_microbiome_path_type[row[2]] = row[1]
+
+    dict_microbiomes_path_id = {}
+    print("microbiome_id", "microbiome_path", "microbiome_type", sep='\t', file=args.microbiomes)
+    for microbiome_id, microbiome_path in enumerate(dict_microbiome_path_type):
+        microbiome_type = dict_microbiome_path_type[microbiome_path]
+        print(microbiome_id, microbiome_path, microbiome_type, sep='\t', file=args.microbiomes, flush=True)
+        dict_microbiomes_path_id[microbiome_path] = microbiome_id
 
     # condition id - condition name - microbiome id
     dict_condition_path = { row[0]:row[2] for row in input_table }
-    print("condition_id", "condition_name", "microbiome_id", sep='\t', file=args.condition_microbiome)
+    print("condition_id", "condition_name", "microbiome_id", sep='\t', file=args.conditions)
     for condition_id, condition_name in enumerate(dict_condition_path):
-        microbiome_id = dict_microbiomes[dict_condition_path[condition_name]]
-        print(condition_id, condition_name, microbiome_id, sep='\t', file=args.condition_microbiome, flush=True)
+        microbiome_id = dict_microbiomes_path_id[dict_condition_path[condition_name]]
+        print(condition_id, condition_name, microbiome_id, sep='\t', file=args.conditions, flush=True)
 
     # allele id - allele name
     allele_names = set([ allele for row in input_table for allele in row[3].split(',') ])
