@@ -295,7 +295,7 @@ process download_proteins {
 
     input:
     val microbiome_ids from ch_taxa_input.ids.collect()
-    file microbiome_files from ch_taxa_input.files.collect()    // TODO use microbiome_id for filename
+    file microbiome_files from ch_taxa_input.files.collect()
     file microbiomes_table from ch_microbiomes_table
 
     output:
@@ -356,8 +356,6 @@ process predict_proteins {
 
 // only based on taxonomic abundances, not on protein expression!
 process assign_protein_weights {
-    // publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
-    //     saveAs: {filename -> "$filename" }
 
     input:
     file contig_depths from ch_contig_depths

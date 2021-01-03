@@ -114,7 +114,6 @@ def main(args=None):
             else:
                 dic_taxId_microbiomeId_abundance[row[0]][microbiomeId] = 1
 
-    print(dic_taxId_microbiomeId_abundance)
     print("Processing the following taxonmy IDs:")
     taxIds = dic_taxId_microbiomeId_abundance.keys()
     print(taxIds)
@@ -141,8 +140,6 @@ def main(args=None):
                 raise
     if not success:
         sys.exit("Entrez elink download failed!")
-    # print("assembly_results: ")
-    # print(assembly_results)
 
     # 2) for each taxon -> select one assembly (largest for now)
     print("get assembly lengths and select largest assembly for each taxon ...")
@@ -157,8 +154,6 @@ def main(args=None):
             # get id for largest assembly
             selected_assemblyId = ids[lengths.index(max(lengths))]
             dict_taxId_assemblyId[taxId] = selected_assemblyId
-    # print("dict")
-    # print(dict_taxId_assemblyId)
 
     # write taxId - assemblyId out
     print("taxon", "assembly", sep='\t', file=args.tax_ass_out, flush=True)
@@ -188,12 +183,8 @@ def main(args=None):
                 raise
     if not success:
             sys.exit("Entrez elink download failed!")
-    # print("nucleotide_results: ")
-    # print(nucleotide_results)
 
     ### for each assembly get list of sequence ids
-    # seq_ids = [ record["Id"] for assembly_record in nucleotide_results for record in assembly_record["LinkSetDb"][0]["Link"] ]
-
     dict_seqId_assemblyIds = defaultdict(lambda : [])
     for assembly_record in nucleotide_results:
         assemblyId = assembly_record["IdList"][0]
@@ -223,18 +214,12 @@ def main(args=None):
                 raise
     if not success:
             sys.exit("Entrez elink download failed!")
-    # print("protein_results: ")
-    # print(protein_results)
 
     ### for each nucleotide sequence get list of protein ids
-    # protein_ids = [ record["Id"] for nuc_record in protein_results for record in nuc_record["LinkSetDb"][0]["Link"] ]
-
     dict_proteinId_assemblyIds = {}
     for nucleotide_record in protein_results:
         seqId = nucleotide_record["IdList"][0]
         assemblyIds = dict_seqId_assemblyIds[seqId]
-        # print("assemblyIds")
-        # print(assemblyIds)
         if len(nucleotide_record["LinkSetDb"]) > 0:
             for protein_record in nucleotide_record["LinkSetDb"][0]["Link"]:
                 if protein_record["Id"] not in dict_proteinId_assemblyIds:
@@ -259,7 +244,7 @@ def main(args=None):
         print(proteinId, ','.join(dict_proteinId_assemblyIds[proteinId]), sep='\t', file=args.prot_ass_out, flush=True)
 
     # 5) download protein FASTAs, convert to TSV
-    # print("    download proteins ...")
+    print("    download proteins ...")
     # (or if mem problem: assembly-wise)
     # TODO check if max. number of item that can be returned by efetch (retmax)!? compare numbers!
 
