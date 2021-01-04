@@ -70,7 +70,7 @@ def main(args=None):
         print("Generate peptides of length ", k, " ...", flush=True)
         # for each protein generate all peptides of length k
         prot_peptides = pd.DataFrame(
-            [ (it.protein_id, pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k) ],
+            [ (str(it.protein_id), pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k) ],
             columns = ['protein_id','peptides']
             )
 
@@ -85,7 +85,7 @@ def main(args=None):
         # rename column names
         results.columns = ['peptide_sequence', 'proteins', 'counts', 'id']
         # convert to string and then joint to get rid of brackets and quotes
-        results["proteins"] = results["proteins"].str.join(",") 
+        results["proteins"] = results["proteins"].str.join(",")
         results["counts"] = results["counts"].apply(lambda x : ','.join([ str(e) for e in  x]))
         print(results.head(5), flush=True)
         results[['peptide_sequence','id','proteins','counts']].to_csv(args.peptides, mode='a', sep="\t", index=False, header=False, compression='gzip')
