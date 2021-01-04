@@ -45,7 +45,7 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 def gen_peptides(prot_seq, k):
-    return [ prot_seq[i:(i+k)] for i in range(len(prot_seq)-k) ]
+    return [ prot_seq[i:(i+k)] for i in range(len(prot_seq)-k+1) ]
 
 
 def main(args=None):
