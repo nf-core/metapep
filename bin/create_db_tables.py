@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 ####################################################################################################
 #
-# Author: Sabrina Krakau
+# Author: Sabrina Krakau, Leon Kuchenbecker
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 import sys
 import csv
+import pandas as pd
 import io
 import argparse
 
@@ -30,54 +31,41 @@ def parse_args(args=None):
     parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type.")
     parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name, microbiome_id.")
     parser.add_argument('-a', "--alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: allele_id, allele_name.")
-    parser.add_argument('-ca', "--condition_allele", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, allele_id.")
+    parser.add_argument('-ca', "--conditions_alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, allele_id.")
     return parser.parse_args(args)
 
 
 def main(args=None):
     args = parse_args(args)
 
-    input_table = list(csv.reader(args.input, delimiter='\t'))
+    input_table = pd.read_csv(args.input, sep='\t')
 
     # microbiome_id - microbiome_path - microbiome_type
-    dict_microbiome_path_type = {}
-    for row in input_table:
-        if row[2] in dict_microbiome_path_type:
-            if dict_microbiome_path_type[row[2]] != row[1]:
-                print("ERROR: for microbiome path ", row[2], " different types '", dict_microbiome_path_type[row[2]], "' and '", row[1], "' were specified.", sep='')
-                sys.exit("Conflicting types were specified for microbiome file path!")
-        else:
-            dict_microbiome_path_type[row[2]] = row[1]
+    microbiomes = input_table[["microbiome_path", "type", "weights_path"]].drop_duplicates().rename({"type":"microbiome_type"}, axis=1)
+    microbiomes["microbiome_id"] = range(len(microbiomes))
 
-    dict_microbiomes_path_id = {}
-    print("microbiome_id", "microbiome_path", "microbiome_type", sep='\t', file=args.microbiomes)
-    for microbiome_id, microbiome_path in enumerate(dict_microbiome_path_type):
-        microbiome_type = dict_microbiome_path_type[microbiome_path]
-        print(microbiome_id, microbiome_path, microbiome_type, sep='\t', file=args.microbiomes, flush=True)
-        dict_microbiomes_path_id[microbiome_path] = microbiome_id
+    if len(microbiomes) != len(microbiomes["microbiome_path"].drop_duplicates()):
+        sys.exit("Conflicting types or weights were specified for the same microbiome path!")
+
+    microbiomes[["microbiome_id", "microbiome_path", "microbiome_type", "weights_path"]].to_csv(args.microbiomes, sep="\t", index=False)
 
     # condition id - condition name - microbiome id
-    dict_condition_path = { row[0]:row[2] for row in input_table }
-    print("condition_id", "condition_name", "microbiome_id", sep='\t', file=args.conditions)
-    for condition_id, condition_name in enumerate(dict_condition_path):
-        microbiome_id = dict_microbiomes_path_id[dict_condition_path[condition_name]]
-        print(condition_id, condition_name, microbiome_id, sep='\t', file=args.conditions, flush=True)
+    conditions = input_table.merge(microbiomes)[["condition", "microbiome_id"]].rename({"condition":"condition_name"}, axis=1)    # conditions unique (checked in nextflow)
+    conditions["condition_id"] = range(len(conditions))
+
+    conditions[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, sep="\t", index=False)
 
     # allele id - allele name
-    allele_names = set([ allele for row in input_table for allele in row[3].split(',') ])
-    dict_alleles = {}
-    print("allele_id", "allele_name", sep='\t', file=args.alleles)
-    for allele_id, allele_name in enumerate(allele_names):
-        dict_alleles[allele_name] = allele_id
-        print(allele_id, allele_name, sep='\t', file=args.alleles, flush=True)
+    unique_alleles = { allele for allele_list in input_table["alleles"] for allele in allele_list.split(',') }
+
+    alleles = pd.DataFrame({"allele_name":list(unique_alleles)})
+    alleles["allele_id"] = range(len(alleles))
+    alleles[["allele_id", "allele_name"]].to_csv(args.alleles, sep="\t", index=False)
 
     # condition id - allele id
-    dict_condition_alleles = { row[0]:row[3].split(',') for row in input_table }
-    print("condition_id", "allele_id", sep='\t', file=args.condition_allele)
-    for condition_id, condition_name in enumerate(dict_condition_alleles):
-        for allele_name in dict_condition_alleles[condition_name]:
-            allele_id = dict_alleles[allele_name]
-            print(condition_id, allele_id, sep='\t', file=args.condition_allele, flush=True)
+    conditions_alleles = pd.DataFrame([ (row["condition"], allele_name) for _, row in input_table.iterrows() for allele_name in row["alleles"].split(',') ], columns = ["condition_name", "allele_name"])
+    conditions_alleles = conditions_alleles.merge(conditions).merge(alleles)[["condition_id", "allele_id"]]
+    conditions_alleles.to_csv(args.conditions_alleles, sep="\t", index=False)
 
     print("Done!")
 

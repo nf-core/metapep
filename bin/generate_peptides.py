@@ -51,21 +51,18 @@ def gen_peptides(prot_seq, k):
 def main(args=None):
     args = parse_args(args)
 
-    with gzip.open(args.proteins, "rt") as handle:
-        # get protein id, sequence, len
-        protid_protseq_protlen = pd.DataFrame(
-            [ (row[0], row[1], len(row[1])) for row in csv.reader(handle, delimiter='\t') ],
-            columns = ['protein','sequence', 'length']
-            )
+    protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
+    protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
     print("# proteins: ", len(protid_protseq_protlen))
 
     # write out protein lengths
-    protid_protseq_protlen[['protein', 'length']].to_csv(args.prot_lengths, sep="\t", index=False)
+    protid_protseq_protlen[['protein_id', 'protein_length']].to_csv(args.prot_lengths, sep="\t", index=False)
 
     ####################
     # generate peptides
     # write header
-    out = pd.DataFrame([], columns = ['sequence','id','proteins','counts'])
+
+    out = pd.DataFrame([], columns = ['peptide_sequence','id','proteins','counts'])
     out.to_csv(args.peptides, sep="\t", index=False, compression='gzip')
 
     # for each k
@@ -73,25 +70,25 @@ def main(args=None):
         print("Generate peptides of length ", k, " ...", flush=True)
         # for each protein generate all peptides of length k
         prot_peptides = pd.DataFrame(
-            [ (it.protein, pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.sequence, k) ],
-            columns = ['protein','peptides']
+            [ (it.protein_id, pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k) ],
+            columns = ['protein_id','peptides']
             )
 
         print("format results ...", flush=True)
         # count occurences of one peptide in one protein
-        prot_peptides = prot_peptides.groupby(['protein','peptides']).size().reset_index(name='count')
+        prot_peptides = prot_peptides.groupby(['protein_id','peptides']).size().reset_index(name='count')
 
         # aggregate for each peptide: -> pep_id     pep_seq    'prot1','prot2',..    3,6,0,..
         results = prot_peptides.groupby('peptides').agg(list)
         results = results.reset_index()
         results = results.assign(id=["P_k" + str(k) + "_" + str(id) for id in results.index])
         # rename column names
-        results.columns = ['sequence', 'proteins', 'counts', 'id']
+        results.columns = ['peptide_sequence', 'proteins', 'counts', 'id']
         # convert to string and then joint to get rid of brackets and quotes
         results["proteins"] = results["proteins"].str.join(",") 
         results["counts"] = results["counts"].apply(lambda x : ','.join([ str(e) for e in  x]))
         print(results.head(5), flush=True)
-        results[['sequence','id','proteins','counts']].to_csv(args.peptides, mode='a', sep="\t", index=False, header=False, compression='gzip')
+        results[['peptide_sequence','id','proteins','counts']].to_csv(args.peptides, mode='a', sep="\t", index=False, header=False, compression='gzip')
         print("# peptides of length ", k, ", (non-unique across proteins): ", len(results))
 
     print("Done!", flush=True)

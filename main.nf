@@ -94,54 +94,54 @@ if (!hasExtension(params.input, "tsv"))
 
 Channel
     .fromPath(params.input, checkIfExists: true)
-    .splitCsv(sep:'\t')
+    .splitCsv(sep:'\t', header: true)
     .map { row ->
-            if (row.size() == 4) {
-                def condition = row[0]
-                def type = row[1]
-                def in_file = file(row[2], checkIfExists: true)
-                def alleles = row[3]
-                return [ condition, type, in_file, alleles ]}
+            if (row.size() == 4 || row.size() == 5) {
+                def condition = row.condition
+                def type = row.type
+                def microbiome_file = file(row.microbiome_path, checkIfExists: true)
+                def alleles = row.alleles
+                def weights_file = false
+                if (row.size() == 5 && row.weights_path)
+                    weights_file = file(row.weights_path, checkIfExists: true)
+                return [ condition, type, microbiome_file, alleles, weights_file ]}
             else {
-                exit 1, "Input TSV file contains row with ${row.size()} column(s). Expects 4."
+                exit 1, "Input TSV file contains row with ${row.size()} column(s). Expects 5."
             }
         }
     .into { ch_input_validate1; ch_input_validate2 }
 
 // Check if condition names are unique
 ch_input_validate1
-    .map { condition, type, in_file, alleles -> condition }
+    .map { condition, type, microbiome_file, alleles, weights_file -> condition }
     .toList()
     .map{ it -> if( it.size() != it.unique().size() ) {exit 1, "ERROR: input contains duplicated conditions!" } }
 
 // Check if specified file extensions and types are valid
 ch_input_validate2
-    .map { condition, type, in_file, alleles ->
-            if (type == 'taxa')
-                if (!hasExtension(in_file, "txt"))   // tsv
-                    exit 1, "File ${in_file} of type 'taxa' has wrong file extension. Expects a '.txt' extension."
-            else if (type == 'proteins')
-                if (!hasExtension(in_file, "fasta") && !hasExtension(in_file, "fa.gz"))  // TODO had other: ''.faa', ''.fa.gz' etc.
-                    exit 1, "File ${in_file} of type 'proteins' has wrong file extension. Expects a '.fasta' extension."
-            else if (type == 'assembly')
-                if (!hasExtension(in_file, "fasta") && !hasExtension(in_file, "fa.gz")) // TODO ...
-                    exit 1, "File ${in_file} of type 'assembly' has wrong file extension. Expects a '.fasta' extension."
-            else
+    .map { condition, type, microbiome_file, alleles, weights_file ->
+            if (type == 'taxa'){
+                if (weights_file)
+                    exit 1, "Invalid format of input TSV file ${params.input}. Column 'weight_path' is only valid for entries of type 'assembly'. Leave empty for type 'taxa'."
+                if (!hasExtension(microbiome_file, "txt"))   // tsv
+                    exit 1, "File ${microbiome_file} of type 'taxa' has wrong file extension. Expects a '.txt' extension."
+            } else if (type == 'proteins'){
+                if (weights_file)
+                    exit 1, "Invalid format of input TSV file ${params.input}. Column 'weight_path' is currently only valid for entries of type 'assembly'. Leave empty for type 'proteins'."
+                if (!hasExtension(microbiome_file, "fasta") && !hasExtension(microbiome_file, "fa.gz"))  // TODO had other: ''.faa', ''.fa.gz' etc.
+                    exit 1, "File ${microbiome_file} of type 'proteins' has wrong file extension. Expects a '.fasta' extension."
+            } else if (type == 'assembly'){
+                if (!weights_file)
+                    exit 1, "Invalid format of input TSV file ${params.input}. For entries of type 'assembly' please specify a file containing contig depths in the column 'weight_path'."  // TODO assign egual weights by default
+                if (!hasExtension(microbiome_file, "fasta") && !hasExtension(microbiome_file, "fa.gz")) // TODO ...
+                    exit 1, "File ${microbiome_file} of type 'assembly' has wrong file extension. Expects a '.fasta' extension."
+            } else {
                 exit 1, "Invalid type ${type}. Valid types are 'taxa', 'proteins' and 'assembly'."
+            }
         }
-
-// Get contigs depths for assemblies
-ch_contig_depths = Channel.empty()
-if (params.contig_depths) {
-    Channel
-        .fromPath(params.contig_depths, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.contig_depths}" }
-        .set { ch_contig_depths }
-}
 
 // TODO for 'proteins' type
 // - allow weight input for type 'proteins' as well! (for now use equal weight)
-// - convert proteins.fasta -> proteins.tsv.gz
 
 // Header log info
 log.info nfcoreHeader()
@@ -246,7 +246,7 @@ process create_db_tables {
 ch_taxa_input = Channel.empty()
 ch_microbiomes_table
     .splitCsv(sep:'\t', skip: 1)
-    .map { microbiome_id, microbiome_path, microbiome_type ->
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             if (microbiome_type == 'taxa') [microbiome_id, microbiome_path, microbiome_type]
         }
     .multiMap { microbiome_id, microbiome_path, microbiome_type ->
@@ -259,7 +259,7 @@ ch_microbiomes_table
 ch_proteins_input = Channel.empty()
 ch_microbiomes_table
     .splitCsv(sep:'\t', skip: 1)
-    .map { microbiome_id, microbiome_path, microbiome_type ->
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             if (microbiome_type == 'proteins') [microbiome_id, microbiome_path, microbiome_type]
         }
     .multiMap { microbiome_id, microbiome_path, microbiome_type ->
@@ -274,12 +274,13 @@ ch_input_proteins_microbiomes = Channel.empty()
 ch_assembly_input = Channel.empty()
 ch_microbiomes_table
     .splitCsv(sep:'\t', skip: 1)
-    .map { microbiome_id, microbiome_path, microbiome_type ->
-            if (microbiome_type == 'assembly') [microbiome_id, microbiome_path, microbiome_type]
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            if (microbiome_type == 'assembly') [microbiome_id, microbiome_path, microbiome_type, weights_path]
         }
-    .multiMap { microbiome_id, microbiome_path, microbiome_type ->
+    .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             ids: microbiome_id
             files: file(microbiome_path)
+            weight_files: file(weights_path)
         }
     .set { ch_assembly_input }
 
@@ -359,7 +360,7 @@ process predict_proteins {
 process assign_protein_weights {
 
     input:
-    file contig_depths from ch_contig_depths
+    file contig_depths from ch_assembly_input.weight_files
     tuple val(microbiome_id), file(proteins) from ch_proteins_get_abundances
 
     output:
