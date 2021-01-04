@@ -102,17 +102,15 @@ def main(args=None):
     # read taxonomic ids for download (together with abundances)
     dic_taxId_microbiomeId_abundance = defaultdict(lambda : {})
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
-        reader = csv.reader(taxid_input, delimiter='\t')
-        header = next(reader)
-        if header[0] != "taxid":
-            print("ERROR: header is ", header)
-            sys.exit("The format of the file provided with --taxid_input is invalid!")
-
+        reader = csv.DictReader(taxid_input, delimiter='\t')
         for row in reader:
-            if len(header) == 2:
-                dic_taxId_microbiomeId_abundance[row[0]][microbiomeId] = row[1]
-            else:
-                dic_taxId_microbiomeId_abundance[row[0]][microbiomeId] = 1
+            try:
+                dic_taxId_microbiomeId_abundance[row['taxid']][microbiomeId] = row['abundance']
+            except KeyError:
+                try:
+                    dic_taxId_microbiomeId_abundance[row['taxid']][microbiomeId] = 1
+                except KeyError:
+                    sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
 
     print("Processing the following taxonmy IDs:")
     taxIds = dic_taxId_microbiomeId_abundance.keys()
