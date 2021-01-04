@@ -92,6 +92,7 @@ if (!params.input)
 if (!hasExtension(params.input, "tsv"))
     exit 1, "Input file specified with --input must have a '.tsv' extension."
 
+// TODO move check to create_db_tables.py! (then no need for additional tabs...)
 Channel
     .fromPath(params.input, checkIfExists: true)
     .splitCsv(sep:'\t', header: true)
