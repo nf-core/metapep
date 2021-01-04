@@ -301,7 +301,7 @@ process download_proteins {
     output:
     file "proteins.entrez.tsv.gz" into ch_entrez_proteins
     file "taxa_assemblies.tsv"
-    file "proteins_assemblies.tsv"
+    file "proteins_assemblies.tsv"      // protein_tmp_id (accessionVersion), assembly_id
     file "proteins_microbiomes.entrez.tsv" into ch_entrez_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
 
     script:

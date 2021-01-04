@@ -156,9 +156,9 @@ def main(args=None):
             dict_taxId_assemblyId[taxId] = selected_assemblyId
 
     # write taxId - assemblyId out
-    print("taxon", "assembly", sep='\t', file=args.tax_ass_out, flush=True)
-    for taxon in dict_taxId_assemblyId.keys():
-            print(taxon, dict_taxId_assemblyId[taxon], sep='\t', file=args.tax_ass_out, flush=True)
+    print("taxon_id", "assembly_id", sep='\t', file=args.tax_ass_out, flush=True)
+    for taxId in dict_taxId_assemblyId.keys():
+            print(taxId, dict_taxId_assemblyId[taxId], sep='\t', file=args.tax_ass_out, flush=True)
 
     # 3) (selected) assembly -> nucleotide sequences
     # (maybe split here)
@@ -238,11 +238,6 @@ def main(args=None):
     print("# proteins (unique): ", len(proteinIds))
     # -> # proteins with refseq source (<= # IPG proteins)
 
-    # protein_id, assembly_ids
-    print("protein_tmp_id", "assemblies", sep='\t', file=args.prot_ass_out)
-    for proteinId in proteinIds:
-        print(proteinId, ','.join(dict_proteinId_assemblyIds[proteinId]), sep='\t', file=args.prot_ass_out, flush=True)
-
     # 5) download protein FASTAs, convert to TSV
     print("    download proteins ...")
     # (or if mem problem: assembly-wise)
@@ -293,15 +288,20 @@ def main(args=None):
     if not success:
             sys.exit("Entrez efetch download failed!")
 
-    # 6) write out protein weights obtained from taxonomic abundances
-    print("protein_tmp_id", "protein_weight", "microbiome_id", sep='\t', file=args.proteins_microbiomes, flush=True)
+    # 6) write out 'proteins_microbiomes.tsv' containing protein weights obtained from taxonomic abundances
+    print("protein_tmp_id", "protein_weight", "microbiome_id", sep='\t', file=args.proteins_microbiomes)
+    # write out protein_tmp_id, assembly_id ('proteins_assemblies.tsv')
+    print("protein_tmp_id", "assembly_id", sep='\t', file=args.prot_ass_out)
     for proteinId in proteinIds:
+        accVersion = dict_protein_uid_acc[proteinId]
         # get protein weights for respective microbiome IDs
         dict_microbiomeId_proteinWeight = get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_microbiomeId_abundance)
         for microbiomeId in dict_microbiomeId_proteinWeight:
             weight = dict_microbiomeId_proteinWeight[microbiomeId]
-            accVersion = dict_protein_uid_acc[proteinId]
             print(accVersion, weight, microbiomeId, sep='\t', file=args.proteins_microbiomes, flush=True)
+        # write out protein_tmp_id, assembly_id
+        for assemblyId in dict_proteinId_assemblyIds[proteinId]:
+            print(accVersion, assemblyId, sep='\t', file=args.prot_ass_out, flush=True)
 
     print("Done!")
 
