@@ -303,6 +303,9 @@ def main(args=None):
         for assemblyId in dict_proteinId_assemblyIds[proteinId]:
             print(accVersion, assemblyId, sep='\t', file=args.prot_ass_out, flush=True)
 
+    # NOTE for proteins the NCBI accession version ids are written out to enable a mapping to the fasta/tsv output
+    # in contrast, for assemblies UIDs are written out
+
     print("Done!")
 
 
