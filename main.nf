@@ -383,8 +383,8 @@ process update_protein_ids {
         saveAs: {filename -> "$filename" }
 
     input:
-    file proteins from ch_proteins_input.files.concat(ch_entrez_proteins, ch_pred_proteins)
-    file proteins_microbiomes from ch_input_proteins_microbiomes.concat(ch_entrez_proteins_microbiomes, ch_pred_proteins_microbiomes)
+    file proteins from ch_proteins_input.files.concat(ch_entrez_proteins, ch_pred_proteins).collect()
+    file proteins_microbiomes from ch_input_proteins_microbiomes.concat(ch_entrez_proteins_microbiomes, ch_pred_proteins_microbiomes).collect()
 
     output:
     file "proteins.tsv.gz" into ch_proteins
