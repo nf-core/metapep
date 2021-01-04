@@ -349,7 +349,8 @@ process predict_proteins {
                 -a proteins.pred_${microbiome_id}.fasta \
                 -p $mode
     
-    awk -f fasta2tsv.awk proteins.pred_${microbiome_id}.fasta > proteins.pred_${microbiome_id}.tsv
+    echo -e "protein_tmp_id\tprotein_sequence" > proteins.pred_${microbiome_id}.tsv
+    fasta2tsv.awk proteins.pred_${microbiome_id}.fasta >> proteins.pred_${microbiome_id}.tsv
     gzip proteins.pred_${microbiome_id}.tsv
     """
 }

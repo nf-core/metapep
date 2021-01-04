@@ -47,9 +47,9 @@ def main(args=None):
     args = parse_args(args)
 
     with gzip.open(args.proteins, "rt") as handle:
-        proteinIds = [ row[0] for row in csv.reader(handle, delimiter='\t') ]
+        proteinIds = [ row["protein_tmp_id"] for row in csv.DictReader(handle, delimiter='\t') ]
 
-    dict_contig_depths = { row[0]:row[1] for row in csv.reader(args.depths, delimiter='\t') }
+    dict_contig_depths = { row["contig_name"]:row["depth"] for row in csv.DictReader(args.depths, delimiter='\t') }
     print(dict_contig_depths)
 
     dict_protein_depths = { id:get_prot_depth(id, dict_contig_depths) for id in proteinIds }
