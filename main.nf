@@ -266,11 +266,11 @@ process download_proteins {
     export HOME="\${PWD}/HOME"
     download_proteins_entrez.py --email $email \
                                 --key $key \
-                                --taxid_input $microbiome_files \
+                                -t $microbiome_files \
                                 -m $microbiome_ids \
-                                --proteins proteins.entrez.tsv.gz \
-                                --tax_ass_out taxa_assemblies.tsv \
-                                --prot_ass_out proteins_assemblies.tsv \
+                                -p proteins.entrez.tsv.gz \
+                                -ta taxa_assemblies.tsv \
+                                -pa proteins_assemblies.tsv \
                                 -pm proteins_microbiomes.entrez.tsv
     """
 }

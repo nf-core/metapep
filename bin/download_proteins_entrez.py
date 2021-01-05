@@ -49,8 +49,8 @@ def parse_args(args=None):
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
     parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed TSV output file containing: protein_tmp_id, protein_sequence.")
-    parser.add_argument('-ta', "--tax_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
-    parser.add_argument('-pa', "--prot_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, assembly_id.")
+    parser.add_argument('-ta', "--taxa_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
+    parser.add_argument('-pa', "--proteins_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, assembly_id.")
     parser.add_argument('-pm', "--proteins_microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, protein_weight, microbiome_id.")
     return parser.parse_args(args)
 
@@ -154,9 +154,9 @@ def main(args=None):
             dict_taxId_assemblyId[taxId] = selected_assemblyId
 
     # write taxId - assemblyId out
-    print("taxon_id", "assembly_id", sep='\t', file=args.tax_ass_out, flush=True)
+    print("taxon_id", "assembly_id", sep='\t', file=args.taxa_assemblies, flush=True)
     for taxId in dict_taxId_assemblyId.keys():
-            print(taxId, dict_taxId_assemblyId[taxId], sep='\t', file=args.tax_ass_out, flush=True)
+            print(taxId, dict_taxId_assemblyId[taxId], sep='\t', file=args.taxa_assemblies, flush=True)
 
     # 3) (selected) assembly -> nucleotide sequences
     # (maybe split here)
@@ -289,7 +289,7 @@ def main(args=None):
     # 6) write out 'proteins_microbiomes.tsv' containing protein weights obtained from taxonomic abundances
     print("protein_tmp_id", "protein_weight", "microbiome_id", sep='\t', file=args.proteins_microbiomes)
     # write out protein_tmp_id, assembly_id ('proteins_assemblies.tsv')
-    print("protein_tmp_id", "assembly_id", sep='\t', file=args.prot_ass_out)
+    print("protein_tmp_id", "assembly_id", sep='\t', file=args.proteins_assemblies)
     for proteinId in proteinIds:
         accVersion = dict_protein_uid_acc[proteinId]
         # get protein weights for respective microbiome IDs
@@ -299,7 +299,7 @@ def main(args=None):
             print(accVersion, weight, microbiomeId, sep='\t', file=args.proteins_microbiomes, flush=True)
         # write out protein_tmp_id, assembly_id
         for assemblyId in dict_proteinId_assemblyIds[proteinId]:
-            print(accVersion, assemblyId, sep='\t', file=args.prot_ass_out, flush=True)
+            print(accVersion, assemblyId, sep='\t', file=args.proteins_assemblies, flush=True)
 
     # NOTE for proteins the NCBI accession version ids are written out to enable a mapping to the fasta/tsv output
     # in contrast, for assemblies UIDs are written out
