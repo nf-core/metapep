@@ -19,6 +19,7 @@
 ####################################################################################################
 
 import sys
+import os.path
 import csv
 import pandas as pd
 import io
@@ -39,6 +40,36 @@ def main(args=None):
     args = parse_args(args)
 
     input_table = pd.read_csv(args.input, sep='\t')
+
+   # check if microbiome_path file extensions are valid
+    for type, fname in zip(input_table["type"], input_table["microbiome_path"]):
+        if type not in ["taxa", "proteins", "assembly"]:
+            sys.exit("Invalid type '" + type + "' specified in " + args.input.name + ". Valid types are 'taxa', 'proteins' and 'assembly'.")
+        if type == "taxa" and not fname.lower().endswith(('.txt', '.tsv')):
+            sys.exit("In " + args.input.name + " specified file " + fname + " of type 'taxa' has invalid file extension. Valid extensions are '.txt' and '.tsv'.")
+        if type == "proteins" and not fname.lower().endswith(('.fa', '.fa.gz', '.fasta', '.fasta.gz')):
+            sys.exit("In " + args.input.name + " specified file " + fname + " of type 'proteins' has invalid file extension. Valid extensions are '.fa', '.fa.gz', '.fasta' and '.fasta.gz'.")
+        if type == "assembly" and not fname.lower().endswith(('.fa', '.fa.gz', '.fasta', '.fasta.gz')):
+            sys.exit("In " + args.input.name + " specified file " + fname + " of type 'assembly' has invalid file extension. Valid extensions are '.fa', '.fa.gz', '.fasta' and '.fasta.gz'.")
+
+    # check if microbiome_path files exist
+    # for fname in input_table["microbiome_path"]:
+    #     if not os.path.isfile(fname):
+    #         sys.exit("In " + args.input.name + " specified file " + fname + " does not exist!")
+    # NOTE not possible for urls, will be checked afterwards during channel creation for microbiome files
+
+    # check if condition names unique
+    if len(input_table["condition"]) != len(input_table["condition"].drop_duplicates()):
+        sys.exit("Input file " + args.input.name + " contains duplicated conditions! Please specify unique conditions.")
+
+    # check if weight_path is valid
+    for type, weights_path in zip(input_table["type"], input_table["weights_path"]):
+        if not type == 'assembly' and not pd.isnull(weights_path):
+            sys.exit("Input file " + args.input.name + " contains 'weights_path' specified for type '" + type + "'! Currently input weights are only supported for type 'assembly'.")
+        if type == 'assembly' and pd.isnull(weights_path):
+            sys.exit("Missing 'weights_path' for entry of type 'assembly' in input file " + args.input.name + ". Currently the use of default weights is not supported yet.")
+        if not pd.isnull(weights_path) and not weights_path.lower().endswith('.tsv'):
+            sys.exit("In " + args.input.name + " specified 'weights_path' " + weights_path + " has invalid file extension. The extension must be '.tsv'.")
 
     # microbiome_id - microbiome_path - microbiome_type
     microbiomes = input_table[["microbiome_path", "type", "weights_path"]].drop_duplicates().rename({"type":"microbiome_type"}, axis=1)
