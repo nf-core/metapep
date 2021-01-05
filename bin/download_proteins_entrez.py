@@ -44,12 +44,12 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', "--taxid_input", required=True, nargs="+", metavar='FILE', type=argparse.FileType('r'), help="List of input files containing taxa IDs (and optionally abundances).")
+    parser.add_argument('-t', "--taxid_input", required=True, nargs="+", metavar='FILE', type=argparse.FileType('r'), help="List of microbiome files containing: taxon_id [, abundance].")
     parser.add_argument('-m', "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs.")
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
     parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed TSV output file containing: protein_tmp_id, protein_sequence.")
-    parser.add_argument('-ta', "--tax_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: tax_id, assembly_id.")
+    parser.add_argument('-ta', "--tax_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
     parser.add_argument('-pa', "--prot_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, assembly_id.")
     parser.add_argument('-pm', "--proteins_microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, protein_weight, microbiome_id.")
     return parser.parse_args(args)
@@ -105,10 +105,10 @@ def main(args=None):
         reader = csv.DictReader(taxid_input, delimiter='\t')
         for row in reader:
             try:
-                dic_taxId_microbiomeId_abundance[row['taxid']][microbiomeId] = row['abundance']
+                dic_taxId_microbiomeId_abundance[row['taxon_id']][microbiomeId] = row['abundance']
             except KeyError:
                 try:
-                    dic_taxId_microbiomeId_abundance[row['taxid']][microbiomeId] = 1
+                    dic_taxId_microbiomeId_abundance[row['taxon_id']][microbiomeId] = 1
                 except KeyError:
                     sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
 
