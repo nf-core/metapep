@@ -48,7 +48,7 @@ def parse_args(args=None):
     parser.add_argument('-m', "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs.")
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
-    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed TSV output file containing: protein_tmp_id, protein_sequence.")
+    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Output file (compressed) containing: protein_tmp_id, protein_sequence.")
     parser.add_argument('-ta', "--taxa_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
     parser.add_argument('-pa', "--proteins_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, assembly_id.")
     parser.add_argument('-pm', "--proteins_microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, protein_weight, microbiome_id.")
