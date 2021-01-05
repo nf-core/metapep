@@ -44,13 +44,14 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', "--taxid_input", required=True, metavar='FILE', type=argparse.FileType('r'), help="File containing list with taxonomy IDs.")
+    parser.add_argument('-t', "--taxid_input", required=True, nargs="+", metavar='FILE', type=argparse.FileType('r'), help="List of microbiome files containing: taxon_id [, abundance].")
+    parser.add_argument('-m', "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs.")
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
-    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed FASTA output file containing proteins.")
-    parser.add_argument('-ta', "--tax_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing taxon - assembly mappings.")
-    parser.add_argument('-pa', "--prot_ass_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing protein - assemblies mappings.")
-    parser.add_argument('-pw', "--prot_weight_out", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing protein weights.")
+    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Compressed TSV output file containing: protein_tmp_id, protein_sequence.")
+    parser.add_argument('-ta', "--taxa_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
+    parser.add_argument('-pa', "--proteins_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, assembly_id.")
+    parser.add_argument('-pm', "--proteins_microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, protein_weight, microbiome_id.")
     return parser.parse_args(args)
 
 
@@ -72,22 +73,23 @@ def get_assembly_length(assemblyId):
             else:
                 raise
     if not success:
-        sys.exit("Entrez download failed!")
+        sys.exit("Entrez efetch download failed!")
 
     root = ET.fromstring("<root>" + str(assembly_stats['DocumentSummarySet']['DocumentSummary'][0]['Meta']) + "</root>")
     return root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text
 
 
-# get protein weight based on taxonomic abundances (if occuring in multiple taxa -> sum)
-# NOTE multiple occurences of a protein within one assembly are not counted!
-def get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_abundance):
-    weight = 0.0
+# get protein weight based on (microbiome-wise) taxonomic abundances (if occuring in multiple taxa -> sum)
+# NOTE multiple occurences of a protein within one assembly/genome are not counted!
+def get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_microbiomeId_abundance):
+    dict_microbiomeId_proteinWeight = defaultdict(lambda : 0.0)
     for assembly in dict_proteinId_assemblyIds[proteinId]:
         for taxId, assembly2 in dict_taxId_assemblyId.items():
             if assembly == assembly2:
-                weight += dic_taxId_abundance[taxId]
+                for microbiomeId in dic_taxId_microbiomeId_abundance[taxId]:
+                    dict_microbiomeId_proteinWeight[microbiomeId] += dic_taxId_microbiomeId_abundance[taxId][microbiomeId]
             break
-    return weight
+    return dict_microbiomeId_proteinWeight
 
 
 def main(args=None):
@@ -98,18 +100,20 @@ def main(args=None):
     Entrez.email = args.email
 
     # read taxonomic ids for download (together with abundances)
-    reader = csv.reader(args.taxid_input)
-    header = next(reader)
-    if header[0] != "taxid":
-        print("ERROR: header is ", header)
-        sys.exit("The format of the file provided with --taxid_input is invalid!")
-    if len(header) == 2:
-        dic_taxId_abundance = { row[0]:row[1] for row in reader }
-    else:
-        dic_taxId_abundance = { row[0]:1 for row in reader }
+    dic_taxId_microbiomeId_abundance = defaultdict(lambda : {})
+    for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
+        reader = csv.DictReader(taxid_input, delimiter='\t')
+        for row in reader:
+            try:
+                dic_taxId_microbiomeId_abundance[row['taxon_id']][microbiomeId] = row['abundance']
+            except KeyError:
+                try:
+                    dic_taxId_microbiomeId_abundance[row['taxon_id']][microbiomeId] = 1
+                except KeyError:
+                    sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
 
     print("Processing the following taxonmy IDs:")
-    taxIds = dic_taxId_abundance.keys()
+    taxIds = dic_taxId_microbiomeId_abundance.keys()
     print(taxIds)
 
     ####################################################################################################
@@ -133,9 +137,7 @@ def main(args=None):
             else:
                 raise
     if not success:
-        sys.exit("Entrez download failed!")
-    # print("assembly_results: ")
-    # print(assembly_results)
+        sys.exit("Entrez elink download failed!")
 
     # 2) for each taxon -> select one assembly (largest for now)
     print("get assembly lengths and select largest assembly for each taxon ...")
@@ -151,13 +153,10 @@ def main(args=None):
             selected_assemblyId = ids[lengths.index(max(lengths))]
             dict_taxId_assemblyId[taxId] = selected_assemblyId
 
-    # print("dict")
-    # print(dict_taxId_assemblyId)
-
-    # write taxId - assemblyId out (-> results!)
-    print("taxon", "assembly", sep='\t', file=args.tax_ass_out, flush=True)
-    for taxon in dict_taxId_assemblyId.keys():
-            print(taxon, dict_taxId_assemblyId[taxon], sep='\t', file=args.tax_ass_out, flush=True)
+    # write taxId - assemblyId out
+    print("taxon_id", "assembly_id", sep='\t', file=args.taxa_assemblies, flush=True)
+    for taxId in dict_taxId_assemblyId.keys():
+            print(taxId, dict_taxId_assemblyId[taxId], sep='\t', file=args.taxa_assemblies, flush=True)
 
     # 3) (selected) assembly -> nucleotide sequences
     # (maybe split here)
@@ -181,13 +180,9 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez download failed!")
-    # print("nucleotide_results: ")
-    # print(nucleotide_results)
+            sys.exit("Entrez elink download failed!")
 
     ### for each assembly get list of sequence ids
-    # seq_ids = [ record["Id"] for assembly_record in nucleotide_results for record in assembly_record["LinkSetDb"][0]["Link"] ]
-
     dict_seqId_assemblyIds = defaultdict(lambda : [])
     for assembly_record in nucleotide_results:
         assemblyId = assembly_record["IdList"][0]
@@ -216,19 +211,13 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez download failed!")
-    # print("protein_results: ")
-    # print(protein_results)
+            sys.exit("Entrez elink download failed!")
 
     ### for each nucleotide sequence get list of protein ids
-    # protein_ids = [ record["Id"] for nuc_record in protein_results for record in nuc_record["LinkSetDb"][0]["Link"] ]
-
     dict_proteinId_assemblyIds = {}
     for nucleotide_record in protein_results:
         seqId = nucleotide_record["IdList"][0]
         assemblyIds = dict_seqId_assemblyIds[seqId]
-        # print("assemblyIds")
-        # print(assemblyIds)
         if len(nucleotide_record["LinkSetDb"]) > 0:
             for protein_record in nucleotide_record["LinkSetDb"][0]["Link"]:
                 if protein_record["Id"] not in dict_proteinId_assemblyIds:
@@ -247,21 +236,17 @@ def main(args=None):
     print("# proteins (unique): ", len(proteinIds))
     # -> # proteins with refseq source (<= # IPG proteins)
 
-    # protein_id, assembly_ids
-    print("protein", "assemblies", sep='\t', file=args.prot_ass_out)
-    for proteinId in proteinIds:
-        print(proteinId, ','.join(dict_proteinId_assemblyIds[proteinId]), sep='\t', file=args.prot_ass_out, flush=True)
-
-    # 5) download protein FASTAs
-    # print("    download proteins ...")
+    # 5) download protein FASTAs, convert to TSV
+    print("    download proteins ...")
     # (or if mem problem: assembly-wise)
+    # TODO check if max. number of item that can be returned by efetch (retmax)!? compare numbers!
+
+    # first retrieve mapping for protein UIDs and accession versions
     success = False
     for attempt in range(3):
         try:
-            with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
-                with gzip.open(args.proteins, 'wt') as out_handle:
-                    out_handle.write(entrez_handle.read().replace('\n\n', '\n'))
-                # ... and get rid of additional blank lines between records (not sure why they are there)
+            with Entrez.esummary(db="protein", id=",".join(proteinIds)) as entrez_handle:   # esummary doesn't work on python lists somehow
+                protein_summaries = Entrez.read(entrez_handle)
             time.sleep(1)   # avoid getting blocked by ncbi
             success = True
             break
@@ -273,12 +258,51 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez download failed!")
+            sys.exit("Entrez esummary download failed!")
 
-    # 6) write out protein weights obtained from taxonomic abundances
-    print("protein", "weight", sep='\t', file=args.prot_weight_out, flush=True)
+    dict_protein_uid_acc = {}
+    for protein_summary in protein_summaries:
+        dict_protein_uid_acc[protein_summary["Id"]] = protein_summary["AccessionVersion"]
+
+    # download actual fasta records and write out
+    success = False
+    for attempt in range(3):
+        try:
+            with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
+                with gzip.open(args.proteins, 'wt') as out_handle:
+                    print("protein_tmp_id", "protein_sequence", sep='\t', file=out_handle)
+                    for record in SeqIO.parse(entrez_handle, "fasta"):
+                        print(record.id, record.seq, sep='\t', file=out_handle, flush=True)
+            time.sleep(1)   # avoid getting blocked by ncbi
+            success = True
+            break
+        except HTTPError as err:
+            if 500 <= err.code <= 599:
+                print("Received error from server %s" % err)
+                print("Attempt %i of 3" % attempt)
+                time.sleep(10)
+            else:
+                raise
+    if not success:
+            sys.exit("Entrez efetch download failed!")
+
+    # 6) write out 'proteins_microbiomes.tsv' containing protein weights obtained from taxonomic abundances
+    print("protein_tmp_id", "protein_weight", "microbiome_id", sep='\t', file=args.proteins_microbiomes)
+    # write out protein_tmp_id, assembly_id ('proteins_assemblies.tsv')
+    print("protein_tmp_id", "assembly_id", sep='\t', file=args.proteins_assemblies)
     for proteinId in proteinIds:
-        print(proteinId, get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_abundance), sep='\t', file=args.prot_weight_out, flush=True)
+        accVersion = dict_protein_uid_acc[proteinId]
+        # get protein weights for respective microbiome IDs
+        dict_microbiomeId_proteinWeight = get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_microbiomeId_abundance)
+        for microbiomeId in dict_microbiomeId_proteinWeight:
+            weight = dict_microbiomeId_proteinWeight[microbiomeId]
+            print(accVersion, weight, microbiomeId, sep='\t', file=args.proteins_microbiomes, flush=True)
+        # write out protein_tmp_id, assembly_id
+        for assemblyId in dict_proteinId_assemblyIds[proteinId]:
+            print(accVersion, assemblyId, sep='\t', file=args.proteins_assemblies, flush=True)
+
+    # NOTE for proteins the NCBI accession version ids are written out to enable a mapping to the fasta/tsv output
+    # in contrast, for assemblies UIDs are written out
 
     print("Done!")
 

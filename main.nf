@@ -21,22 +21,17 @@ def helpMessage() {
     nextflow run nf-core/metapep --input '*_R{1,2}.fastq.gz' -profile docker
 
     Mandatory arguments:
-      --input [file]                  Path to input file. Txt file containing taxon IDs or FASTA file containing proteins.
-      --input_assembly [file]         Alternative input. FASTA file containing nucleotide sequences.
+      --input [file]                  Path to input TSV file containing: condition, type, path, alleles. Must contain a corresponding header.
       -profile [str]                  Configuration profile to use. Can use multiple (comma separated)
                                       Available: conda, docker, singularity, test, awsbatch, <institute> and more
 
     Options:
       --genome [str]                  Name of iGenomes reference
-      --single_end [bool]             Specifies that the input is single-end reads
       --prodigal_mode [str]           Prodigal mode, 'meta' or 'single'. Default: 'meta'.
       --ncbi_key [str]                NCBI key for faster download from Entrez databases.
       --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
       --min_pep_len [int]             Min. peptide length to generate.
       --max_pep_len [int]             Max. peptide length to generate.
-
-    References                        If not specified in the configuration file or you wish to overwrite any of the references
-      --fasta [file]                  Path to fasta reference
 
     Other options:
       --outdir [file]                 The output directory where the results will be saved
@@ -67,17 +62,6 @@ if (params.genomes && params.genome && !params.genomes.containsKey(params.genome
     exit 1, "The provided genome '${params.genome}' is not available in the iGenomes file. Currently the available genomes are ${params.genomes.keySet().join(", ")}"
 }
 
-// TODO nf-core: Add any reference files that are needed
-// Configurable reference genomes
-//
-// NOTE - THIS IS NOT USED IN THIS PIPELINE, EXAMPLE ONLY
-// If you want to use the channel below in a process, define the following:
-//   input:
-//   file fasta from ch_fasta
-//
-params.fasta = params.genome ? params.genomes[ params.genome ].fasta ?: false : false
-if (params.fasta) { ch_fasta = file(params.fasta, checkIfExists: true) }
-
 // Has the run name been specified by the user?
 // this has the bonus effect of catching both -name and --name
 custom_runName = params.name
@@ -101,37 +85,15 @@ ch_output_docs = file("$projectDir/docs/output.md", checkIfExists: true)
 ch_output_docs_images = file("$projectDir/docs/images/", checkIfExists: true)
 
 /*
- * Create a channel for input files
+ * Check and process input file
  */
+if (!params.input)
+    exit 1, "Missing input. Please specify --input."
+if (!hasExtension(params.input, "tsv"))
+    exit 1, "Input file specified with --input must have a '.tsv' extension."
 
-if (params.input && hasExtension(params.input, "txt") ) {
-    Channel
-        .fromPath(params.input, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
-        .set { ch_taxon_ids }
-} else if (params.input  && (hasExtension(params.input, "fasta") || hasExtension(params.input, "fa") || hasExtension(params.input, "faa"))) {
-    Channel
-        .fromPath(params.input, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input}" }
-        .set { ch_proteins }
-    ch_taxon_ids = Channel.empty()
-} else if (params.input_assembly ) {
-    Channel
-        .fromPath(params.input_assembly, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.input_assembly}" }
-        .set { ch_assembly }
-    ch_taxon_ids = Channel.empty()
-} else {
-    exit 1, "Missing input. Please specify --input or --input_assembly."
-}
-
-ch_contig_depths = Channel.empty()
-if (params.contig_depths) {
-    Channel
-        .fromPath(params.contig_depths, checkIfExists: true)
-        .ifEmpty { exit 1, "Cannot find any file matching: ${params.contig_depths}" }
-        .set { ch_contig_depths }
-}
+// TODO for 'proteins' type
+// - allow weight input for type 'proteins' as well! (for now use equal weight ?)
 
 // Header log info
 log.info nfcoreHeader()
@@ -140,9 +102,6 @@ if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
 // TODO nf-core: Report custom parameters here
 summary['Input']            = params.input
-summary['Input Assembly']   = params.input_assembly
-summary['Fasta Ref']        = params.fasta
-summary['Data Type']        = params.single_end ? 'Single-End' : 'Paired-End'
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
 summary['Output dir']       = params.outdir
@@ -209,89 +168,191 @@ process get_software_versions {
     """
 }
 
+/*
+ * Create database tables for input
+ */
+process create_db_tables {
+    publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+    input:
+    file input_file from Channel.value(file(params.input))
+
+    output:
+    file "microbiomes.tsv" into ch_microbiomes_table                    // microbiome_id, microbiome_path, microbiome_type
+    file "conditions.tsv" into ch_condition_microbiome_table            // condition_id, condition_name, microbiome_id
+    file "alleles.tsv"  into ch_alleles_table                           // allele_id, allele_name
+    file "conditions_alleles.tsv" into ch_condition_allele_table        // condition_id, allele_id
+
+    script:
+    """
+    create_db_tables.py -i ${input_file} \
+                        -m microbiomes.tsv \
+                        -c conditions.tsv \
+                        -a alleles.tsv \
+                        -ca conditions_alleles.tsv
+    """
+}
+
+// Create channels for different types of microbiome data files
+// type 'taxa' (-> download_proteins)
+ch_taxa_input = Channel.empty()
+ch_microbiomes_table
+    .splitCsv(sep:'\t', skip: 1)
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            if (microbiome_type == 'taxa') [microbiome_id, microbiome_path, microbiome_type]
+        }
+    .multiMap { microbiome_id, microbiome_path, microbiome_type ->
+            ids: microbiome_id
+            files: file(microbiome_path, checkIfExists: true)
+        }
+    .set { ch_taxa_input }
+
+// type 'proteins' (-> generate_peptides)
+ch_proteins_input = Channel.empty()
+ch_microbiomes_table
+    .splitCsv(sep:'\t', skip: 1)
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            if (microbiome_type == 'proteins') [microbiome_id, microbiome_path, microbiome_type]
+        }
+    .multiMap { microbiome_id, microbiome_path, microbiome_type ->
+            ids: microbiome_id
+            files: file(microbiome_path, checkIfExists: true)
+        }
+    .set { ch_proteins_input }
+
+ch_input_proteins_microbiomes = Channel.empty()
+
+// type 'assembly' (-> predict_proteins)
+ch_assembly_input = Channel.empty()
+ch_microbiomes_table
+    .splitCsv(sep:'\t', skip: 1)
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            if (microbiome_type == 'assembly') [microbiome_id, microbiome_path, microbiome_type, weights_path]
+        }
+    .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            ids: microbiome_id
+            files: file(microbiome_path, checkIfExists: true)
+            weights_files: file(weights_path, checkIfExists: true)
+        }
+    .set { ch_assembly_input }
 
 /*
  * Download proteins from entrez
  */
-if (hasExtension(params.input, "txt")) {
-    process download_proteins {
-        publishDir "${params.outdir}/entrez_data", mode: params.publish_dir_mode,
-            saveAs: {filename -> filename.indexOf(".fasta") == -1 ? "$filename" : null }
+process download_proteins {
+    publishDir "${params.outdir}", mode: params.publish_dir_mode,
+        saveAs: {filename ->
+                    if (filename.indexOf(".fasta.gz") == -1) "entrez_data/$filename"
+                    else null
+        }
 
-        input:
-        file taxon_ids from ch_taxon_ids
+    input:
+    val microbiome_ids from ch_taxa_input.ids.collect()
+    file microbiome_files from ch_taxa_input.files.collect()
+    file microbiomes_table from ch_microbiomes_table
 
-        output:
-        file "proteins.fasta.gz" into ch_proteins
-        file "taxa_assembly.tsv"
-        file "protein_assemblies.tsv"
-        file "protein_weight.tsv"
+    output:
+    file "proteins.entrez.tsv.gz" into ch_entrez_proteins
+    file "taxa_assemblies.tsv"
+    file "proteins_assemblies.tsv"      // protein_tmp_id (accessionVersion), assembly_id
+    file "proteins_microbiomes.entrez.tsv" into ch_entrez_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
 
-        script:
-        def key = params.ncbi_key
-        def email = params.ncbi_email
-        """
-        # provide new home dir to avoid permission errors with Docker and other artefacts
-        export HOME="\${PWD}/HOME"
-        download_proteins_entrez.py --email $email \
-                                    --key $key \
-                                    --taxid_input $taxon_ids \
-                                    --proteins proteins.fasta.gz \
-                                    --tax_ass_out taxa_assembly.tsv \
-                                    --prot_ass_out protein_assemblies.tsv \
-                                    --prot_weight_out protein_weight.tsv
-        """
-    }
+    script:
+    def key = params.ncbi_key
+    def email = params.ncbi_email
+    def microbiome_ids = microbiome_ids.toString().replaceAll(/\[|\,|\]/,"")
+    """
+    # provide new home dir to avoid permission errors with Docker and other artefacts
+    export HOME="\${PWD}/HOME"
+    download_proteins_entrez.py --email $email \
+                                --key $key \
+                                -t $microbiome_files \
+                                -m $microbiome_ids \
+                                -p proteins.entrez.tsv.gz \
+                                -ta taxa_assemblies.tsv \
+                                -pa proteins_assemblies.tsv \
+                                -pm proteins_microbiomes.entrez.tsv
+    """
 }
 
 /*
  * Predict proteins from contigs
  */
-if (params.input_assembly) {
-    process predict_proteins {
-        publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
-            saveAs: {filename -> "$filename" }
+process predict_proteins {
+    publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
+        saveAs: {filename ->
+                    if (filename.indexOf(".fasta") == -1) "$filename"
+                    else null
+        }
 
-        input:
-        file assembly from ch_assembly
+    input:
+    val microbiome_id from ch_assembly_input.ids
+    file microbiome_file from ch_assembly_input.files
 
-        output:
-        file "proteins.fasta.gz" into ch_proteins
-        file "coords.gff"
+    output:
+    tuple val(microbiome_id), file("proteins.pred_${microbiome_id}.tsv.gz") into (ch_pred_proteins, ch_proteins_get_abundances)
+    file "coords.pred_${microbiome_id}.gff"
 
-        script:
-        def mode = params.prodigal_mode
-        """
-        gzip -c -d $assembly | prodigal \
-                 -f gff \
-                 -o coords.gff \
-                 -a proteins.fasta \
-                 -p $mode
-        gzip proteins.fasta
-        """
-    }
-
-    (ch_proteins, ch_proteins_get_abundances) = ch_proteins.into(2)
-
-    // only based on taxonomic abundances, not on protein expression!
-    // rename, "weight"?
-    process assign_protein_abundances {
-        publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
-            saveAs: {filename -> "$filename" }
-
-        input:
-        file contig_depths from ch_contig_depths
-        file proteins from ch_proteins_get_abundances
-
-        output:
-        file "protein_abundances.tsv"   // place somewhere else ?
-
-        script:
-        """
-        get_abundance.py --proteins $proteins --depths $contig_depths --output "protein_abundances.tsv"
-        """
-    }
+    script:
+    def mode = params.prodigal_mode
+    """
+    gzip -c -d $microbiome_file | prodigal \
+                -f gff \
+                -o coords.pred_${microbiome_id}.gff \
+                -a proteins.pred_${microbiome_id}.fasta \
+                -p $mode
+    
+    echo -e "protein_tmp_id\tprotein_sequence" > proteins.pred_${microbiome_id}.tsv
+    fasta2tsv.awk proteins.pred_${microbiome_id}.fasta >> proteins.pred_${microbiome_id}.tsv
+    gzip proteins.pred_${microbiome_id}.tsv
+    """
 }
+
+// only based on taxonomic abundances, not on protein expression!
+process assign_protein_weights {
+
+    input:
+    file contig_depths from ch_assembly_input.weights_files
+    tuple val(microbiome_id), file(proteins) from ch_proteins_get_abundances
+
+    output:
+    file("proteins_microbiomes.${microbiome_id}.tsv") into ch_pred_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
+
+    script:
+    """
+    get_abundance.py --proteins $proteins \
+                     --depths $contig_depths \
+                     --microbiome_id $microbiome_id \
+                     --output "proteins_microbiomes.${microbiome_id}.tsv"
+    """
+}
+
+ch_pred_proteins
+    .map { row -> [row[1]]}
+    .set { ch_pred_proteins }
+
+// concat files and assign new, unique ids for all proteins (from different sources)
+process update_protein_ids {
+    publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    file proteins from ch_proteins_input.files.concat(ch_entrez_proteins, ch_pred_proteins).collect()
+    file proteins_microbiomes from ch_input_proteins_microbiomes.concat(ch_entrez_proteins_microbiomes, ch_pred_proteins_microbiomes).collect()
+
+    output:
+    file "proteins.tsv.gz" into ch_proteins
+    file "proteins_microbiomes.tsv"
+
+    script:
+    """
+    update_protein_ids.py --in_proteins $proteins \
+                          --in_proteins_microbiomes $proteins_microbiomes \
+                          --out_proteins proteins.tsv.gz \
+                          --out_proteins_microbiomes proteins_microbiomes.tsv \
+    """
+}
+
 
 /*
  * Generate peptides

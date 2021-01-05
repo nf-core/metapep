@@ -13,6 +13,8 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 - [#2](https://github.com/skrakau/metapep/pull/2) - Add peptide generationfrom proteins
 - [#9](https://github.com/skrakau/metapep/pull/9),[#10](https://github.com/skrakau/metapep/pull/10) - Add protein prediction using `Prodigal v2.6.3`
 - [#11](https://github.com/skrakau/metapep/pull/11) - Compute protein weights based on taxonomic abundances or contig depths [#4](https://github.com/skrakau/metapep/issues/4)
+- [#20](https://github.com/skrakau/metapep/pull/20) - Add creation of main db files for new data model (published in `results/db_tables`)
+- [#20](https://github.com/skrakau/metapep/pull/20) - New input format allowing handling of multiple conditions
 
 ### `Fixed`
 
