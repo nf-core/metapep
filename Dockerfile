@@ -5,6 +5,8 @@ LABEL authors="Sabrina Krakau and Leon Kuchenbecker" \
 # Install the conda environment
 COPY environment.yml /
 RUN conda env create --quiet -f /environment.yml && conda clean -a
+# Manually install epytope / FRED-2 from GH
+RUN /opt/conda/envs/nf-core-metapep-1.0dev/bin/pip install git+https://github.com/KohlbacherLab/epytope.git@a863afc5131a33d3510ba0a397cd34bbcaae6270
 
 # Add conda installation dir to PATH (instead of doing 'conda activate')
 ENV PATH /opt/conda/envs/nf-core-metapep-1.0dev/bin:$PATH
