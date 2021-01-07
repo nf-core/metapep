@@ -197,10 +197,10 @@ process create_db_tables {
     file input_file from Channel.value(file(params.input))
 
     output:
-    file "microbiomes.tsv" into ch_microbiomes_table                    // microbiome_id, microbiome_path, microbiome_type
-    file "conditions.tsv" into ch_condition_microbiome_table            // condition_id, condition_name, microbiome_id
-    file "alleles.tsv"  into ch_alleles_table                           // allele_id, allele_name
-    file "conditions_alleles.tsv" into ch_condition_allele_table        // condition_id, allele_id
+    file "microbiomes.tsv" into ch_microbiomes                    // microbiome_id, microbiome_path, microbiome_type
+    file "conditions.tsv" into ch_conditions_microbiomes          // condition_id, condition_name, microbiome_id
+    file "alleles.tsv"  into ch_alleles                           // allele_id, allele_name
+    file "conditions_alleles.tsv" into ch_conditions_alleles      // condition_id, allele_id
 
     script:
     """
@@ -215,7 +215,7 @@ process create_db_tables {
 // Create channels for different types of microbiome data files
 // type 'taxa' (-> download_proteins)
 ch_taxa_input = Channel.empty()
-ch_microbiomes_table
+ch_microbiomes
     .splitCsv(sep:'\t', skip: 1)
     .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             if (microbiome_type == 'taxa') [microbiome_id, microbiome_path, microbiome_type]
@@ -228,7 +228,7 @@ ch_microbiomes_table
 
 // type 'proteins' (-> generate_peptides)
 ch_proteins_input = Channel.empty()
-ch_microbiomes_table
+ch_microbiomes
     .splitCsv(sep:'\t', skip: 1)
     .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             if (microbiome_type == 'proteins') [microbiome_id, microbiome_path, microbiome_type]
@@ -243,7 +243,7 @@ ch_input_proteins_microbiomes = Channel.empty()
 
 // type 'assembly' (-> predict_proteins)
 ch_assembly_input = Channel.empty()
-ch_microbiomes_table
+ch_microbiomes
     .splitCsv(sep:'\t', skip: 1)
     .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             if (microbiome_type == 'assembly') [microbiome_id, microbiome_path, microbiome_type, weights_path]
@@ -268,7 +268,6 @@ process download_proteins {
     input:
     val microbiome_ids from ch_taxa_input.ids.collect()
     file microbiome_files from ch_taxa_input.files.collect()
-    file microbiomes_table from ch_microbiomes_table
 
     output:
     file "proteins.entrez.tsv.gz" into ch_entrez_proteins
@@ -409,9 +408,9 @@ process split_pred_tasks {
     path  peptides              from  ch_peptides
     path  proteins_peptides     from  ch_proteins_peptides
     path  microbiomes_proteins  from  ch_proteins_microbiomes
-    path  conditions            from  ch_condition_microbiome_table
-    path  conditions_alleles    from  ch_condition_allele_table
-    path  alleles               from  ch_alleles_table
+    path  conditions            from  ch_conditions_microbiomes
+    path  conditions_alleles    from  ch_conditions_alleles
+    path  alleles               from  ch_alleles
     // The tables are joined to map peptide -> protein -> microbiome -> condition -> allele
     // and thus to enumerate, which (peptide, allele) combinations have to be predicted.
 
