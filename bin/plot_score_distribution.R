@@ -50,9 +50,7 @@ p1 <- ggplot(data, aes(x=condition_name, y=prediction_score, fill=condition_name
     theme_classic()+
     theme(legend.position="none")
 
-pdf("prediction_score_distribution.pdf", height=5, width=5)
-p1
-dev.off()
+ggsave("prediction_score_distribution.pdf", height=5, width=5)
 
 # individual distributions for alleles
 p2 <- ggplot(data, aes(x=condition_name, y=prediction_score, fill=condition_name)) +
