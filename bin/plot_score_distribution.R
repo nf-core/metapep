@@ -71,6 +71,4 @@ if (nc == 1){
   nr <- 3
 }
 
-pdf("prediction_score_distribution.alleles.pdf", height=5*nc, width=5*nr)
-p2
-dev.off()
+ggsave("prediction_score_distribution.alleles.pdf", height=5*nc, width=5*nr)
