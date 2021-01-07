@@ -20,6 +20,8 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 
 ### `Fixed`
 
+- [#41](https://github.com/skrakau/metapep/pull/41) - Allow `assembly` input without weights
+
 ### `Dependencies`
 
 ### `Deprecated`

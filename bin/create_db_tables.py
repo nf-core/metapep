@@ -66,8 +66,6 @@ def main(args=None):
     for type, weights_path in zip(input_table["type"], input_table["weights_path"]):
         if not type == 'assembly' and not pd.isnull(weights_path):
             sys.exit("Input file " + args.input.name + " contains 'weights_path' specified for type '" + type + "'! Currently input weights are only supported for type 'assembly'.")
-        if type == 'assembly' and pd.isnull(weights_path):
-            sys.exit("Missing 'weights_path' for entry of type 'assembly' in input file " + args.input.name + ". Currently the use of default weights is not supported yet.")
         if not pd.isnull(weights_path) and not weights_path.lower().endswith('.tsv'):
             sys.exit("In " + args.input.name + " specified 'weights_path' " + weights_path + " has invalid file extension. The extension must be '.tsv'.")
 
