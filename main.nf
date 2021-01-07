@@ -96,16 +96,16 @@ if (!hasExtension(params.input, "tsv"))
 
 switch (params.pred_method) {
     case "syfpeithi":
-        params.pred_method_version = "1.0";
+        pred_method_version = "1.0";
         break;
     case "mhcflurry":
-        params.pred_method_version = "1.4.3";
+        pred_method_version = "1.4.3";
         break;
     case "mhcnuggets-class-1":
-        params.pred_method_version = "2.3.2";
+        pred_method_version = "2.3.2";
         break;
     case "mhcnuggets-class-2":
-        params.pred_method_version = "2.3.2";
+        pred_method_version = "2.3.2";
         break;
     default:
         exit 1, "Epitope prediction method specified with --pred_method not recognized."
@@ -444,7 +444,6 @@ process predict_epitopes {
 
     script:
     def pred_method           = params.pred_method
-    def pred_method_version   = params.pred_method_version
     """
 
     # Extract allele name from file header
