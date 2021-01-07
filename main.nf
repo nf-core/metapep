@@ -198,7 +198,7 @@ process create_db_tables {
 
     output:
     file "microbiomes.tsv" into ch_microbiomes                    // microbiome_id, microbiome_path, microbiome_type
-    file "conditions.tsv" into ch_conditions_microbiomes          // condition_id, condition_name, microbiome_id
+    file "conditions.tsv" into ch_conditions                      // condition_id, condition_name, microbiome_id
     file "alleles.tsv"  into ch_alleles                           // allele_id, allele_name
     file "conditions_alleles.tsv" into ch_conditions_alleles      // condition_id, allele_id
 
@@ -408,7 +408,7 @@ process split_pred_tasks {
     path  peptides              from  ch_peptides
     path  proteins_peptides     from  ch_proteins_peptides
     path  microbiomes_proteins  from  ch_proteins_microbiomes
-    path  conditions            from  ch_conditions_microbiomes
+    path  conditions            from  ch_conditions
     path  conditions_alleles    from  ch_conditions_alleles
     path  alleles               from  ch_alleles
     // The tables are joined to map peptide -> protein -> microbiome -> condition -> allele
@@ -489,7 +489,7 @@ process merge_predictions {
     path prediction_warnings from ch_epitope_prediction_warnings.collect()
 
     output:
-    path "predictions.tsv.gz"
+    path "predictions.tsv.gz" into ch_predictions
     path "prediction_warnings.log"
 
     script:
@@ -501,6 +501,36 @@ process merge_predictions {
     sort -u $prediction_warnings > prediction_warnings.log
     """
 }
+
+/*
+ * Generate figures
+ */
+process plot_score_distribution {
+    publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
+
+    input:
+    file predictions from ch_predictions
+    file proteins_peptides from ch_proteins_peptides
+    file proteins_microbiomes from ch_proteins_microbiomes
+    file conditions_alleles from ch_conditions_alleles
+    file conditions from ch_conditions
+    file alleles from ch_alleles
+
+    output:
+    file "prediction_score_distribution.pdf"
+    file "prediction_score_distribution.alleles.pdf"
+
+    script:
+    """
+    plot_score_distribution.R --predictions $predictions \
+                              --proteins_peptides $proteins_peptides \
+                              --proteins_microbiomes $proteins_microbiomes \
+                              --conditions $conditions \
+                              --conditions_alleles $conditions_alleles \
+                              --alleles $alleles
+    """
+}
+
 
 /*
  * Output Description HTML
