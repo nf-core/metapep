@@ -197,7 +197,7 @@ process create_db_tables {
     file input_file from Channel.value(file(params.input))
 
     output:
-    file "microbiomes.tsv" into ch_microbiomes                    // microbiome_id, microbiome_path, microbiome_type
+    file "microbiomes.tsv" into ch_microbiomes                    // microbiome_id, microbiome_path, microbiome_type, weights_path
     file "conditions.tsv" into ch_conditions                      // condition_id, condition_name, microbiome_id
     file "alleles.tsv"  into ch_alleles                           // allele_id, allele_name
     file "conditions_alleles.tsv" into ch_conditions_alleles      // condition_id, allele_id
@@ -251,7 +251,7 @@ ch_microbiomes
     .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             ids: microbiome_id
             files: file(microbiome_path, checkIfExists: true)
-            weights_files: file(weights_path, checkIfExists: true)
+            weights_files: weights_path ? file(weights_path, checkIfExists: true) : null
         }
     .set { ch_assembly_input }
 
@@ -330,16 +330,19 @@ process predict_proteins {
 process assign_protein_weights {
 
     input:
-    file contig_depths from ch_assembly_input.weights_files
+    file contig_depths from ch_assembly_input.weights_files // NOTE if input is null -> stores empty file (not compatible with 'path', returns error if input is not a file)
     tuple val(microbiome_id), file(proteins) from ch_proteins_get_abundances
 
     output:
     file("proteins_microbiomes.${microbiome_id}.tsv") into ch_pred_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
 
     script:
+    def depths = ""
+    if (contig_depths.size() > 0)
+        depths = "--depths $contig_depths"
     """
     get_abundance.py --proteins $proteins \
-                     --depths $contig_depths \
+                     $depths \
                      --microbiome_id $microbiome_id \
                      --output "proteins_microbiomes.${microbiome_id}.tsv"
     """

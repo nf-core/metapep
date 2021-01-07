@@ -32,7 +32,7 @@ import sys
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Input file containing: protein_tmp_id, protein_sequence.")
-    parser.add_argument('-d', "--depths", required=True, metavar='FILE', type=argparse.FileType('r'), help="File containing contig depths.")
+    parser.add_argument('-d', "--depths", metavar='FILE', type=argparse.FileType('r'), help="File containing contig depths.")
     parser.add_argument('-m', "--microbiome_id", required=True, help="Corresponding microbiome_id.")
     parser.add_argument('-o', "--output", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_tmp_id, protein_weight, microbiome_id.")
     return parser.parse_args(args)
@@ -49,10 +49,12 @@ def main(args=None):
     with gzip.open(args.proteins, "rt") as handle:
         proteinIds = [ row["protein_tmp_id"] for row in csv.DictReader(handle, delimiter='\t') ]
 
-    dict_contig_depths = { row["contig_name"]:row["depth"] for row in csv.DictReader(args.depths, delimiter='\t') }
-    print(dict_contig_depths)
+    if args.depths is not None:
+        dict_contig_depths = { row["contig_name"]:row["depth"] for row in csv.DictReader(args.depths, delimiter='\t') }
+        dict_protein_depths = { id:get_prot_depth(id, dict_contig_depths) for id in proteinIds }
+    else:
+        dict_protein_depths = { id:1 for id in proteinIds }
 
-    dict_protein_depths = { id:get_prot_depth(id, dict_contig_depths) for id in proteinIds }
     print("protein_tmp_id", "protein_weight", "microbiome_id", sep='\t', file=args.output)
     for prot in dict_protein_depths:
         print(prot, dict_protein_depths[prot], args.microbiome_id, sep='\t', file=args.output, flush=True)
