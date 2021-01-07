@@ -113,6 +113,7 @@ def parse_args():
             "Default: stdout.", type=argparse.FileType('w'), default=sys.stdout)
     parser.add_argument("-m", "--method", help="Prediction method to use. Default: syfpeithi.", type=str, default="syfpeithi")
     parser.add_argument("-mv", "--method_version", help="Prediction method version to use. Default: Use method-specific default version.", type=str, default=None)
+    parser.add_argument("-sn", "--syfpeithi-norm", help="When using the SYFPEITHI method, normalize the scores", action="store_true")
     parser.add_argument("-lm", "--list_methods", help="List available methods and versions and exit.", action="store_true")
     parser.add_argument("-vm", "--validate_method", help="Confirm that the requested method / version is available.", action="store_true")
 
@@ -157,6 +158,35 @@ def write_results(outfile, ids, peptides, predictions):
         id_map.merge(predictions).drop('peptide_sequence', axis=1).to_csv(outfile, sep='\t', index=False, na_rep="NA")
     else:
         predictions.to_csv(outfile, sep='\t', index=False, na_rep="NA")
+
+
+def matrix_max(matrix): # SYFPEITHI NORMALIZATION
+    """Returns the maximum attainable score for a pssm"""
+    return sum([ max(value.values()) for _, value in matrix.items() ])
+
+def get_allele_model_max_value(allele, length): # SYFPEITHI NORMALIZATION
+    """Returns the SYFPEITHI pssm max value for a given allele"""
+    allele_model = "%s_%i" % (allele, length)
+    try:
+        return matrix_max(getattr(__import__("Fred2.Data.pssms.syfpeithi" + ".mat." + allele_model, fromlist=[allele_model]), allele_model))
+    except ImportError:
+        return None
+
+def syfpeithi_normalize(predictions): # SYFPEITHI NORMALIZATION
+    """Normalizes syfpeithi prediction scores by dividing by the maximum
+    attainable score for a particular model"""
+    predictor      = EpitopePredictorFactory("syfpeithi")
+    alleles        = [ cname for cname in predictions.columns if cname not in ['Seq', 'Method'] ]
+    conv_alleles   = predictor.convert_alleles(alleles)
+
+    lengths = predictions.Seq.apply(len)
+    for allele, conv_allele in zip(alleles, conv_alleles):
+        scored_lengths = { l for l, score in zip(lengths, predictions[allele]) if not pd.isna(score) }
+        max_vals = { l : get_allele_model_max_value(conv_allele, l) for l in scored_lengths }
+        new_scores = [ np.nan if pd.isna(score) else score / max_vals[l] for score, l in zip(predictions[allele], lengths) ]
+        predictions[allele] = new_scores
+
+    return predictions
 
 ####################################################################################################
 
@@ -206,6 +236,10 @@ try:
     for missing_allele in [ str(allele) for allele in alleles if str(allele) not in predictions.columns ]:
         logging.warning(f"PREDICTION ({predictor.name} {predictor.version}) yielded no results for allele {missing_allele}")
         predictions[missing_allele] = np.NaN
+
+    # Normalize syfpeithi scores
+    if args.method == "syfpeithi" and args.syfpeithi_norm:
+        predictions = syfpeithi_normalize(predictions)
 
     # Write results
     write_results(args.output, ids, peptides, predictions)

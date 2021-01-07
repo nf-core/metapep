@@ -461,9 +461,12 @@ process predict_epitopes {
     echo "peptide_id	prediction_score	allele_id" >"\$out_predictions"
 
     # Process file
+    # The --syfpeithi-norm flag enables score normalization when syfpeithi is
+    # used and is ignored otherwise
     if ! epytope_predict.py --peptides "$peptides" \
                        --method "$pred_method" \
                        --method_version "$pred_method_version" \
+		       --syfpeithi-norm \
                        "\$allele_name" \
                        2>stderr.log \
                        | tail -n +2 \
