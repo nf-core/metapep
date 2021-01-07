@@ -319,9 +319,9 @@ process predict_proteins {
                 -o coords.pred_${microbiome_id}.gff \
                 -a proteins.pred_${microbiome_id}.fasta \
                 -p $mode
-    
+
     echo -e "protein_tmp_id\tprotein_sequence" > proteins.pred_${microbiome_id}.tsv
-    fasta2tsv.awk proteins.pred_${microbiome_id}.fasta >> proteins.pred_${microbiome_id}.tsv
+    fasta_to_tsv.py --remove-asterisk --input proteins.pred_${microbiome_id}.fasta >> proteins.pred_${microbiome_id}.tsv
     gzip proteins.pred_${microbiome_id}.tsv
     """
 }
