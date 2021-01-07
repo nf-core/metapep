@@ -34,7 +34,8 @@ data <-
   inner_join(predictions) %>%
   inner_join(proteins_peptides) %>%
   inner_join(proteins_microbiomes) %>%
-  group_by(condition_name, peptide_id, prediction_score, allele_name) %>% summarise(weight_sum = sum(protein_weight))
+  group_by(condition_name, peptide_id, prediction_score, allele_name) %>% 
+  summarise(weight_sum = sum(protein_weight))
 
 
 data$condition_name <- as.factor(data$condition_name)
