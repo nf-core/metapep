@@ -15,6 +15,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 - [#11](https://github.com/skrakau/metapep/pull/11) - Compute protein weights based on taxonomic abundances or contig depths [#4](https://github.com/skrakau/metapep/issues/4)
 - [#20](https://github.com/skrakau/metapep/pull/20), [#26](https://github.com/skrakau/metapep/pull/26) - Add creation of main db files for new data model (published in `results/db_tables`)
 - [#20](https://github.com/skrakau/metapep/pull/20) - New input format allowing handling of multiple conditions
+- [#36](https://github.com/skrakau/metapep/pull/36) - Add generation of first plot: score distributions for different conditions (and alleles)
 
 ### `Fixed`
 
