@@ -76,6 +76,7 @@ def main(args=None):
                 columns = ['protein_id','peptide_sequence']
                 )
 
+            # TODO handle this more memory efficiently
             print("format results ...", flush=True)
             # count occurences of one peptide in one protein
             results = results.groupby(['protein_id','peptide_sequence']).size().reset_index(name='count')

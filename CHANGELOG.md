@@ -17,6 +17,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 - [#19](https://github.com/skrakau/metapep/pull/19) - Integrate epitope prediction into the pipeline
 - [#20](https://github.com/skrakau/metapep/pull/20) - New input format allowing handling of multiple conditions
 - [#36](https://github.com/skrakau/metapep/pull/36) - Add generation of first plot: score distributions for different conditions (and alleles)
+- [#44](https://github.com/skrakau/metapep/pull/44) - Adjusted process-specific resource requirements
 
 ### `Fixed`
 
