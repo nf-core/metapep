@@ -119,8 +119,12 @@ log.info nfcoreHeader()
 def summary = [:]
 if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['Run Name']         = custom_runName ?: workflow.runName
-// TODO nf-core: Report custom parameters here
 summary['Input']            = params.input
+summary['Prodigal mode']    = params.prodigal_mode
+summary['Min. peptide length']   = params.min_pep_len
+summary['Max. peptide length']   = params.max_pep_len
+summary['Prediction method']     = params.pred_method
+summary['Prediction chunk size'] = params.pred_chunk_size
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
 if (workflow.containerEngine) summary['Container'] = "$workflow.containerEngine - $workflow.container"
 summary['Output dir']       = params.outdir
