@@ -64,7 +64,7 @@ p1 <- ggplot(data, aes(x=condition_name, y=prediction_score, fill=condition_name
     xlab("Condition") +
     geom_violin() +
     scale_fill_brewer(palette="Dark2") +
-    geom_boxplot(width=0.05, fill="white") +
+    geom_boxplot(width=0.05, fill="white", outlier.shape = NA) +
     theme_classic()+
     theme(legend.position="none")
 
@@ -77,7 +77,7 @@ p2 <- ggplot(data, aes(x=condition_name, y=prediction_score, fill=condition_name
     xlab("Condition") +
     geom_violin() +
     scale_fill_brewer(palette="Dark2") +  # "Spectral") +
-    geom_boxplot(width=0.05, fill="white") +
+    geom_boxplot(width=0.05, fill="white", outlier.shape = NA) +
     theme_classic() +
     theme(legend.position="none")
 
