@@ -48,7 +48,7 @@ def parse_args():
 
     # PARAMETERS
     parser.add_argument("-mc"    , "--max-chunk-size"           , help="Maximum chunk size. Default: 5000"                      , type=int                      , default=5000)
-
+    parser.add_argument("-sn"    , "--sample_n"                 , help="Number of peptides to subsample for each condition"     , type=int)
     return parser.parse_args()
 
 def write_chunks(data, pbar=None):
@@ -95,7 +95,15 @@ try:
             .merge(microbiome_protein_occs)\
             .drop(columns="protein_id")\
             .merge(conditions)\
-            .drop(columns="microbiome_id")\
+            .drop(columns="microbiome_id")
+
+    if args.sample_n is not None:
+        to_predict = to_predict\
+            .groupby("condition_id")\
+            .sample(n=args.sample_n, random_state=1)
+        # TODO handle cases if < sample_n peptides for a condition
+
+    to_predict = to_predict\
             .merge(condition_allele_map)\
             .drop(columns="condition_id")\
             .merge(alleles)\
