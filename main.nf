@@ -436,7 +436,7 @@ process split_pred_tasks {
                              --conditions "$conditions" \
                              --condition-allele-map "$conditions_alleles" \
                              --max-chunk-size $pred_chunk_size \
-                             $s \
+                             $subsampling \
                              --alleles "$alleles" \
                              --outdir .
     """
