@@ -428,7 +428,7 @@ process split_pred_tasks {
 
     script:
     def pred_chunk_size       = params.pred_chunk_size
-    def s = params.sample_n ? "--sample_n ${params.sample_n}" : ""
+    def subsampling = params.sample_n ? "--sample_n ${params.sample_n}" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \
                              --protein-peptide-occ "$proteins_peptides" \
