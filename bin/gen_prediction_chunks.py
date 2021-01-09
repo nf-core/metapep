@@ -25,6 +25,7 @@
 import argparse
 import sys
 import os
+from tqdm import tqdm
 
 import pandas as pd
 
@@ -50,7 +51,7 @@ def parse_args():
 
     return parser.parse_args()
 
-def write_chunks(data):
+def write_chunks(data, pbar=None):
     """Takes data in form of a table of peptide_id, peptide_sequence and
     identical allele_name values. The data is partitioned into chunks and
     written into individual output files, prepended with a comment line (#)
@@ -59,7 +60,10 @@ def write_chunks(data):
     for start in range(0, len(data), args.max_chunk_size):
         with open(os.path.join(args.outdir, "peptides_" + str(cur_chunk).rjust(5,"0") + ".txt"), 'w') as outfile:
             print(f"#{data.iloc[0].allele_name}#{data.iloc[0].allele_id}", file = outfile)
-            data.iloc[start:start+args.max_chunk_size][["peptide_id", "peptide_sequence"]].to_csv(outfile, sep='\t', index=False)
+            write = data.iloc[start:start+args.max_chunk_size]
+            if pbar:
+                pbar.update(len(write))
+            write[["peptide_id", "peptide_sequence"]].to_csv(outfile, sep='\t', index=False)
             cur_chunk = cur_chunk + 1
 
 ####################################################################################################
@@ -70,9 +74,9 @@ try:
 
     # Read input files
     peptides                  = pd.read_csv(args.peptides, sep='\t')
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t')
-    microbiome_protein_occs   = pd.read_csv(args.microbiome_protein_occ, sep='\t')
-    conditions                = pd.read_csv(args.conditions, sep='\t')
+    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
+    microbiome_protein_occs   = pd.read_csv(args.microbiome_protein_occ, sep='\t').drop(columns="protein_weight")
+    conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
     condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
 
@@ -83,18 +87,27 @@ try:
     elif not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
+    print("Joining input data...", file = sys.stderr, flush=True, end='')
+
     # Identify which predictions have to be computed
     to_predict = peptides\
             .merge(protein_peptide_occs)\
             .merge(microbiome_protein_occs)\
+            .drop(columns="protein_id")\
             .merge(conditions)\
+            .drop(columns="microbiome_id")\
             .merge(condition_allele_map)\
-            .merge(alleles)[['peptide_id','peptide_sequence', 'allele_id', 'allele_name']]\
+            .drop(columns="condition_id")\
+            .merge(alleles)\
             .drop_duplicates()
+
+    print(" done.", file = sys.stderr, flush=True)
+    print("Writing output files...", file = sys.stderr, flush=True)
 
     # Write the necessary predictions into chunks of peptide lists
     cur_chunk = 0
-    to_predict.groupby("allele_id").apply(write_chunks)
+    with tqdm(total=len(to_predict), ascii=True, unit=" peptides") as pbar:
+        to_predict.groupby("allele_id").apply(lambda x : write_chunks(x, pbar=pbar))
 
     # We're happy if we got here
     print(f"All done. Written {len(to_predict)} peptide prediction requests into {cur_chunk} chunks.")
@@ -102,4 +115,3 @@ try:
 except KeyboardInterrupt:
     print("\nUser aborted.", file = sys.stderr)
     sys.exit(1)
-

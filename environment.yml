@@ -15,6 +15,7 @@ dependencies:
   - bioconda::multiqc=1.7
   - conda-forge::biopython=1.78
   - bioconda::prodigal=2.6.3
+  - conda-forge::tqdm=4.55.1
 # epytope / FRED-2 core dependencies:
   - bioconda::svmlight=6.02
   - conda-forge::coincbc=2.10.5
