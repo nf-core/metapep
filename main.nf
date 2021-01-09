@@ -32,6 +32,7 @@ def helpMessage() {
       --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
       --min_pep_len [int]             Min. peptide length to generate.
       --max_pep_len [int]             Max. peptide length to generate.
+      --sample_n [int]                Number of peptides to subsample for each condition. Default: false
       --pred_method [str]             Epitope prediction method to use. One of [syfpeithi, mhcflurry, mhcnuggets-class-1, mhcnuggets-class-2]. Default: syfpeithi.
       --pred_chunk_size               Maximum chunk size (#peptides) for epitope prediction jobs
 
@@ -123,6 +124,7 @@ summary['Input']            = params.input
 summary['Prodigal mode']    = params.prodigal_mode
 summary['Min. peptide length']   = params.min_pep_len
 summary['Max. peptide length']   = params.max_pep_len
+if (params.sample_n) summary['Sample n']   = params.sample_n
 summary['Prediction method']     = params.pred_method
 summary['Prediction chunk size'] = params.pred_chunk_size
 summary['Max Resources']    = "$params.max_memory memory, $params.max_cpus cpus, $params.max_time time per job"
@@ -426,6 +428,7 @@ process split_pred_tasks {
 
     script:
     def pred_chunk_size       = params.pred_chunk_size
+    def s = params.sample_n ? "--sample_n ${params.sample_n}" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \
                              --protein-peptide-occ "$proteins_peptides" \
@@ -433,6 +436,7 @@ process split_pred_tasks {
                              --conditions "$conditions" \
                              --condition-allele-map "$conditions_alleles" \
                              --max-chunk-size $pred_chunk_size \
+                             $s \
                              --alleles "$alleles" \
                              --outdir .
     """

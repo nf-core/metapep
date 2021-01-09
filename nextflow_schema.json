@@ -259,6 +259,10 @@
             "type": "integer",
             "default": 11
         },
+        "sample_n": {
+            "type": "integer",
+            "default": false
+        },
         "pred_method": {
             "type": "string",
             "default": "syfpeithi",
