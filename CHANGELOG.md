@@ -23,6 +23,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 ### `Fixed`
 
 - [#41](https://github.com/skrakau/metapep/pull/41) - Allow `assembly` input without weights
+- [#53](https://github.com/skrakau/metapep/pull/53) - Add buffering of predictions and chunk-wise merging to avoid sbatch error due to too many input files [#52](https://github.com/skrakau/metapep/issues/52)
 
 ### `Dependencies`
 
