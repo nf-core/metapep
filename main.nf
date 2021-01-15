@@ -493,13 +493,38 @@ process predict_epitopes {
 /*
  * Merge prediction results from peptide chunks into one prediction result
  */
+ // gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
+ // (causing "sbatch: error: Batch job submission failed: Pathname of a file, directory or other parameter too long")
+process merge_predictions_buffer {
+
+    input:
+    path predictions from ch_epitope_predictions.buffer(size: 1000, remainder: true)
+    path prediction_warnings from ch_epitope_prediction_warnings.buffer(size: 1000, remainder: true)
+
+    output:
+    path "predictions.buffer_*.tsv" into ch_predictions_buffer
+    path "prediction_warnings.buffer_*.log" into ch_prediction_warnings_buffer
+
+    script:
+    def single = predictions instanceof Path ? 1 : predictions.size()
+    def merge = (single == 1) ? 'cat' : 'csvtk concat -t'
+    """
+    [[ ${predictions[0]} =~  peptides_(.*)_predictions.tsv ]];
+    uname="\${BASH_REMATCH[1]}"
+    echo \$uname
+
+    $merge $predictions > predictions.buffer_\$uname.tsv
+    sort -u $prediction_warnings > prediction_warnings.buffer_\$uname.log
+    """
+}
+
 process merge_predictions {
     publishDir "${params.outdir}", mode: params.publish_dir_mode,
         saveAs: {filename -> filename.endsWith(".log") ? "logs/$filename" : "db_tables/$filename"}
 
     input:
-    path predictions from ch_epitope_predictions.collect()
-    path prediction_warnings from ch_epitope_prediction_warnings.collect()
+    path predictions from ch_predictions_buffer.collect()
+    path prediction_warnings from ch_prediction_warnings_buffer.collect()
 
     output:
     path "predictions.tsv.gz" into ch_predictions
@@ -508,7 +533,6 @@ process merge_predictions {
     script:
     def single = predictions instanceof Path ? 1 : predictions.size()
     def merge = (single == 1) ? 'cat' : 'csvtk concat -t'
-
     """
     $merge $predictions | gzip > predictions.tsv.gz
     sort -u $prediction_warnings > prediction_warnings.log
