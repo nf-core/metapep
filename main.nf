@@ -540,7 +540,8 @@ process plot_score_distribution {
                               --proteins_microbiomes $proteins_microbiomes \
                               --conditions $conditions \
                               --conditions_alleles $conditions_alleles \
-                              --alleles $alleles
+                              --alleles $alleles \
+                              --method ${params.pred_method}
     """
 }
 

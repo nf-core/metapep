@@ -32,6 +32,7 @@ parser <- add_argument(parser, "--proteins_microbiomes", nargs=1, help="Input fi
 parser <- add_argument(parser, "--conditions", nargs=1, help="Input file containing: microbiome_id, condition_id, condition_name.")
 parser <- add_argument(parser, "--conditions_alleles", nargs=1, help="Input file containing: condition_id, allele_id.")
 parser <- add_argument(parser, "--alleles", nargs=1, help="Input file containing: allele_id, allele_name.")
+parser <- add_argument(parser, "--method", nargs=1, help="Epitope prediction method used.")
 #parser <- add_argument(parser, "--output", nargs=1, help="Output file name.")
 
 
@@ -55,29 +56,36 @@ data <-
   group_by(condition_name, peptide_id, prediction_score, allele_name) %>% 
   summarise(weight_sum = sum(protein_weight))
 
+if (args$method == "syfpeithi"){
+  score_threshold <- 50
+} else {
+  score_threshold <- 500
+}
 
 data$condition_name <- as.factor(data$condition_name)
 
 # one distribution including all alleles
-p1 <- ggplot(data, aes(x=condition_name, y=prediction_score, fill=condition_name)) +
+p1 <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum, fill=condition_name)) +
     ylab("Epitope prediction score") +
     xlab("Condition") +
     geom_violin() +
     scale_fill_brewer(palette="Dark2") +
     geom_boxplot(width=0.05, fill="white", outlier.shape = NA) +
+    geom_hline(yintercept=score_threshold) +
     theme_classic()+
     theme(legend.position="none")
 
 ggsave("prediction_score_distribution.pdf", height=5, width=5)
 
 # individual distributions for alleles
-p2 <- ggplot(data, aes(x=condition_name, y=prediction_score, fill=condition_name)) +
+p2 <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum, fill=condition_name)) +
     facet_grid(. ~ allele_name) +
     ylab("Epitope prediction score") +
     xlab("Condition") +
     geom_violin() +
     scale_fill_brewer(palette="Dark2") +  # "Spectral") +
     geom_boxplot(width=0.05, fill="white", outlier.shape = NA) +
+    geom_hline(yintercept=score_threshold) +
     theme_classic() +
     theme(legend.position="none")
 
