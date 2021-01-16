@@ -542,6 +542,31 @@ process merge_predictions {
 /*
  * Generate figures
  */
+
+process prepare_score_distribution {
+    publishDir "${params.outdir}/figures/prediction_scores", mode: params.publish_dir_mode
+
+    input:
+    file predictions from ch_predictions
+    file proteins_peptides from ch_proteins_peptides
+    file proteins_microbiomes from ch_proteins_microbiomes
+    file alleles from ch_alleles
+
+    output:
+    file "prediction_scores.allele_*.tsv"
+
+    script:
+    """
+    prepare_score_distribution.py --predictions "$predictions" \
+                            --protein-peptide-occ "$proteins_peptides" \
+                            --microbiome-protein-occ "$proteins_microbiomes" \
+                            --alleles "$alleles" \
+                            --outdir .
+    """
+}
+
+
+
 process plot_score_distribution {
     publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
 
