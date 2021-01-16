@@ -25,75 +25,36 @@ library(argparser, quietly=TRUE)
 
 
 parser <- arg_parser("Description")
-
-parser <- add_argument(parser, "--predictions", nargs=1, help="Input file containing: peptide_id, allele_id, prediction_score.")
-parser <- add_argument(parser, "--proteins_peptides", nargs=1, help="Input file containing: protein_id, peptide_id, count.")
-parser <- add_argument(parser, "--proteins_microbiomes", nargs=1, help="Input file containing: microbiome_id, protein_id, protein_weight.")
-parser <- add_argument(parser, "--conditions", nargs=1, help="Input file containing: microbiome_id, condition_id, condition_name.")
-parser <- add_argument(parser, "--conditions_alleles", nargs=1, help="Input file containing: condition_id, allele_id.")
+parser <- add_argument(parser, "--scores", nargs=1, help="Input file containing: prediction_score, microbiome_id, weight_sum.")
 parser <- add_argument(parser, "--alleles", nargs=1, help="Input file containing: allele_id, allele_name.")
+parser <- add_argument(parser, "--conditions", nargs=1, help="Input file containing: microbiome_id, condition_id, condition_name.")
+parser <- add_argument(parser, "--allele_id", nargs=1, help="allele_id.")
 parser <- add_argument(parser, "--method", nargs=1, help="Epitope prediction method used.")
-#parser <- add_argument(parser, "--output", nargs=1, help="Output file name.")
-
-
+parser <- add_argument(parser, "--output", nargs=1, help="Output file name.")
 args <- parse_args(parser)
 
-predictions <- fread(args$predictions)
-proteins_peptides <- fread(args$proteins_peptides)
-proteins_microbiomes <- fread(args$proteins_microbiomes)
-conditions <- fread(args$conditions)
-conditions_alleles <- fread(args$conditions_alleles)
+data <- fread(args$scores)
 alleles <- fread(args$alleles)
+conditions <- fread(args$conditions)    # TODO use condition name for plot
 
-
-data <-
-  conditions %>%
-  inner_join(conditions_alleles) %>%
-  inner_join(alleles) %>%
-  inner_join(predictions) %>%
-  inner_join(proteins_peptides) %>%
-  inner_join(proteins_microbiomes) %>%
-  group_by(condition_name, peptide_id, prediction_score, allele_name) %>% 
-  summarise(weight_sum = sum(protein_weight))
+allele_name <- alleles[alleles$allele_id == args$allele_id, ]$allele_name
 
 if (args$method == "syfpeithi"){
-  score_threshold <- 50
+  score_threshold <- 0.50
 } else {
   score_threshold <- 500
 }
 
-data$condition_name <- as.factor(data$condition_name)
+data$microbiome_id <- as.factor(data$microbiome_id)
 
-# one distribution including all alleles
-p1 <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum, fill=condition_name)) +
+p <- ggplot(data, aes(x=microbiome_id, y=prediction_score, weight = weight_sum, fill=microbiome_id)) +
     ylab("Epitope prediction score") +
-    xlab("Condition") +
-    geom_violin() +
-    scale_fill_brewer(palette="Dark2") +
-    geom_boxplot(width=0.05, fill="white", outlier.shape = NA) +
-    geom_hline(yintercept=score_threshold) +
-    theme_classic()+
-    theme(legend.position="none")
-
-ggsave("prediction_score_distribution.pdf", height=5, width=5)
-
-# individual distributions for alleles
-p2 <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum, fill=condition_name)) +
-    facet_grid(. ~ allele_name) +
-    ylab("Epitope prediction score") +
-    xlab("Condition") +
-    geom_violin() +
-    scale_fill_brewer(palette="Dark2") +  # "Spectral") +
-    geom_boxplot(width=0.05, fill="white", outlier.shape = NA) +
+    xlab("Microbiome ID") +
+    ggtitle(allele_name) +
+    geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+    scale_fill_brewer(palette="Dark2") + 
     geom_hline(yintercept=score_threshold) +
     theme_classic() +
-    theme(legend.position="none")
+    theme(legend.position="none", plot.title = element_text(hjust = 0.5))
 
-nc <- ceiling(nrow(alleles)/3)
-if (nc == 1){
-  nr <- nrow(alleles) %% 3
-} else {
-  nr <- 3
-}
-
-ggsave("prediction_score_distribution.alleles.pdf", height=5*nc, width=5*nr)
+ggsave(args$output, height=5, width=5)
