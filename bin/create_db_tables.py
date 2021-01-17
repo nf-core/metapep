@@ -43,7 +43,7 @@ def main(args=None):
 
    # check if microbiome_path file extensions are valid
     for type, fname in zip(input_table["type"], input_table["microbiome_path"]):
-        if type not in ["taxa", "proteins", "assembly"]:
+        if type not in ["taxa", "proteins", "assembly", "bins"]:
             sys.exit("Invalid type '" + type + "' specified in " + args.input.name + ". Valid types are 'taxa', 'proteins' and 'assembly'.")
         if type == "taxa" and not fname.lower().endswith(('.txt', '.tsv')):
             sys.exit("In " + args.input.name + " specified file " + fname + " of type 'taxa' has invalid file extension. Valid extensions are '.txt' and '.tsv'.")
