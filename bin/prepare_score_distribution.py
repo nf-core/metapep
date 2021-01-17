@@ -21,7 +21,6 @@ import argparse
 import sys
 import os
 import csv
-from tqdm import tqdm
 
 import pandas as pd
 
