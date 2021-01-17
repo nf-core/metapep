@@ -542,30 +542,56 @@ process merge_predictions {
 /*
  * Generate figures
  */
-process plot_score_distribution {
-    publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
+
+process prepare_score_distribution {
+    publishDir "${params.outdir}/figures/prediction_scores", mode: params.publish_dir_mode
 
     input:
     file predictions from ch_predictions
     file proteins_peptides from ch_proteins_peptides
     file proteins_microbiomes from ch_proteins_microbiomes
-    file conditions_alleles from ch_conditions_alleles
-    file conditions from ch_conditions
+    file conditions from  ch_conditions
+    file conditions_alleles from  ch_conditions_alleles
     file alleles from ch_alleles
 
     output:
-    file "prediction_score_distribution.pdf"
-    file "prediction_score_distribution.alleles.pdf"
+    file "prediction_scores.allele_*.tsv" into ch_prep_prediction_scores
 
     script:
     """
-    plot_score_distribution.R --predictions $predictions \
-                              --proteins_peptides $proteins_peptides \
-                              --proteins_microbiomes $proteins_microbiomes \
-                              --conditions $conditions \
-                              --conditions_alleles $conditions_alleles \
-                              --alleles $alleles \
-                              --method ${params.pred_method}
+    prepare_score_distribution.py --predictions "$predictions" \
+                            --protein-peptide-occ "$proteins_peptides" \
+                            --microbiome-protein-occ "$proteins_microbiomes" \
+                             --conditions "$conditions" \
+                             --condition-allele-map "$conditions_alleles" \
+                            --alleles "$alleles" \
+                            --outdir .
+    """
+}
+
+process plot_score_distribution {
+    publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
+
+    input:
+    file prep_scores from ch_prep_prediction_scores.flatten()
+    file alleles from ch_alleles
+    file conditions from ch_conditions
+
+    output:
+    file "prediction_score_distribution.allele_*.pdf"
+
+    script:
+    """
+    [[ ${prep_scores} =~ prediction_scores.allele_(.*).tsv ]];
+    allele_id="\${BASH_REMATCH[1]}"
+    echo \$allele_id
+
+    plot_score_distribution.R --scores $prep_scores \
+                                   --alleles $alleles \
+                                   --conditions $conditions \
+                                   --allele_id \$allele_id \
+                                   --method ${params.pred_method} \
+                                   --output "prediction_score_distribution.allele_\$allele_id.pdf"
     """
 }
 
