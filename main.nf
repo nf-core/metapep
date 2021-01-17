@@ -550,6 +550,8 @@ process prepare_score_distribution {
     file predictions from ch_predictions
     file proteins_peptides from ch_proteins_peptides
     file proteins_microbiomes from ch_proteins_microbiomes
+    file conditions from  ch_conditions
+    file conditions_alleles from  ch_conditions_alleles
     file alleles from ch_alleles
 
     output:
@@ -560,6 +562,8 @@ process prepare_score_distribution {
     prepare_score_distribution.py --predictions "$predictions" \
                             --protein-peptide-occ "$proteins_peptides" \
                             --microbiome-protein-occ "$proteins_microbiomes" \
+                             --conditions "$conditions" \
+                             --condition-allele-map "$conditions_alleles" \
                             --alleles "$alleles" \
                             --outdir .
     """

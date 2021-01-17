@@ -35,8 +35,8 @@ def parse_args(args=None):
     parser.add_argument("-p"     , "--predictions"              , help="Path to the predictions input file"                     , type=str   , required=True)
     parser.add_argument("-ppo"   , "--protein-peptide-occ"      , help="Path to the protein peptide occurences input file"      , type=str   , required=True)
     parser.add_argument("-mpo"   , "--microbiome-protein-occ"   , help="Path to the microbiome protein occurences input file"   , type=str   , required=True)
-    #parser.add_argument("-c"     , "--conditions"               , help="Path to the conditions input file"                      , type=str   , required=True)
-    #parser.add_argument("-cam"   , "--condition-allele-map"     , help="Path to the condition allele map input file"            , type=str   , required=True)
+    parser.add_argument("-c"     , "--conditions"               , help="Path to the conditions input file"                      , type=str   , required=True)
+    parser.add_argument("-cam"   , "--condition-allele-map"     , help="Path to the condition allele map input file"            , type=str   , required=True)
     parser.add_argument("-a"     , "--alleles"                  , help="Path to the allele input file"                          , type=str   , required=True)
 
     # OUTPUT FILES
@@ -54,8 +54,8 @@ def main(args=None):
     predictions               = pd.read_csv(args.predictions, sep='\t')
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
     microbiome_protein_occs   = pd.read_csv(args.microbiome_protein_occ, sep='\t')
-    #conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
-    #condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
+    conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
+    condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
 
     # Create output directory if it doesn't exist
@@ -72,16 +72,17 @@ def main(args=None):
         print("Process allele: ", allele_id, flush=True)
 
         data = predictions[predictions.allele_id == allele_id] \
-                .drop(columns="allele_id") \
                 .merge(protein_peptide_occs) \
                 .merge(microbiome_protein_occs) \
                 .drop(columns="protein_id") \
+                .merge(conditions) \
+                .merge(condition_allele_map) \
+                .drop(columns=["allele_id", "condition_id"]) \
                 .groupby(["peptide_id", "prediction_score", "microbiome_id"])["protein_weight"] \
                 .sum() \
                 .reset_index(name="weight_sum") \
                 .drop(columns="peptide_id")
 
-        # missing link: peptide - condition ? not sure ...
         with open(os.path.join(args.outdir, "prediction_scores.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
             data[["prediction_score", "microbiome_id", "weight_sum"]].to_csv(outfile, sep="\t", index=False, header=True)
 
