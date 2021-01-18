@@ -400,7 +400,10 @@ process assign_nucl_entity_weights {
 
     script:
     """
-    assign_entity_weights.py 
+    assign_entity_weights.py \
+        --microbiome-ids $microbiome_ids \
+        --weights-files $weights_files \
+        --out microbiomes_entities.nucl.tsv
     """
 }
 
