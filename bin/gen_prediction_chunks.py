@@ -38,7 +38,8 @@ def parse_args():
     # INPUT FILES
     parser.add_argument("-p"     , "--peptides"                 , help="Path to the peptides input file"                        , type=str   , required=True)
     parser.add_argument("-ppo"   , "--protein-peptide-occ"      , help="Path to the protein peptide occurences input file"      , type=str   , required=True)
-    parser.add_argument("-mpo"   , "--microbiome-protein-occ"   , help="Path to the microbiome protein occurences input file"   , type=str   , required=True)
+    parser.add_argument("-epo"   , "--entities-proteins-occ"    , help="Path to the entity protein occurences input file"       , type=str   , required=True)
+    parser.add_argument("-meo"   , "--microbiomes-entities-occ" , help="Path to the microbiome entity occurences input file"    , type=str   , required=True)
     parser.add_argument("-c"     , "--conditions"               , help="Path to the conditions input file"                      , type=str   , required=True)
     parser.add_argument("-cam"   , "--condition-allele-map"     , help="Path to the condition allele map input file"            , type=str   , required=True)
     parser.add_argument("-a"     , "--alleles"                  , help="Path to the allele input file"                          , type=str   , required=True)
@@ -75,7 +76,8 @@ try:
     # Read input files
     peptides                  = pd.read_csv(args.peptides, sep='\t')
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
-    microbiome_protein_occs   = pd.read_csv(args.microbiome_protein_occ, sep='\t').drop(columns="protein_weight")
+    entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
+    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t').drop(columns="entity_weight")
     conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
     condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
@@ -92,8 +94,10 @@ try:
     # Identify which predictions have to be computed
     to_predict = peptides\
             .merge(protein_peptide_occs)\
-            .merge(microbiome_protein_occs)\
+            .merge(entities_proteins_occs)\
             .drop(columns="protein_id")\
+            .merge(microbiomes_entities_occs)\
+            .drop(columns="entity_id")\
             .merge(conditions)\
             .drop(columns="microbiome_id")
 

@@ -439,7 +439,8 @@ process split_pred_tasks {
     input:
     path  peptides              from  ch_peptides
     path  proteins_peptides     from  ch_proteins_peptides
-    path  microbiomes_proteins  from  ch_proteins_microbiomes
+    path  entities_proteins     from  ch_entities_proteins
+    path  microbiomes_entities  from  ch_microbiomes_entities
     path  conditions            from  ch_conditions
     path  conditions_alleles    from  ch_conditions_alleles
     path  alleles               from  ch_alleles
@@ -455,7 +456,8 @@ process split_pred_tasks {
     """
     gen_prediction_chunks.py --peptides "$peptides" \
                              --protein-peptide-occ "$proteins_peptides" \
-                             --microbiome-protein-occ "$microbiomes_proteins" \
+                             --entities_proteins-occ "$entities_proteins" \
+                             --microbiomes_entities-occ "$microbiomes_entities" \
                              --conditions "$conditions" \
                              --condition-allele-map "$conditions_alleles" \
                              --max-chunk-size $pred_chunk_size \
