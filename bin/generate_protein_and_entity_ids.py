@@ -39,6 +39,7 @@ def parse_args(args=None):
     # Predicted Proteins
     parser.add_argument("-pp", "--predicted-proteins", type=str, nargs="*", help="Protein TSV files with predicted proteins")
     parser.add_argument("-ppm", "--predicted-proteins-microbiome-ids", type=int, nargs="*", help="Microbiome ids of the predicted protein TSV files in corresponding order")
+    parser.add_argument("-ppb", "--predicted-proteins-bin-basenames", type=str, nargs="*", help="Bin basenames of the predicted protein TSV files in corresponding order, false for type 'assemlby'.")
     # Entrez Proteins
     parser.add_argument("-ep", "--entrez-proteins", type=str, nargs="?", help="Protein TSV file with entrez downloaded proteins")
     parser.add_argument("-epa", "--entrez-proteins-assemblies", nargs="?", required=True, type=str, help="TSV file associating entrez downloaded proteins with assemblies")
@@ -80,8 +81,10 @@ def main(args=None):
             # Check validity of runtime arguments
             if not args.predicted_proteins_microbiome_ids or len(args.predicted_proteins_microbiome_ids) != len(args.predicted_proteins):
                 sys.exit("An equal number of arguments has to be passed to --predicted-proteins and --predicted_proteins_microbiome_ids")
+            if not args.predicted_proteins_bin_basenames or len(args.predicted_proteins_bin_basenames) != len(args.predicted_proteins):
+                sys.exit("An equal number of arguments has to be passed to --predicted-proteins and --predicted_proteins_bin_basenames")
             # Read all provided files
-            for mb_id, inpath in zip(args.predicted_proteins_microbiome_ids, args.predicted_proteins):
+            for mb_id, bin_basename, inpath in zip(args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins):
                 # Read and annotate proteins
                 proteins = pd.read_csv(inpath, sep='\t')
                 proteins['entity_name'] = proteins['protein_tmp_id'].map(lambda x : "_".join(x.split("_")[:-1]))

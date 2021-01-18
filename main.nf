@@ -258,8 +258,47 @@ ch_microbiomes
             ids: microbiome_id
             files: file(microbiome_path, checkIfExists: true)
             weights_files: weights_path ? file(weights_path, checkIfExists: true) : null
+            bin_basenames: false
         }
     .set { ch_assembly_input }
+
+// type 'bins' (-> predict_proteins)
+def getBinBasenames(files) {
+    extensions = ['.fa', '.fa.gz', '.fasta', '.fasta.gz']
+    names = []
+    for( def file : files.listFiles() ) {
+        for (def ext : extensions) {
+            if (file.getName().endsWith(ext)) {
+                names += file.getName()[0..-(ext.length()+1)]
+                break
+            }
+        }
+    }
+    return names
+}
+
+ch_bins_input = Channel.empty()
+ch_microbiomes
+    .splitCsv(sep:'\t', skip: 1)
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            if (microbiome_type == 'bins') [microbiome_id, microbiome_path, microbiome_type, weights_path]
+        }
+    .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            def bin_files = file(microbiome_path, checkIfExists: true) // TODO handle http files in dir!? archive?
+            def weights_file = weights_path ? file(weights_path, checkIfExists: true) : null
+            ids: Collections.nCopies((int) bin_files.list().size(), microbiome_id)   // microbiome_id
+            files: bin_files.listFiles()
+            weights_files: Collections.nCopies((int) bin_files.list().size(), weights_file)  // weights_path ? file(weights_path, checkIfExists: true) : null
+            bin_basenames: getBinBasenames(bin_files)  // list of strings
+        }
+    .set { ch_bins_input }
+
+
+ch_nucl_input_ids = ch_assembly_input.ids.concat(ch_bins_input.ids.flatten())
+ch_nucl_input_files = ch_assembly_input.files.concat(ch_bins_input.files.flatten())
+ch_nucl_input_weights = ch_assembly_input.weights_files.concat(ch_bins_input.weights_files.flatten())
+ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_input.bin_basenames.flatten()).view()
+
 
 /*
  * Download proteins from entrez
@@ -310,26 +349,29 @@ process predict_proteins {
         }
 
     input:
-    val microbiome_id from ch_assembly_input.ids
-    file microbiome_file from ch_assembly_input.files
+    val microbiome_id from ch_nucl_input_ids
+    val bin_basename from ch_nucl_input_bin_basenames
+    file microbiome_file from ch_nucl_input_files
 
     output:
-    val(microbiome_id) into ch_pred_proteins_microbiome_ids                          // Emit microbiome ID
-    file("proteins.pred_${microbiome_id}.tsv.gz") into ch_pred_proteins     // Emit protein tsv
-    file "coords.pred_${microbiome_id}.gff"
+    val microbiome_id into ch_pred_proteins_microbiome_ids                  // Emit microbiome ID
+    val bin_basename into ch_pred_proteins_bin_basename
+    file("proteins.pred_${microbiome_id}*.tsv.gz") into ch_pred_proteins     // Emit protein tsv
+    file "coords.pred_${microbiome_id}*.gff"
 
     script:
     def mode = params.prodigal_mode
+    def name = bin_basename ? "${microbiome_id}.${bin_basename}" : "${microbiome_id}"
     """
     gzip -c -d $microbiome_file | prodigal \
                 -f gff \
-                -o coords.pred_${microbiome_id}.gff \
-                -a proteins.pred_${microbiome_id}.fasta \
+                -o coords.pred_${name}.gff \
+                -a proteins.pred_${name}.fasta \
                 -p $mode
 
-    echo -e "protein_tmp_id\tprotein_sequence" > proteins.pred_${microbiome_id}.tsv
-    fasta_to_tsv.py --remove-asterisk --input proteins.pred_${microbiome_id}.fasta >> proteins.pred_${microbiome_id}.tsv
-    gzip proteins.pred_${microbiome_id}.tsv
+    echo -e "protein_tmp_id\tprotein_sequence" > proteins.pred_${name}.tsv
+    fasta_to_tsv.py --remove-asterisk --input proteins.pred_${name}.fasta >> proteins.pred_${name}.tsv
+    gzip proteins.pred_${name}.tsv
     """
 }
 
@@ -368,29 +410,32 @@ process generate_protein_and_entity_ids {
         saveAs: {filename -> "$filename" }
 
     input:
-     // Predicted Proteins
-     file   predicted_proteins                  from       ch_pred_proteins.collect()
-     val    predicted_proteins_microbiome_ids   from       ch_pred_proteins_microbiome_ids.collect()
-     // Entrez Proteins
-     file   entrez_proteins                     from       ch_entrez_proteins
-     file   entrez_proteins_assemblies          from       ch_entrez_proteins_assemblies  //   protein_tmp_id    (accessionVersion),   assembly_id
-     file   entrez_proteins_microbiomes         from       ch_entrez_proteins_microbiomes //   protein_tmp_id,   protein_weight,       microbiome_id
-     // Bare Proteins
-     file   bare_proteins                       from       ch_proteins_input.files.collect()
-     file   bare_proteins_microbiome_ids        from       ch_proteins_input.ids.collect()
+    // Predicted Proteins
+    path   predicted_proteins                  from       ch_pred_proteins.collect().ifEmpty([])
+    val    predicted_proteins_microbiome_ids   from       ch_pred_proteins_microbiome_ids.collect().ifEmpty([])
+    val    predicted_proteins_bin_basenames    from       ch_pred_proteins_bin_basename.collect().ifEmpty([])
+    // Entrez Proteins
+    path   entrez_proteins                     from       ch_entrez_proteins.ifEmpty([])
+    path   entrez_proteins_assemblies          from       ch_entrez_proteins_assemblies.ifEmpty([])  //   protein_tmp_id    (accessionVersion),   assembly_id
+    path   entrez_proteins_microbiomes         from       ch_entrez_proteins_microbiomes.ifEmpty([]) //   protein_tmp_id,   protein_weight,       microbiome_id
+    // Bare Proteins
+    path   bare_proteins                       from       ch_proteins_input.files.collect().ifEmpty([])
+    path   bare_proteins_microbiome_ids        from       ch_proteins_input.ids.collect().ifEmpty([])
 
     output:
-    file   "proteins.tsv.gz"            into   ch_proteins
-    file   "entities_proteins.tsv"      into   ch_entities_proteins
-    file   "entities.tsv"               into   ch_entities
-    file   "microbiomes_entities.tsv"   into   ch_microbiomes_entities
+    path   "proteins.tsv.gz"            into   ch_proteins
+    path   "entities_proteins.tsv"      into   ch_entities_proteins
+    path   "entities.tsv"               into   ch_entities
+    path   "microbiomes_entities.tsv"   into   ch_microbiomes_entities
 
     script:
     predicted_proteins_microbiome_ids = predicted_proteins_microbiome_ids.join(' ')
+    predicted_proteins_bin_basenames  = predicted_proteins_bin_basenames.join(' ')
     """
     generate_protein_and_entity_ids.py \
         --predicted-proteins                  $predicted_proteins                  \
         --predicted-proteins-microbiome-ids   $predicted_proteins_microbiome_ids   \
+        --predicted-proteins-bin-basenames    $predicted_proteins_bin_basenames    \
         --entrez-proteins                     "$entrez_proteins"                   \
         --entrez-proteins-assemblies          "$entrez_proteins_assemblies"        \
         --entrez-proteins-microbiomes         "$entrez_proteins_microbiomes"       \
@@ -456,8 +501,8 @@ process split_pred_tasks {
     """
     gen_prediction_chunks.py --peptides "$peptides" \
                              --protein-peptide-occ "$proteins_peptides" \
-                             --entities_proteins-occ "$entities_proteins" \
-                             --microbiomes_entities-occ "$microbiomes_entities" \
+                             --entities-proteins-occ "$entities_proteins" \
+                             --microbiomes-entities-occ "$microbiomes_entities" \
                              --conditions "$conditions" \
                              --condition-allele-map "$conditions_alleles" \
                              --max-chunk-size $pred_chunk_size \
