@@ -272,19 +272,19 @@ process download_proteins {
         }
 
     input:
-    val microbiome_ids from ch_taxa_input.ids.collect()
-    file microbiome_files from ch_taxa_input.files.collect()
+    val    microbiome_ids     from   ch_taxa_input.ids.collect()
+    file   microbiome_files   from   ch_taxa_input.files.collect()
 
     output:
-    file "proteins.entrez.tsv.gz" into ch_entrez_proteins
-    file "taxa_assemblies.tsv"
-    file "proteins_assemblies.tsv"      // protein_tmp_id (accessionVersion), assembly_id
-    file "proteins_microbiomes.entrez.tsv" into ch_entrez_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
+    file   "proteins.entrez.tsv.gz"            into   ch_entrez_proteins
+    file   "taxa_assemblies.tsv"               into   ch_entrez_assemblies
+    file   "proteins_assemblies.tsv"           into   ch_entrez_proteins_assemblies  // protein_tmp_id (accessionVersion), assembly_id
+    file   "proteins_microbiomes.entrez.tsv"   into   ch_entrez_proteins_microbiomes // protein_tmp_id, protein_weight, microbiome_id
 
     script:
     def key = params.ncbi_key
     def email = params.ncbi_email
-    def microbiome_ids = microbiome_ids.toString().replaceAll(/\[|\,|\]/,"")
+    def microbiome_ids = microbiome_ids.join(' ')
     """
     # provide new home dir to avoid permission errors with Docker and other artefacts
     export HOME="\${PWD}/HOME"
@@ -314,7 +314,8 @@ process predict_proteins {
     file microbiome_file from ch_assembly_input.files
 
     output:
-    tuple val(microbiome_id), file("proteins.pred_${microbiome_id}.tsv.gz") into (ch_pred_proteins, ch_proteins_get_abundances)
+    val(microbiome_id) into ch_pred_microbiome_ids                          // Emit microbiome ID
+    file("proteins.pred_${microbiome_id}.tsv.gz") into ch_pred_proteins     // Emit protein tsv
     file "coords.pred_${microbiome_id}.gff"
 
     script:
@@ -332,51 +333,73 @@ process predict_proteins {
     """
 }
 
-// only based on taxonomic abundances, not on protein expression!
-process assign_protein_weights {
+//// only based on taxonomic abundances, not on protein expression!
+//process assign_protein_weights {
+//
+//    input:
+//    file contig_depths from ch_assembly_input.weights_files // NOTE if input is null -> stores empty file (not compatible with 'path', returns error if input is not a file)
+//    tuple val(microbiome_id), file(proteins) from ch_proteins_get_abundances
+//
+//    output:
+//    file("proteins_microbiomes.${microbiome_id}.tsv") into ch_pred_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
+//
+//    script:
+//    def depths = ""
+//    if (contig_depths.size() > 0)
+//        depths = "--depths $contig_depths"
+//    """
+//    get_abundance.py --proteins $proteins \
+//                     $depths \
+//                     --microbiome_id $microbiome_id \
+//                     --output "proteins_microbiomes.${microbiome_id}.tsv"
+//    """
+//}
+//
+//
+//ch_pred_proteins
+//    .map { row -> [row[1]]}
+//    .set { ch_pred_proteins }
 
-    input:
-    file contig_depths from ch_assembly_input.weights_files // NOTE if input is null -> stores empty file (not compatible with 'path', returns error if input is not a file)
-    tuple val(microbiome_id), file(proteins) from ch_proteins_get_abundances
-
-    output:
-    file("proteins_microbiomes.${microbiome_id}.tsv") into ch_pred_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
-
-    script:
-    def depths = ""
-    if (contig_depths.size() > 0)
-        depths = "--depths $contig_depths"
-    """
-    get_abundance.py --proteins $proteins \
-                     $depths \
-                     --microbiome_id $microbiome_id \
-                     --output "proteins_microbiomes.${microbiome_id}.tsv"
-    """
-}
-
-ch_pred_proteins
-    .map { row -> [row[1]]}
-    .set { ch_pred_proteins }
-
-// concat files and assign new, unique ids for all proteins (from different sources)
+/*
+ * concat files and assign new, unique ids for all proteins (from different sources)
+ */
 process update_protein_ids {
     publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
         saveAs: {filename -> "$filename" }
 
     input:
-    file proteins from ch_proteins_input.files.concat(ch_entrez_proteins, ch_pred_proteins).collect()
-    file proteins_microbiomes from ch_input_proteins_microbiomes.concat(ch_entrez_proteins_microbiomes, ch_pred_proteins_microbiomes).collect()
+     // Predicted Proteins
+     file   predicted_proteins                  from       ch_pred_proteins.collect()
+     val    predicted_proteins_microbiome_ids   from       ch_pred_proteins_microbiome_ids.collect()
+     // Entrez Proteins
+     file   entrez_proteins                     from       ch_entrez_proteins
+     file   entrez_proteins_assemblies          from       ch_entrez_proteins_assemblies  //   protein_tmp_id    (accessionVersion),   assembly_id
+     file   entrez_proteins_microbiomes         from       ch_entrez_proteins_microbiomes //   protein_tmp_id,   protein_weight,       microbiome_id
+     // Bare Proteins
+     file   bare_proteins                       from       ch_proteins_input.files.collect()
+     file   bare_proteins_microbiome_ids        from       ch_proteins_input.ids.collect()
 
     output:
-    file "proteins.tsv.gz" into ch_proteins
-    file "proteins_microbiomes.tsv" into ch_proteins_microbiomes
+    file   "proteins.tsv.gz"            into   ch_proteins
+    file   "entities_proteins.tsv"      into   ch_entities_proteins
+    file   "entities.tsv"               into   ch_entities
+    file   "microbiomes_entities.tsv"   into   ch_microbiomes_entities
 
     script:
+    predicted_proteins_microbiome_ids = predicted_proteins_microbiome_ids.join(' ')
     """
-    update_protein_ids.py --in_proteins $proteins \
-                          --in_proteins_microbiomes $proteins_microbiomes \
-                          --out_proteins proteins.tsv.gz \
-                          --out_proteins_microbiomes proteins_microbiomes.tsv \
+    update_protein_ids.py \
+        --predicted-proteins                  $predicted_proteins                  \
+        --predicted-proteins-microbiome-ids   $predicted_proteins_microbiome_ids   \
+        --entrez-proteins                     "$entrez_proteins"                   \
+        --entrez-proteins-assemblies          "$entrez_proteins_assemblies"        \
+        --entrez-proteins-microbiomes         "$entrez_proteins_microbiomes"       \
+        --bare-proteins                       $bare_proteins                       \
+        --bare-proteins-microbiome-ids        $bare_proteins_microbiome_ids        \
+        --out-proteins                        proteins.tsv.gz                      \
+        --out-entities-proteins               entities_proteins.tsv                \
+        --out-entities                        entities.tsv                         \
+        --out-microbiomes-entities            microbiomes_entities.tsv
     """
 }
 
