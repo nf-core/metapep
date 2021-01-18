@@ -363,7 +363,7 @@ process predict_proteins {
 /*
  * concat files and assign new, unique ids for all proteins (from different sources)
  */
-process update_protein_ids {
+process generate_protein_and_entity_ids {
     publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
         saveAs: {filename -> "$filename" }
 
@@ -388,7 +388,7 @@ process update_protein_ids {
     script:
     predicted_proteins_microbiome_ids = predicted_proteins_microbiome_ids.join(' ')
     """
-    update_protein_ids.py \
+    generate_protein_and_entity_ids.py \
         --predicted-proteins                  $predicted_proteins                  \
         --predicted-proteins-microbiome-ids   $predicted_proteins_microbiome_ids   \
         --entrez-proteins                     "$entrez_proteins"                   \
