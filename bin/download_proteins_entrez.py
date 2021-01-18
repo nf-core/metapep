@@ -50,8 +50,8 @@ def parse_args(args=None):
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
     parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Output file (compressed) containing: protein_tmp_id, protein_sequence.")
     parser.add_argument('-ta', "--taxa_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
-    parser.add_argument('-pa', "--proteins_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, assembly_id.")
-    parser.add_argument('-pm', "--proteins_microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_id, protein_weight, microbiome_id.")
+    parser.add_argument('-ep', "--entities_proteins", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_tmp_id, entity_name (taxon_id).")
+    parser.add_argument('-me', "--microbiomes_entities", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: entity_name (taxon_id), microbiome_id, entity_weight.")
     return parser.parse_args(args)
 
 
@@ -79,18 +79,6 @@ def get_assembly_length(assemblyId):
     return root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text
 
 
-# get protein weight based on (microbiome-wise) taxonomic abundances (if occuring in multiple taxa -> sum)
-# NOTE multiple occurences of a protein within one assembly/genome are not counted!
-def get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_microbiomeId_abundance):
-    dict_microbiomeId_proteinWeight = defaultdict(lambda : 0.0)
-    for assembly in dict_proteinId_assemblyIds[proteinId]:
-        for taxId, assembly2 in dict_taxId_assemblyId.items():
-            if assembly == assembly2:
-                for microbiomeId in dic_taxId_microbiomeId_abundance[taxId]:
-                    dict_microbiomeId_proteinWeight[microbiomeId] += dic_taxId_microbiomeId_abundance[taxId][microbiomeId]
-            break
-    return dict_microbiomeId_proteinWeight
-
 
 def main(args=None):
     args = parse_args(args)
@@ -99,21 +87,23 @@ def main(args=None):
     Entrez.api_key = args.key
     Entrez.email = args.email
 
-    # read taxonomic ids for download (together with abundances)
-    dic_taxId_microbiomeId_abundance = defaultdict(lambda : {})
+    # read taxonomic ids for download (together with abundances) and write 'microbiomes_entities' output
+    taxIds = []
+    print("entity_name", "microbiome_id", "entity_weight", sep='\t', file=args.microbiomes_entities)
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
         reader = csv.DictReader(taxid_input, delimiter='\t')
         for row in reader:
+            taxIds.append(row['taxon_id'])
             try:
-                dic_taxId_microbiomeId_abundance[row['taxon_id']][microbiomeId] = row['abundance']
+                print(row['taxon_id'], microbiomeId, row['abundance'], sep='\t', file=args.microbiomes_entities, flush=True)
             except KeyError:
                 try:
-                    dic_taxId_microbiomeId_abundance[row['taxon_id']][microbiomeId] = 1
+                    print(row['taxon_id'], microbiomeId, 1, sep='\t', file=args.microbiomes_entities, flush=True)
                 except KeyError:
                     sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
 
+    taxIds = list(set(taxIds))
     print("Processing the following taxonmy IDs:")
-    taxIds = dic_taxId_microbiomeId_abundance.keys()
     print(taxIds)
 
     ####################################################################################################
@@ -286,20 +276,17 @@ def main(args=None):
     if not success:
             sys.exit("Entrez efetch download failed!")
 
-    # 6) write out 'proteins_microbiomes.tsv' containing protein weights obtained from taxonomic abundances
-    print("protein_tmp_id", "protein_weight", "microbiome_id", sep='\t', file=args.proteins_microbiomes)
-    # write out protein_tmp_id, assembly_id ('proteins_assemblies.tsv')
-    print("protein_tmp_id", "assembly_id", sep='\t', file=args.proteins_assemblies)
+    # 6) write out 'entities_proteins.entrez.tsv'
+    print("protein_tmp_id", "entity_name", sep='\t', file=args.entities_proteins)
+    dict_assemblyId_taxId = { v : k for k, v in dict_taxId_assemblyId.items() }
+    if len(orig_dict) == len(rev_dict):
+        sys.exit("Creation of dict_assemblyId_taxId failed!")
     for proteinId in proteinIds:
         accVersion = dict_protein_uid_acc[proteinId]
-        # get protein weights for respective microbiome IDs
-        dict_microbiomeId_proteinWeight = get_protein_weight(proteinId, dict_proteinId_assemblyIds, dict_taxId_assemblyId, dic_taxId_microbiomeId_abundance)
-        for microbiomeId in dict_microbiomeId_proteinWeight:
-            weight = dict_microbiomeId_proteinWeight[microbiomeId]
-            print(accVersion, weight, microbiomeId, sep='\t', file=args.proteins_microbiomes, flush=True)
-        # write out protein_tmp_id, assembly_id
+        # write out protein_tmp_id, entity_name (taxon_id)
         for assemblyId in dict_proteinId_assemblyIds[proteinId]:
-            print(accVersion, assemblyId, sep='\t', file=args.proteins_assemblies, flush=True)
+            taxId = dict_assemblyId_taxId[assemblyId]
+            print(accVersion, taxId, sep='\t', file=args.entities_proteins, flush=True)
 
     # NOTE for proteins the NCBI accession version ids are written out to enable a mapping to the fasta/tsv output
     # in contrast, for assemblies UIDs are written out

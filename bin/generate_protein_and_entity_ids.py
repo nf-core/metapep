@@ -39,11 +39,11 @@ def parse_args(args=None):
     # Predicted Proteins
     parser.add_argument("-pp", "--predicted-proteins", type=str, nargs="*", help="Protein TSV files with predicted proteins")
     parser.add_argument("-ppm", "--predicted-proteins-microbiome-ids", type=int, nargs="*", help="Microbiome ids of the predicted protein TSV files in corresponding order")
-    parser.add_argument("-ppb", "--predicted-proteins-bin-basenames", type=str, nargs="*", help="Bin basenames of the predicted protein TSV files in corresponding order, false for type 'assemlby'.")
+    parser.add_argument("-ppb", "--predicted-proteins-bin-basenames", type=str, nargs="*", help="Bin basenames of the predicted protein TSV files in corresponding order, false for type 'assembly'.")
     # Entrez Proteins
     parser.add_argument("-ep", "--entrez-proteins", type=str, nargs="?", help="Protein TSV file with entrez downloaded proteins")
-    parser.add_argument("-epa", "--entrez-proteins-assemblies", nargs="?", required=True, type=str, help="TSV file associating entrez downloaded proteins with assemblies")
-    parser.add_argument("-epm", "--entrez-proteins-microbiomes", nargs="?", required=True, type=str, help="TSV file associating entrez downloaded proteins with microbiomes")
+    parser.add_argument("-eep", "--entrez-entities-proteins", nargs="?", required=True, type=str, help="TSV file associating entrez downloaded proteins with entity_name (taxon_id).")
+    parser.add_argument("-eme", "--entrez-microbiomes-entities", nargs="?", required=True, type=str, help="TSV file associating entrez entity_name with microbiome_id and entity_weight.")
     # Bare Proteins
     parser.add_argument("-bp", "--bare-proteins", type=str, nargs="*", help="Protein TSV file with user-provided proteins")
     parser.add_argument("-bpm", "--bare-proteins-microbiome-ids", type=int, nargs="*", help="Microbiome ids of the user provided protein TSV files in corresponding order")
@@ -87,7 +87,7 @@ def main(args=None):
             for mb_id, bin_basename, inpath in zip(args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins):
                 # Read and annotate proteins
                 proteins = pd.read_csv(inpath, sep='\t')
-                proteins['entity_name'] = proteins['protein_tmp_id'].map(lambda x : "_".join(x.split("_")[:-1]))
+                proteins['entity_name'] = proteins['protein_tmp_id'].map(lambda x : "_".join(x.split("_")[:-1]))    # TODO for bins: get bin basename
                 proteins['protein_id']  = range(next_protein_id, next_protein_id + len(proteins))
                 next_protein_id += len(proteins)
                 proteins.rename(columns={'protein_tmp_id' : 'protein_orig_id'}, inplace=True)
@@ -111,48 +111,42 @@ def main(args=None):
         #
         if args.entrez_proteins:
             # Check validity of runtime arguments
-            if not args.entrez_proteins_assemblies or not args.entrez_proteins_microbiomes:
+            if not args.entrez_entities_proteins or not args.entrez_microbiomes_entities:
                 sys.exit("The --entrez-* flags have to be specified together")
             # Read proteins and associations
             proteins = pd.read_csv(args.entrez_proteins, sep='\t')
-            proteins_assemblies = pd.read_csv(args.entrez_proteins_assemblies, '\t')\
-                    .rename(columns={
-                        'assembly_id' : 'entity_name',
-                        })
-            proteins_microbiomes   = pd.read_csv(args.entrez_proteins_microbiomes, '\t')
+            entities_proteins = pd.read_csv(args.entrez_entities_proteins, '\t')            # protein_tmp_id (accessionVersion), entity_name (taxon_id)
+            microbiomes_entities = pd.read_csv(args.entrez_microbiomes_entities, '\t')      # entity_name, microbiome_id, entity_weight
 
             # Assign protein_id
             proteins['protein_id'] = range(next_protein_id, next_protein_id + len(proteins))
             next_protein_id += len(proteins)
 
             # Assign entity_id
-            entities = proteins_assemblies[['entity_name']].drop_duplicates()
+            entities = microbiomes_entities[['entity_name']].drop_duplicates()
             entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
             next_entity_id += len(entities)
 
-            entities_microbiomes_proteins = proteins_assemblies\
-                    .merge(proteins)\
-                    .merge(entities)\
-                    .merge(proteins_microbiomes)[['entity_id', 'protein_id', 'microbiome_id']]
-
             # Write proteins
             proteins.rename(columns={"protein_tmp_id" : "protein_orig_id"})[proteins_columns].to_csv(outfile_proteins, sep='\t', header=False, index=False)
-            # Write entities_proteins
+
+            entities_microbiomes_proteins = entities_proteins\
+                    .merge(proteins)\
+                    .merge(entities)\
+                    .merge(microbiomes_entities)[['entity_id', 'protein_id', 'microbiome_id', 'entity_weight']]
+
+            # Write entities_proteins: 'entity_id', 'protein_id'
             entities_microbiomes_proteins[entities_proteins_columns].to_csv(outfile_entities_proteins, sep='\t', header=False, index=False)
-            # Write entities
+            # Write entities: 'entity_id', 'entity_name'
             entities[entities_columns].to_csv(outfile_entities, sep='\t', header=False, index=False)
-            # Write microbiomes - entities
-            entities_microbiomes_proteins[microbiomes_entities_columns].drop_duplicates().to_csv(outfile_microbiomes_entities, sep='\t', header=False, index=False)
+            # Write microbiomes - entities: 'microbiome_id', 'entity_id'
+            entities_microbiomes_proteins['microbiome_id', 'entity_id'].drop_duplicates().to_csv(outfile_microbiomes_entities, sep='\t', header=False, index=False)
 
         #
         # BARE PROTEINS
         #
 
-        # TODO
 
-        #
-        # READ WEIGHTS
-        #
 
 
 if __name__ == "__main__":

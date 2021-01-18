@@ -257,7 +257,6 @@ ch_microbiomes
     .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             ids: microbiome_id
             files: file(microbiome_path, checkIfExists: true)
-            weights_files: weights_path ? file(weights_path, checkIfExists: true) : null
             bin_basenames: false
         }
     .set { ch_assembly_input }
@@ -285,10 +284,8 @@ ch_microbiomes
         }
     .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             def bin_files = file(microbiome_path, checkIfExists: true) // TODO handle http files in dir!? archive?
-            def weights_file = weights_path ? file(weights_path, checkIfExists: true) : null
             ids: Collections.nCopies((int) bin_files.list().size(), microbiome_id)   // microbiome_id
             files: bin_files.listFiles()
-            weights_files: Collections.nCopies((int) bin_files.list().size(), weights_file)  // weights_path ? file(weights_path, checkIfExists: true) : null
             bin_basenames: getBinBasenames(bin_files)  // list of strings
         }
     .set { ch_bins_input }
@@ -296,8 +293,20 @@ ch_microbiomes
 
 ch_nucl_input_ids = ch_assembly_input.ids.concat(ch_bins_input.ids.flatten())
 ch_nucl_input_files = ch_assembly_input.files.concat(ch_bins_input.files.flatten())
-ch_nucl_input_weights = ch_assembly_input.weights_files.concat(ch_bins_input.weights_files.flatten())
 ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_input.bin_basenames.flatten()).view()
+
+
+ch_weights = Channel.empty()
+ch_microbiomes
+    .splitCsv(sep:'\t', skip: 1)
+    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
+            if (microbiome_type =! 'taxa' && weights_path) [microbiome_id, weights_path]
+        }
+    .multiMap { microbiome_id, weights_path ->
+            microbiome_ids: microbiome_id
+            weights_paths: weights_path
+        }
+    .set { ch_weights }
 
 
 /*
@@ -317,8 +326,8 @@ process download_proteins {
     output:
     file   "proteins.entrez.tsv.gz"            into   ch_entrez_proteins
     file   "taxa_assemblies.tsv"               into   ch_entrez_assemblies
-    file   "proteins_assemblies.tsv"           into   ch_entrez_proteins_assemblies  // protein_tmp_id (accessionVersion), assembly_id
-    file   "proteins_microbiomes.entrez.tsv"   into   ch_entrez_proteins_microbiomes // protein_tmp_id, protein_weight, microbiome_id
+    file   "entities_proteins.entrez.tsv"      into   ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
+    file   "microbiomes_entities.entrez.tsv"   into   ch_entrez_microbiomes_entities  // entity_name, microbiome_id, entity_weight
 
     script:
     def key = params.ncbi_key
@@ -333,8 +342,8 @@ process download_proteins {
                                 -m $microbiome_ids \
                                 -p proteins.entrez.tsv.gz \
                                 -ta taxa_assemblies.tsv \
-                                -pa proteins_assemblies.tsv \
-                                -pm proteins_microbiomes.entrez.tsv
+                                -ep entities_proteins.entrez.tsv \
+                                -me microbiomes_entities.entrez.tsv
     """
 }
 
@@ -375,32 +384,25 @@ process predict_proteins {
     """
 }
 
-//// only based on taxonomic abundances, not on protein expression!
-//process assign_protein_weights {
-//
-//    input:
-//    file contig_depths from ch_assembly_input.weights_files // NOTE if input is null -> stores empty file (not compatible with 'path', returns error if input is not a file)
-//    tuple val(microbiome_id), file(proteins) from ch_proteins_get_abundances
-//
-//    output:
-//    file("proteins_microbiomes.${microbiome_id}.tsv") into ch_pred_proteins_microbiomes //  protein_tmp_id, protein_weight, microbiome_id
-//
-//    script:
-//    def depths = ""
-//    if (contig_depths.size() > 0)
-//        depths = "--depths $contig_depths"
-//    """
-//    get_abundance.py --proteins $proteins \
-//                     $depths \
-//                     --microbiome_id $microbiome_id \
-//                     --output "proteins_microbiomes.${microbiome_id}.tsv"
-//    """
-//}
-//
-//
-//ch_pred_proteins
-//    .map { row -> [row[1]]}
-//    .set { ch_pred_proteins }
+/*
+ * Assign entity weights for input type 'assembly' and 'bins'
+ */
+process assign_nucl_entity_weights {
+    publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    val  microbiome_ids     from  ch_weights.microbiome_ids.collect().ifEmpty([])
+    path weights_files      from  ch_weights.weights_paths.collect().ifEmpty([])
+
+    output:
+    path   "microbiomes_entities.nucl.tsv"    into   ch_nucl_microbiomes_entities  // entity_name, microbiome_id, entity_weight
+
+    script:
+    """
+    assign_entity_weights.py 
+    """
+}
 
 /*
  * concat files and assign new, unique ids for all proteins (from different sources)
@@ -416,17 +418,17 @@ process generate_protein_and_entity_ids {
     val    predicted_proteins_bin_basenames    from       ch_pred_proteins_bin_basename.collect().ifEmpty([])
     // Entrez Proteins
     path   entrez_proteins                     from       ch_entrez_proteins.ifEmpty([])
-    path   entrez_proteins_assemblies          from       ch_entrez_proteins_assemblies.ifEmpty([])  //   protein_tmp_id    (accessionVersion),   assembly_id
-    path   entrez_proteins_microbiomes         from       ch_entrez_proteins_microbiomes.ifEmpty([]) //   protein_tmp_id,   protein_weight,       microbiome_id
+    path   entrez_entities_proteins            from       ch_entrez_entities_proteins.ifEmpty([])       //   protein_tmp_id (accessionVersion), entity_name (taxon_id)
+    path   entrez_microbiomes_entities         from       ch_entrez_microbiomes_entities.ifEmpty([])    //   entity_name, microbiome_id, entity_weight
     // Bare Proteins
     path   bare_proteins                       from       ch_proteins_input.files.collect().ifEmpty([])
     path   bare_proteins_microbiome_ids        from       ch_proteins_input.ids.collect().ifEmpty([])
 
     output:
-    path   "proteins.tsv.gz"            into   ch_proteins
-    path   "entities_proteins.tsv"      into   ch_entities_proteins
-    path   "entities.tsv"               into   ch_entities
-    path   "microbiomes_entities.tsv"   into   ch_microbiomes_entities
+    path   "proteins.tsv.gz"                        into   ch_proteins
+    path   "entities_proteins.tsv"                  into   ch_entities_proteins
+    path   "entities.tsv"                           into   ch_entities
+    path   "microbiomes_entities.no_weights.tsv"    into   ch_microbiomes_entities_noweights  // microbiome_id, entitiy_id  (no weights yet!)
 
     script:
     predicted_proteins_microbiome_ids = predicted_proteins_microbiome_ids.join(' ')
@@ -437,8 +439,8 @@ process generate_protein_and_entity_ids {
         --predicted-proteins-microbiome-ids   $predicted_proteins_microbiome_ids   \
         --predicted-proteins-bin-basenames    $predicted_proteins_bin_basenames    \
         --entrez-proteins                     "$entrez_proteins"                   \
-        --entrez-proteins-assemblies          "$entrez_proteins_assemblies"        \
-        --entrez-proteins-microbiomes         "$entrez_proteins_microbiomes"       \
+        --entrez-entities-proteins            "$entrez_entities_proteins"          \
+        --entrez-microbiomes-entities         "$entrez_microbiomes_entities"       \
         --bare-proteins                       $bare_proteins                       \
         --bare-proteins-microbiome-ids        $bare_proteins_microbiome_ids        \
         --out-proteins                        proteins.tsv.gz                      \
@@ -446,6 +448,30 @@ process generate_protein_and_entity_ids {
         --out-entities                        entities.tsv                         \
         --out-microbiomes-entities            microbiomes_entities.tsv
     """
+}
+
+/*
+ * Create microbiome_entities
+ */
+ // TODO
+process finalize_microbiome_entities {
+    publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
+        saveAs: {filename -> "$filename" }
+
+    input:
+    path   microbiomes_entities_noweights     from       ch_microbiomes_entities_noweights.ifEmpty([])
+    path   entrez_microbiomes_entities        from       ch_entrez_microbiomes_entities.ifEmpty([])
+    path   nucl_microbiomes_entities          from       ch_nucl_microbiomes_entities
+
+    output:
+    path   "microbiomes_entities.tsv"    into   ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
+
+    script:
+
+    """
+    finalize_microbiome_entities.py ...
+    """
+    // TODO add checking if for microbiome_id either no weight or weights for all entities are given
 }
 
 /*
