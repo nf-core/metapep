@@ -314,7 +314,7 @@ process predict_proteins {
     file microbiome_file from ch_assembly_input.files
 
     output:
-    val(microbiome_id) into ch_pred_microbiome_ids                          // Emit microbiome ID
+    val(microbiome_id) into ch_pred_proteins_microbiome_ids                          // Emit microbiome ID
     file("proteins.pred_${microbiome_id}.tsv.gz") into ch_pred_proteins     // Emit protein tsv
     file "coords.pred_${microbiome_id}.gff"
 
