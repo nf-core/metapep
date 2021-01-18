@@ -103,7 +103,6 @@ def main(args=None):
                 # Write microbiomes - entities
                 entities[microbiomes_entities_columns].to_csv(outfile_microbiomes_entities, sep='\t', index=False, header=False)
 
-
         #
         # ENTREZ PROTEINS
         #
@@ -131,9 +130,7 @@ def main(args=None):
             entities_microbiomes_proteins = proteins_assemblies\
                     .merge(proteins)\
                     .merge(entities)\
-                    .merge(proteins_microbiomes)[['entity_id', 'protein_id', 'microbiome_id']].drop_duplicates()
-
-
+                    .merge(proteins_microbiomes)[['entity_id', 'protein_id', 'microbiome_id']]
 
             # Write proteins
             proteins.rename(columns={"protein_tmp_id" : "protein_orig_id"})[proteins_columns].to_csv(outfile_proteins, sep='\t', header=False, index=False)
