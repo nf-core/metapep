@@ -574,7 +574,8 @@ process prepare_score_distribution {
     input:
     file predictions from ch_predictions
     file proteins_peptides from ch_proteins_peptides
-    file proteins_microbiomes from ch_proteins_microbiomes
+    file entities_proteins from ch_entities_proteins
+    file microbiomes_entities from ch_microbiomes_entities
     file conditions from  ch_conditions
     file conditions_alleles from  ch_conditions_alleles
     file alleles from ch_alleles
@@ -586,9 +587,10 @@ process prepare_score_distribution {
     """
     prepare_score_distribution.py --predictions "$predictions" \
                             --protein-peptide-occ "$proteins_peptides" \
-                            --microbiome-protein-occ "$proteins_microbiomes" \
-                             --conditions "$conditions" \
-                             --condition-allele-map "$conditions_alleles" \
+                            --entities_proteins-occ "$entities_proteins" \
+                            --microbiomes_entities-occ "$microbiomes_entities" \
+                            --conditions "$conditions" \
+                            --condition-allele-map "$conditions_alleles" \
                             --alleles "$alleles" \
                             --outdir .
     """
