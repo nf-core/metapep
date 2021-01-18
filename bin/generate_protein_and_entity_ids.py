@@ -87,7 +87,12 @@ def main(args=None):
             for mb_id, bin_basename, inpath in zip(args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins):
                 # Read and annotate proteins
                 proteins = pd.read_csv(inpath, sep='\t')
-                proteins['entity_name'] = proteins['protein_tmp_id'].map(lambda x : "_".join(x.split("_")[:-1]))    # TODO for bins: get bin basename
+                if bin_basename == "__ISASSEMBLY__":
+                    # retrieve 'entity_name' from 'protein_tmp_id' prefix
+                    proteins['entity_name'] = proteins['protein_tmp_id'].map(lambda x : "_".join(x.split("_")[:-1]))
+                else:
+                    proteins['entity_name'] = bin_basename
+
                 proteins['protein_id']  = range(next_protein_id, next_protein_id + len(proteins))
                 next_protein_id += len(proteins)
                 proteins.rename(columns={'protein_tmp_id' : 'protein_orig_id'}, inplace=True)

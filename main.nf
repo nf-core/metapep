@@ -432,7 +432,7 @@ process generate_protein_and_entity_ids {
 
     script:
     predicted_proteins_microbiome_ids = predicted_proteins_microbiome_ids.join(' ')
-    predicted_proteins_bin_basenames  = predicted_proteins_bin_basenames.join(' ')
+    predicted_proteins_bin_basenames  = predicted_proteins_bin_basenames.collect{ it ? it : "__ISASSEMBLY__" }.join(' ')
     """
     generate_protein_and_entity_ids.py \
         --predicted-proteins                  $predicted_proteins                  \
