@@ -77,12 +77,10 @@ input_data = pd.concat([ pd.read_csv(e, sep='\t') for e in [args.entrez_microbio
 result = entity_microbiome.merge(input_data, how="left").drop(columns="entity_name")
 
 # For each microbiome, we now check whether this assumption is true. If we find
-# no weights for a microbiome, we add uniform weights. The column 'weight' is
-# turned into 'entity_weight' to adhere to the data model nomenclature.
+# no weights for a microbiome, we add uniform weights.
 try:
     result = result.groupby("microbiome_id")\
             .apply(process_weights)\
-            .rename(columns={'weight' : 'entity_weight'})
     result.to_csv(args.output, sep='\t', index=False, header=True)
 except PartialWeightsError as e:
     sys.exit(f"Inconsist weight specifications. Weights were specified for only a subset of entities in microbiome with microbiome ID {e}.")
