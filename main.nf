@@ -700,6 +700,60 @@ process plot_score_distribution {
 }
 
 
+process prepare_entity_binding_ratios {
+    publishDir "${params.outdir}/figures/entity_binding_rates", mode: params.publish_dir_mode
+
+    input:
+    file predictions from ch_predictions
+    file proteins_peptides from ch_proteins_peptides
+    file entities_proteins from ch_entities_proteins
+    file microbiomes_entities from ch_microbiomes_entities
+    file conditions from  ch_conditions
+    file conditions_alleles from  ch_conditions_alleles
+    file alleles from ch_alleles
+
+    output:
+    file "entity_binding_rates.allele_*.tsv" into ch_prep_entity_binding_rates
+
+    script:
+    """
+    prepare_entity_binding_ratios.py --predictions "$predictions" \
+                            --protein-peptide-occ "$proteins_peptides" \
+                            --entities_proteins-occ "$entities_proteins" \
+                            --microbiomes_entities-occ "$microbiomes_entities" \
+                            --conditions "$conditions" \
+                            --condition-allele-map "$conditions_alleles" \
+                            --alleles "$alleles" \
+                            --method ${params.pred_method} \
+                            --outdir .
+    """
+}
+
+process plot_entity_binding_ratios {
+    publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
+
+    input:
+    file prep_entity_binding_rates from ch_prep_entity_binding_rates.flatten()
+    file alleles from ch_alleles
+
+    output:
+    file "entity_binding_rates.allele_*.pdf"
+
+    script:
+    """
+    [[ ${prep_scores} =~ entity_binding_rates.allele_(.*).tsv ]];
+    allele_id="\${BASH_REMATCH[1]}"
+    echo \$allele_id
+
+    plot_entity_binding_rates.R --scores $prep_entity_binding_rates \
+                                   --alleles $alleles \
+                                   --allele_id \$allele_id \
+                                   --method ${params.pred_method} \
+                                   --output "entity_binding_rates.allele_\$allele_id.pdf"
+    """
+}
+
+
 /*
  * Output Description HTML
  */
