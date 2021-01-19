@@ -10,7 +10,6 @@
 */
 
 def helpMessage() {
-    // TODO nf-core: Add to this help message with new command line parameters
     log.info nfcoreHeader()
     log.info"""
 
@@ -18,7 +17,7 @@ def helpMessage() {
 
     The typical command for running the pipeline is as follows:
 
-    nextflow run nf-core/metapep --input '*_R{1,2}.fastq.gz' -profile docker
+    nextflow run nf-core/metapep --input 'input.tsv' -profile docker
 
     Mandatory arguments:
       --input [file]                  Path to input TSV file containing: condition, type, path, alleles. Must contain a corresponding header.
@@ -32,7 +31,6 @@ def helpMessage() {
       --ncbi_email [str]              Email address for NCBI Entrez database access. Required if downloading proteins from NCBI.
       --min_pep_len [int]             Min. peptide length to generate.
       --max_pep_len [int]             Max. peptide length to generate.
-      --sample_n [int]                Number of peptides to subsample for each condition. Default: false
       --pred_method [str]             Epitope prediction method to use. One of [syfpeithi, mhcflurry, mhcnuggets-class-1, mhcnuggets-class-2]. Default: syfpeithi.
       --pred_chunk_size               Maximum chunk size (#peptides) for epitope prediction jobs
 
