@@ -25,27 +25,39 @@ library(argparser, quietly=TRUE)
 
 
 parser <- arg_parser("Description")
-parser <- add_argument(parser, "--binding_rates", nargs=1, help="Input file containing: condition_name, binding_rate, entity_weight.")
+parser <- add_argument(parser, "--binding-rates", nargs=1, help="Input file containing: condition_name, binding_rate, entity_weight.")
 parser <- add_argument(parser, "--alleles", nargs=1, help="Input file containing: allele_id, allele_name.")
 parser <- add_argument(parser, "--allele_id", nargs=1, help="allele_id.")
-parser <- add_argument(parser, "--output", nargs=1, help="Output file name.")
 args <- parse_args(parser)
 
-data <- fread(args$scores)
+data <- fread(args$binding_rates)
 alleles <- fread(args$alleles)
 allele_name <- alleles[alleles$allele_id == args$allele_id, ]$allele_name
 
 data$condition_name <- as.factor(data$condition_name)
 p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
-    ylab("Entity-wise binding rate") +
+    ylab("Entity-wise binding ratio") +
     xlab("Condition") +
     ggtitle(allele_name) +
     geom_boxplot() +
     geom_jitter(width = 0.2) +
-    scale_fill_brewer(palette="Dark2") + 
+    scale_fill_brewer(palette="Dark2") +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
 
-# TODO use weights for violin plot
+ggsave(paste0("entity_binding_ratios.with_points.allele_", args$allele_id, ".pdf"), height=5, width=5)
 
-ggsave(args$output, height=5, width=5)
+
+p2 <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
+    ylab("Entity-wise binding ratio") +
+    xlab("Condition") +
+    ggtitle(allele_name) +
+    geom_boxplot() +
+    scale_fill_brewer(palette="Dark2") +
+    theme_classic() +
+    theme(legend.position="none", plot.title = element_text(hjust = 0.5))
+
+ggsave(paste0("entity_binding_ratios.allele_", args$allele_id, ".pdf"), height=5, width=5)
+
+
+# TODO use weights for violin plot

@@ -47,17 +47,17 @@ def parse_args(args=None):
     return parser.parse_args()
 
 
-def get_binder(score):
-    if args.method == "syfpeithi":
+def call_binder(score, method):
+    if method == "syfpeithi":
         if score >= 0.50:
             return True
-        else
-            return False
     else:
         if score <= 500:
             return True
-        else
-            return False
+    return False
+
+def get_binding_ratio(no_binder, n):
+    return no_binder/float(n)
 
 
 def main(args=None):
@@ -94,14 +94,18 @@ def main(args=None):
                 .merge(conditions) \
                 .drop(columns="microbiome_id") \
                 .merge(condition_allele_map) \
-                .drop(columns=["allele_id", "condition_id"]) \
-                .groupby(["entity_name", "peptide_id", "condition_name", "entity_weight"])["prediction_score"].apply(lambda s: (get_binder(s)).sum()/len(s)) \
+                .drop(columns=["allele_id", "condition_id"])
+
+        n = len(data)
+        data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
+
+        data = data \
+                .drop(columns="prediction_score") \
+                .groupby(["entity_id", "condition_name", "entity_weight"])["binder"].sum().apply(get_binding_ratio, n=n) \
                 .reset_index(name="binding_rate") \
-                .drop(columns=["entity_name", "peptide_id"])
+                .drop(columns=["entity_id"])
 
-        # TODO maybe keep "entity_name" to explore potential outliers?
-
-        with open(os.path.join(args.outdir, "entity_binding_rates.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
+        with open(os.path.join(args.outdir, "entity_binding_ratios.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
             data[["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, header=True)
 
         # Sanity check, remove
