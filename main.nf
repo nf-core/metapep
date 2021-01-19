@@ -630,15 +630,19 @@ process predict_epitopes {
  */
  // gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
  // (causing "sbatch: error: Batch job submission failed: Pathname of a file, directory or other parameter too long")
+ // sort and buffer to ensure resume will work (inefficient, since this causes waiting for all predictions)
+ch_epitope_predictions_buffered = ch_epitope_predictions.toSortedList().flatten().buffer(size: 1000, remainder: true)
+ch_epitope_prediction_warnings_buffered = ch_epitope_prediction_warnings.toSortedList().flatten().buffer(size: 1000, remainder: true)
+
 process merge_predictions_buffer {
 
     input:
-    path predictions from ch_epitope_predictions.buffer(size: 1000, remainder: true)
-    path prediction_warnings from ch_epitope_prediction_warnings.buffer(size: 1000, remainder: true)
+    path predictions from ch_epitope_predictions_buffered
+    path prediction_warnings from ch_epitope_prediction_warnings_buffered
 
     output:
-    path "predictions.buffer_*.tsv" into ch_predictions_buffer
-    path "prediction_warnings.buffer_*.log" into ch_prediction_warnings_buffer
+    path "predictions.buffer_*.tsv" into ch_predictions_merged_buffer
+    path "prediction_warnings.buffer_*.log" into ch_prediction_warnings_merged_buffer
 
     script:
     def single = predictions instanceof Path ? 1 : predictions.size()
@@ -658,8 +662,8 @@ process merge_predictions {
         saveAs: {filename -> filename.endsWith(".log") ? "logs/$filename" : "db_tables/$filename"}
 
     input:
-    path predictions from ch_predictions_buffer.collect()
-    path prediction_warnings from ch_prediction_warnings_buffer.collect()
+    path predictions from ch_predictions_merged_buffer.collect()
+    path prediction_warnings from ch_prediction_warnings_merged_buffer.collect()
 
     output:
     path "predictions.tsv.gz" into ch_predictions
