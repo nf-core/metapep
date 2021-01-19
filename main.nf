@@ -449,22 +449,21 @@ process generate_protein_and_entity_ids {
         --out-proteins                        proteins.tsv.gz                      \
         --out-entities-proteins               entities_proteins.tsv                \
         --out-entities                        entities.tsv                         \
-        --out-microbiomes-entities            microbiomes_entities.tsv
+        --out-microbiomes-entities            microbiomes_entities.no_weights.tsv
     """
 }
 
 /*
  * Create microbiome_entities
  */
- // TODO
 process finalize_microbiome_entities {
     publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
         saveAs: {filename -> "$filename" }
 
     input:
-    path   microbiomes_entities_noweights     from       ch_microbiomes_entities_noweights.ifEmpty([])
     path   entrez_microbiomes_entities        from       ch_entrez_microbiomes_entities.ifEmpty([])
-    path   nucl_microbiomes_entities          from       ch_nucl_microbiomes_entities
+    path   nucl_microbiomes_entities          from       ch_nucl_microbiomes_entities.ifEmpty([])
+    path   microbiomes_entities_noweights     from       ch_microbiomes_entities_noweights.ifEmpty([])
 
     output:
     path   "microbiomes_entities.tsv"    into   ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
@@ -472,7 +471,11 @@ process finalize_microbiome_entities {
     script:
 
     """
-    finalize_microbiome_entities.py ...
+    finalize_microbiome_entities.py \
+        -eme $entrez_microbiomes_entities \
+        -nme $nucl_microbiomes_entities \
+        -menw $microbiomes_entities_noweights \
+        -o microbiomes_entities.tsv
     """
     // TODO add checking if for microbiome_id either no weight or weights for all entities are given
 }
