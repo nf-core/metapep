@@ -396,10 +396,11 @@ process predict_proteins {
     file "coords.pred_${microbiome_id}*.gff"
 
     script:
-    def mode = params.prodigal_mode
-    def name = bin_basename ? "${microbiome_id}.${bin_basename}" : "${microbiome_id}"
+    def mode   = params.prodigal_mode
+    def name   = bin_basename ? "${microbiome_id}.${bin_basename}" : "${microbiome_id}"
+    def reader = microbiome_file.name =~ ~/(?i)[.]gz$/ ? "gunzip -c" : "cat"
     """
-    gzip -c -d $microbiome_file | prodigal \
+    $reader $microbiome_file | prodigal \
                 -f gff \
                 -o coords.pred_${name}.gff \
                 -a proteins.pred_${name}.fasta \
