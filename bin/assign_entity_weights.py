@@ -47,7 +47,7 @@ for mb_id, w_path in zip(args.microbiome_ids, args.weights_files):
 column_names = ["entity_name", "microbiome_id", "weight"]
 
 if dfs:
-    print(f"{args.microbiome_ids} input tables provided, writing concatenated table.", file = sys.stderr)
+    print(f"{len(args.microbiome_ids)} input tables provided, writing concatenated table.", file = sys.stderr)
     pd.concat(dfs)[column_names].to_csv(args.out, sep='\t', index=False, header=True)
 else:
     print("No input files provided, writing empty table.", file = sys.stderr)
