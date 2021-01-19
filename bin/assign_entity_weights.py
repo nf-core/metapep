@@ -38,7 +38,10 @@ if len(args.microbiome_ids) != len(args.weights_files):
 
 dfs = []
 for mb_id, w_path in zip(args.microbiome_ids, args.weights_files):
-    data = pd.read_csv(w_path, sep='\t')
+    data = pd.read_csv(w_path, sep='\t').rename(columns={
+        'contig_name' : 'entity_name',
+        'bin_basename' : 'entity_name'
+        })
     data['microbiome_id'] = mb_id
     dfs.append(data)
 

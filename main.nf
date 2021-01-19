@@ -293,20 +293,19 @@ ch_microbiomes
 
 ch_nucl_input_ids = ch_assembly_input.ids.concat(ch_bins_input.ids.flatten())
 ch_nucl_input_files = ch_assembly_input.files.concat(ch_bins_input.files.flatten())
-ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_input.bin_basenames.flatten()).view()
+ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_input.bin_basenames.flatten())
 
 
 ch_weights = Channel.empty()
 ch_microbiomes
     .splitCsv(sep:'\t', skip: 1)
     .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
-            if (microbiome_type =! 'taxa' && weights_path) [microbiome_id, weights_path]
+            if (microbiome_type != 'taxa' && weights_path) [microbiome_id, weights_path]
         }
-    .multiMap { microbiome_id, weights_path ->
+    .view().multiMap { microbiome_id, weights_path ->
             microbiome_ids: microbiome_id
             weights_paths: weights_path
-        }
-    .set { ch_weights }
+        }.set { ch_weights }
 
 
 /*
@@ -398,7 +397,10 @@ process assign_nucl_entity_weights {
     output:
     path   "microbiomes_entities.nucl.tsv"    into   ch_nucl_microbiomes_entities  // entity_name, microbiome_id, entity_weight
 
+    // TODO handle no weights provided case
+
     script:
+    microbiome_ids = microbiome_ids.join(' ')
     """
     assign_entity_weights.py \
         --microbiome-ids $microbiome_ids \
@@ -463,7 +465,8 @@ process finalize_microbiome_entities {
     input:
     path   entrez_microbiomes_entities        from       ch_entrez_microbiomes_entities.ifEmpty([])
     path   nucl_microbiomes_entities          from       ch_nucl_microbiomes_entities.ifEmpty([])
-    path   microbiomes_entities_noweights     from       ch_microbiomes_entities_noweights.ifEmpty([])
+    path   microbiomes_entities_noweights     from       ch_microbiomes_entities_noweights
+    path   entities                           from       ch_entities
 
     output:
     path   "microbiomes_entities.tsv"    into   ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
@@ -475,6 +478,7 @@ process finalize_microbiome_entities {
         -eme $entrez_microbiomes_entities \
         -nme $nucl_microbiomes_entities \
         -menw $microbiomes_entities_noweights \
+        -ent "$entities" \
         -o microbiomes_entities.tsv
     """
     // TODO add checking if for microbiome_id either no weight or weights for all entities are given
