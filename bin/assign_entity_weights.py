@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ####################################################################################################
-# for each strain: select largest assembly (for now)
 
 import sys
 import argparse
@@ -53,4 +52,3 @@ if dfs:
 else:
     print("No input files provided, writing empty table.", file = sys.stderr)
     print('\t'.join(column_names), file = args.out)
-
