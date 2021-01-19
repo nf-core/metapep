@@ -279,7 +279,7 @@ def main(args=None):
     # 6) write out 'entities_proteins.entrez.tsv'
     print("protein_tmp_id", "entity_name", sep='\t', file=args.entities_proteins)
     dict_assemblyId_taxId = { v : k for k, v in dict_taxId_assemblyId.items() }
-    if len(orig_dict) == len(rev_dict):
+    if len(dict_assemblyId_taxId) != len(dict_taxId_assemblyId):
         sys.exit("Creation of dict_assemblyId_taxId failed!")
     for proteinId in proteinIds:
         accVersion = dict_protein_uid_acc[proteinId]
