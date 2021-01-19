@@ -292,6 +292,9 @@ ch_microbiomes_bins.archives
     }
     .set{ch_microbiomes_archives}
 
+/*
+ * Unpack archived assembly bins
+ */
 process unpack_bin_archives {
     input:
     val microbiome_id from ch_microbiomes_archives.ids
@@ -675,7 +678,6 @@ process merge_predictions {
 /*
  * Generate figures
  */
-
 process prepare_score_distribution {
     publishDir "${params.outdir}/figures/prediction_scores", mode: params.publish_dir_mode
 
