@@ -236,12 +236,8 @@ ch_microbiomes
         proteins : row.microbiome_type == 'proteins'
         assembly:  row.microbiome_type == 'assembly'
         bins:      row.microbiome_type == 'bins'
-        other:     true
     }
     .set{ch_microbiomes_branch}
-
-// Emit warning about unknown data types
-ch_microbiomes_branch.other.map { row -> log.info("WARNING - Ignoring row in input sheet: Unknown type '${row.microbiome_type}'") }
 
 // TAXA
 ch_microbiomes_branch.taxa
