@@ -145,7 +145,7 @@ def main(args=None):
             # Write entities: 'entity_id', 'entity_name'
             entities[entities_columns].to_csv(outfile_entities, sep='\t', header=False, index=False)
             # Write microbiomes - entities: 'microbiome_id', 'entity_id'
-            entities_microbiomes_proteins['microbiome_id', 'entity_id'].drop_duplicates().to_csv(outfile_microbiomes_entities, sep='\t', header=False, index=False)
+            entities_microbiomes_proteins[microbiomes_entities_columns].drop_duplicates().to_csv(outfile_microbiomes_entities, sep='\t', header=False, index=False)
 
         #
         # BARE PROTEINS
