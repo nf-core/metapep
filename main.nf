@@ -334,7 +334,7 @@ ch_microbiomes
     .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
             if (microbiome_type != 'taxa' && weights_path) [microbiome_id, weights_path]
         }
-    .view().multiMap { microbiome_id, weights_path ->
+    .multiMap { microbiome_id, weights_path ->
             microbiome_ids: microbiome_id
             weights_paths: weights_path
         }.set { ch_weights }
