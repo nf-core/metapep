@@ -218,83 +218,117 @@ process create_db_tables {
     """
 }
 
-// Create channels for different types of microbiome data files
-// type 'taxa' (-> download_proteins)
-ch_taxa_input = Channel.empty()
+// ####################################################################################################
+
 ch_microbiomes
-    .splitCsv(sep:'\t', skip: 1)
-    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
-            if (microbiome_type == 'taxa') [microbiome_id, microbiome_path, microbiome_type]
-        }
-    .multiMap { microbiome_id, microbiome_path, microbiome_type ->
-            ids: microbiome_id
-            files: file(microbiome_path, checkIfExists: true)
+    // Read microbiomes table
+    .splitCsv(sep:'\t', header:true)
+    // Convert paths to files
+    .map {
+        row ->
+        row.microbiome_path = file(row.microbiome_path, checkIfExists: true)
+        row
+    }
+    // Split into types
+    .branch {
+        row->
+        taxa:      row.microbiome_type == 'taxa'
+        proteins : row.microbiome_type == 'proteins'
+        assembly:  row.microbiome_type == 'assembly'
+        bins:      row.microbiome_type == 'bins'
+        other:     true
+    }
+    .set{ch_microbiomes_branch}
+
+// Emit warning about unknown data types
+ch_microbiomes_branch.other.map { row -> log.warn("Ignoring row in input sheet: Unknown type '${row.microbiome_type}'") }
+
+// TAXA
+ch_microbiomes_branch.taxa
+    .multiMap { row ->
+            ids: row.microbiome_id
+            files: row.microbiome_path
         }
     .set { ch_taxa_input }
 
-// type 'proteins' (-> generate_peptides)
-ch_proteins_input = Channel.empty()
-ch_microbiomes
-    .splitCsv(sep:'\t', skip: 1)
-    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
-            if (microbiome_type == 'proteins') [microbiome_id, microbiome_path, microbiome_type]
-        }
-    .multiMap { microbiome_id, microbiome_path, microbiome_type ->
-            ids: microbiome_id
-            files: file(microbiome_path, checkIfExists: true)
+// PROTEINS
+ch_microbiomes_branch.proteins
+    .multiMap { row ->
+            ids: row.microbiome_id
+            files: row.microbiome_path
         }
     .set { ch_proteins_input }
 
-ch_input_proteins_microbiomes = Channel.empty()
-
-// type 'assembly' (-> predict_proteins)
-ch_assembly_input = Channel.empty()
-ch_microbiomes
-    .splitCsv(sep:'\t', skip: 1)
-    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
-            if (microbiome_type == 'assembly') [microbiome_id, microbiome_path, microbiome_type, weights_path]
-        }
-    .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
-            ids: microbiome_id
-            files: file(microbiome_path, checkIfExists: true)
+// ASSEMBLY
+ch_microbiomes_branch.assembly
+    .multiMap { row ->
+            ids: row.microbiome_id
+            files: row.microbiome_path
             bin_basenames: false
         }
     .set { ch_assembly_input }
 
-// type 'bins' (-> predict_proteins)
-def getBinBasenames(files) {
-    extensions = ['.fa', '.fa.gz', '.fasta', '.fasta.gz']
-    names = []
-    for( def file : files.listFiles() ) {
-        for (def ext : extensions) {
-            if (file.getName().endsWith(ext)) {
-                names += file.getName()[0..-(ext.length()+1)]
-                break
-            }
+// BINS
+ch_microbiomes_branch.bins
+    .branch {
+            row ->
+            folders : row.microbiome_path.isDirectory()
+            archives : row.microbiome_path.isFile()
+            other: true
         }
+    .set{ ch_microbiomes_bins }
+
+// The file ending we expect for FASTA files
+fasta_suffix = ~/(?i)[.]fa(sta)?(.gz)?$/
+
+// BINS - LOCAL FOLDERS
+ch_microbiomes_bins.folders
+    .multiMap { row ->
+        def bin_files = row.microbiome_path.listFiles().findAll{ it.name =~ fasta_suffix }
+        ids           : Collections.nCopies((int) bin_files.size(), row.microbiome_id)
+        files         : bin_files
+        bin_basenames : bin_files.collect{ it.name - fasta_suffix }
+    }.set { ch_microbiomes_bins_folders }
+
+// BINS - LOCAL OR REMOTE ARCHIVES
+ch_microbiomes_bins.archives
+    .multiMap { row ->
+        ids : row.microbiome_id
+        files: row.microbiome_path
     }
-    return names
+    .set{ch_microbiomes_archives}
+
+process unpack_bin_archives {
+    input:
+    val microbiome_id from ch_microbiomes_archives.ids
+    path microbiome_path from ch_microbiomes_archives.files
+
+    output:
+    tuple val(microbiome_id), file('unpacked/*') into ch_microbiomes_unpacked_archives
+
+    script:
+    """
+    mkdir -v unpacked
+    tar -C unpacked -vxf "$microbiome_path"
+    """
 }
 
-ch_bins_input = Channel.empty()
-ch_microbiomes
-    .splitCsv(sep:'\t', skip: 1)
-    .map { microbiome_id, microbiome_path, microbiome_type, weights_path ->
-            if (microbiome_type == 'bins') [microbiome_id, microbiome_path, microbiome_type, weights_path]
-        }
-    .multiMap { microbiome_id, microbiome_path, microbiome_type, weights_path ->
-            def bin_files = file(microbiome_path, checkIfExists: true) // TODO handle http files in dir!? archive?
-            ids: Collections.nCopies((int) bin_files.list().size(), microbiome_id)   // microbiome_id
-            files: bin_files.listFiles()
-            bin_basenames: getBinBasenames(bin_files)  // list of strings
-        }
-    .set { ch_bins_input }
+ch_microbiomes_bins_archives = Channel.empty()
+ch_microbiomes_unpacked_archives
+    .multiMap { microbiome_id, bin_files ->
+        bin_files = bin_files.findAll{ it.name =~ fasta_suffix }
+        ids           : Collections.nCopies((int) bin_files.size(), microbiome_id)
+        files         : bin_files
+        bin_basenames : bin_files.collect{ it.name - fasta_suffix }
+    }.set{ch_microbiomes_bins_archives}
+
+// Concatenate the channels for nucleotide based inputs
+ch_nucl_input_ids           = ch_assembly_input.ids.concat(ch_microbiomes_bins_archives.ids.flatten(), ch_microbiomes_bins_folders.ids.flatten())
+ch_nucl_input_files         = ch_assembly_input.files.concat(ch_microbiomes_bins_archives.files.flatten(), ch_microbiomes_bins_folders.files.flatten())
+ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_microbiomes_bins_archives.bin_basenames.flatten(), ch_microbiomes_bins_folders.bin_basenames.flatten())
 
 
-ch_nucl_input_ids = ch_assembly_input.ids.concat(ch_bins_input.ids.flatten())
-ch_nucl_input_files = ch_assembly_input.files.concat(ch_bins_input.files.flatten())
-ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_input.bin_basenames.flatten())
-
+// ####################################################################################################
 
 ch_weights = Channel.empty()
 ch_microbiomes
@@ -306,7 +340,6 @@ ch_microbiomes
             microbiome_ids: microbiome_id
             weights_paths: weights_path
         }.set { ch_weights }
-
 
 /*
  * Download proteins from entrez
@@ -396,8 +429,6 @@ process assign_nucl_entity_weights {
 
     output:
     path   "microbiomes_entities.nucl.tsv"    into   ch_nucl_microbiomes_entities  // entity_name, microbiome_id, entity_weight
-
-    // TODO handle no weights provided case
 
     script:
     microbiome_ids = microbiome_ids.join(' ')

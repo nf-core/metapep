@@ -26,8 +26,8 @@ import pandas as pd
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-m', "--microbiome-ids", metavar="ID", required=True, nargs="+", type=int, help="List of microbiome IDs")
-    parser.add_argument('-w', "--weights-files", metavar="PATH", required=True, nargs="+", type=str, help="List of corresponding weights files (entity_name, weight)")
+    parser.add_argument('-m', "--microbiome-ids", metavar="ID", nargs="*", type=int, help="List of microbiome IDs")
+    parser.add_argument('-w', "--weights-files", metavar="PATH", nargs="*", type=str, help="List of corresponding weights files (entity_name, weight)")
     parser.add_argument('-o', "--out", required=True, type=argparse.FileType('w'), help="Output TSV file (entity_name, microbiome_id, weight)")
     return parser.parse_args(args)
 
@@ -45,5 +45,12 @@ for mb_id, w_path in zip(args.microbiome_ids, args.weights_files):
     data['microbiome_id'] = mb_id
     dfs.append(data)
 
-pd.concat(dfs).to_csv(args.out, sep='\t', index=False, header=True)
+column_names = ["entity_name", "microbiome_id", "weight"]
+
+if dfs:
+    print(f"{args.microbiome_ids} input tables provided, writing concatenated table.", file = sys.stderr)
+    pd.concat(dfs)[column_names].to_csv(args.out, sep='\t', index=False, header=True)
+else:
+    print("No input files provided, writing empty table.", file = sys.stderr)
+    print('\t'.join(column_names), file = args.out)
 
