@@ -686,7 +686,7 @@ process plot_score_distribution {
     file conditions from ch_conditions
 
     output:
-    file "prediction_score_distribution.allele_*.pdf"
+    file "prediction_score_distribution.*.pdf"
 
     script:
     """
@@ -698,8 +698,7 @@ process plot_score_distribution {
                                    --alleles $alleles \
                                    --conditions $conditions \
                                    --allele_id \$allele_id \
-                                   --method ${params.pred_method} \
-                                   --output "prediction_score_distribution.allele_\$allele_id.pdf"
+                                   --method ${params.pred_method}
     """
 }
 
@@ -741,8 +740,7 @@ process plot_entity_binding_ratios {
     file alleles from ch_alleles
 
     output:
-    file "entity_binding_ratios.allele_*.pdf"
-    file "entity_binding_ratios.with_points.allele_*.pdf"
+    file "entity_binding_ratios.*.pdf"
 
     script:
     """

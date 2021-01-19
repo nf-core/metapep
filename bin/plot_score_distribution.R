@@ -22,22 +22,23 @@ library(ggplot2)
 library(data.table)
 library(dplyr)
 library(argparser, quietly=TRUE)
+library(stringr)
 
 
 parser <- arg_parser("Description")
-parser <- add_argument(parser, "--scores", nargs=1, help="Input file containing: prediction_score, microbiome_id, weight_sum.")
+parser <- add_argument(parser, "--scores", nargs=1, help="Input file containing: prediction_score, condition_name, weight_sum.")
 parser <- add_argument(parser, "--alleles", nargs=1, help="Input file containing: allele_id, allele_name.")
 parser <- add_argument(parser, "--conditions", nargs=1, help="Input file containing: microbiome_id, condition_id, condition_name.")
 parser <- add_argument(parser, "--allele_id", nargs=1, help="allele_id.")
 parser <- add_argument(parser, "--method", nargs=1, help="Epitope prediction method used.")
-parser <- add_argument(parser, "--output", nargs=1, help="Output file name.")
 args <- parse_args(parser)
 
 data <- fread(args$scores)
 alleles <- fread(args$alleles)
-conditions <- fread(args$conditions)    # TODO use condition name for plot
 
 allele_name <- alleles[alleles$allele_id == args$allele_id, ]$allele_name
+allele_str <- str_replace_all(allele_name, '\\*', '_')
+allele_str <- str_replace_all(allele_str, '\\:', '_')
 
 if (args$method == "syfpeithi"){
   score_threshold <- 0.50
@@ -45,11 +46,11 @@ if (args$method == "syfpeithi"){
   score_threshold <- 500
 }
 
-data$microbiome_id <- as.factor(data$microbiome_id)
+data$condition_name <- as.factor(data$condition_name)
 
-p <- ggplot(data, aes(x=microbiome_id, y=prediction_score, weight = weight_sum, fill=microbiome_id)) +
+p <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum, fill=condition_name)) +
     ylab("Epitope prediction score") +
-    xlab("Microbiome ID") +
+    xlab("Condition") +
     ggtitle(allele_name) +
     geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
     scale_fill_brewer(palette="Dark2") + 
@@ -57,4 +58,5 @@ p <- ggplot(data, aes(x=microbiome_id, y=prediction_score, weight = weight_sum, 
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
 
-ggsave(args$output, height=5, width=5)
+ggsave(paste0("prediction_score_distribution.", allele_str, ".pdf"), height=5, width=5)
+

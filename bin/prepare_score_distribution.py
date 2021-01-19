@@ -55,7 +55,7 @@ def main(args=None):
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
-    conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
+    conditions                = pd.read_csv(args.conditions, sep='\t')
     condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
 
@@ -80,19 +80,18 @@ def main(args=None):
                 .drop(columns="entity_id") \
                 .merge(conditions) \
                 .merge(condition_allele_map) \
-                .drop(columns=["allele_id", "condition_id"]) \
-                .groupby(["peptide_id", "prediction_score", "microbiome_id"])["entity_weight"] \
+                .drop(columns=["allele_id", "microbiome_id", "condition_id"]) \
+                .groupby(["peptide_id", "prediction_score", "condition_name"])["entity_weight"] \
                 .sum() \
                 .reset_index(name="weight_sum") \
                 .drop(columns="peptide_id")
         # TODO double check if weights are summed up correctly
 
         with open(os.path.join(args.outdir, "prediction_scores.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
-            data[["prediction_score", "microbiome_id", "weight_sum"]].to_csv(outfile, sep="\t", index=False, header=True)
+            data[["prediction_score", "condition_name", "weight_sum"]].to_csv(outfile, sep="\t", index=False, header=True)
 
-        microbiome_ids = data.microbiome_id.drop_duplicates()
-        for microbiome_id in microbiome_ids:
-            print("Wrote out ", len(data[data.microbiome_id == microbiome_id]), " prediction scores for microbiome_id ", microbiome_id, ".", flush=True)
+        for condition_name in data.condition_name.drop_duplicates():
+            print("Wrote out ", len(data[data.condition_name == condition_name]), " prediction scores for condition_name ", condition_name, ".", flush=True)
 
 
 if __name__ == "__main__":

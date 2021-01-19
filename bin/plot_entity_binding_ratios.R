@@ -22,6 +22,7 @@ library(ggplot2)
 library(data.table)
 library(dplyr)
 library(argparser, quietly=TRUE)
+library(stringr)
 
 
 parser <- arg_parser("Description")
@@ -33,6 +34,9 @@ args <- parse_args(parser)
 data <- fread(args$binding_rates)
 alleles <- fread(args$alleles)
 allele_name <- alleles[alleles$allele_id == args$allele_id, ]$allele_name
+allele_str <- str_replace_all(allele_name, '\\*', '_')
+allele_str <- str_replace_all(allele_str, '\\:', '_')
+
 
 data$condition_name <- as.factor(data$condition_name)
 p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
@@ -45,7 +49,7 @@ p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
 
-ggsave(paste0("entity_binding_ratios.with_points.allele_", args$allele_id, ".pdf"), height=5, width=5)
+ggsave(paste0("entity_binding_ratios.with_points.", allele_str, ".pdf"), height=5, width=5)
 
 
 p2 <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
@@ -57,7 +61,6 @@ p2 <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
 
-ggsave(paste0("entity_binding_ratios.allele_", args$allele_id, ".pdf"), height=5, width=5)
-
+ggsave(paste0("entity_binding_ratios.", allele_str, ".pdf"), height=5, width=5)
 
 # TODO use weights for violin plot
