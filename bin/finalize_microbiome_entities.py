@@ -47,9 +47,9 @@ def process_weights(subset):
     one microbiome. If all weights are present, do nothing. If no weights are
     present, assign uniform weights. Otherwise, raise an error."""
 
-    if subset['weight'].isnull().all():
-        subset['weight'] = 1
-    elif not subset['weight'].isnull().any():
+    if subset['entity_weight'].isnull().all():
+        subset['entity_weight'] = 1
+    elif not subset['entity_weight'].isnull().any():
         pass
     else:
         raise PartialWeightsError(subset['microbiome_id'].iloc[0])
@@ -80,7 +80,7 @@ result = entity_microbiome.merge(input_data, how="left").drop(columns="entity_na
 # no weights for a microbiome, we add uniform weights.
 try:
     result = result.groupby("microbiome_id")\
-            .apply(process_weights)\
+            .apply(process_weights)
     result.to_csv(args.output, sep='\t', index=False, header=True)
 except PartialWeightsError as e:
     sys.exit(f"Inconsist weight specifications. Weights were specified for only a subset of entities in microbiome with microbiome ID {e}.")
