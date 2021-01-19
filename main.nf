@@ -241,7 +241,7 @@ ch_microbiomes
     .set{ch_microbiomes_branch}
 
 // Emit warning about unknown data types
-ch_microbiomes_branch.other.map { row -> log.warn("Ignoring row in input sheet: Unknown type '${row.microbiome_type}'") }
+ch_microbiomes_branch.other.map { row -> log.info("WARNING - Ignoring row in input sheet: Unknown type '${row.microbiome_type}'") }
 
 // TAXA
 ch_microbiomes_branch.taxa
@@ -317,6 +317,7 @@ ch_microbiomes_bins_archives = Channel.empty()
 ch_microbiomes_unpacked_archives
     .multiMap { microbiome_id, bin_files ->
         bin_files = bin_files.findAll{ it.name =~ fasta_suffix }
+        if (bin_files.isEmpty()) log.info("WARNING - Archive provided for microbiome ID ${microbiome_id} did not yield any bin files")
         ids           : Collections.nCopies((int) bin_files.size(), microbiome_id)
         files         : bin_files
         bin_basenames : bin_files.collect{ it.name - fasta_suffix }
