@@ -511,7 +511,6 @@ process finalize_microbiome_entities {
         -ent "$entities" \
         -o microbiomes_entities.tsv
     """
-    // TODO add checking if for microbiome_id either no weight or weights for all entities are given
 }
 
 /*
