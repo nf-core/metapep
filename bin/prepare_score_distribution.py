@@ -85,7 +85,10 @@ def main(args=None):
                 .sum() \
                 .reset_index(name="weight_sum") \
                 .drop(columns="peptide_id")
-        # TODO double check if weights are summed up correctly
+        # NOTE
+        # for each peptide in a condition the weight is computed as follows:
+        # - the sum of all weights of the corresponding entity_weights, each weighted by the number of proteins in which the peptide occurs
+        # - multiple occurrences of the peptide within one protein are not counted
 
         with open(os.path.join(args.outdir, "prediction_scores.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
             data[["prediction_score", "condition_name", "weight_sum"]].to_csv(outfile, sep="\t", index=False, header=True)

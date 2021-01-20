@@ -104,6 +104,8 @@ def main(args=None):
                 .groupby(["entity_id", "condition_name", "entity_weight"])["binder"].sum().apply(get_binding_ratio, n=n) \
                 .reset_index(name="binding_rate") \
                 .drop(columns=["entity_id"])
+        # NOTE
+        # binding ratio: occurences within multiple proteins of an entity are counted, while occurences within the same protein are not counted
 
         with open(os.path.join(args.outdir, "entity_binding_ratios.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
             data[["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, header=True)
