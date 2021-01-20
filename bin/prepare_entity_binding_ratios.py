@@ -49,12 +49,9 @@ def parse_args(args=None):
 
 def call_binder(score, method):
     if method == "syfpeithi":
-        if score >= 0.50:
-            return True
+        return score >= 0.50:
     else:
-        if score <= 500:
-            return True
-    return False
+        return score <= 500:
 
 def get_binding_ratio(no_binder, n):
     return no_binder/float(n)
