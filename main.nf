@@ -282,7 +282,7 @@ ch_microbiomes_bins.folders
         ids           : Collections.nCopies((int) bin_files.size(), row.microbiome_id)
         files         : bin_files
         bin_basenames : bin_files.collect{ it.name - fasta_suffix }
-    }.set { ch_microbiomes_bins_folders }
+    }.set { ch_bins_folders_input }
 
 // BINS - LOCAL OR REMOTE ARCHIVES
 ch_microbiomes_bins.archives
@@ -290,18 +290,18 @@ ch_microbiomes_bins.archives
         ids : row.microbiome_id
         files: row.microbiome_path
     }
-    .set{ch_microbiomes_archives}
+    .set{ ch_microbiomes_bins_archives_packed }
 
 /*
  * Unpack archived assembly bins
  */
 process unpack_bin_archives {
     input:
-    val microbiome_id from ch_microbiomes_archives.ids
-    path microbiome_path from ch_microbiomes_archives.files
+    val microbiome_id from ch_microbiomes_bins_archives_packed.ids
+    path microbiome_path from ch_microbiomes_bins_archives_packed.files
 
     output:
-    tuple val(microbiome_id), file('unpacked/*') into ch_microbiomes_unpacked_archives
+    tuple val(microbiome_id), file('unpacked/*') into ch_microbiomes_bins_archives_unpacked
 
     script:
     """
@@ -310,20 +310,20 @@ process unpack_bin_archives {
     """
 }
 
-ch_microbiomes_bins_archives = Channel.empty()
-ch_microbiomes_unpacked_archives
+ch_bins_archives_input = Channel.empty()
+ch_microbiomes_bins_archives_unpacked
     .multiMap { microbiome_id, bin_files ->
         bin_files = bin_files.findAll{ it.name =~ fasta_suffix }
         if (bin_files.isEmpty()) log.warn("WARNING - Archive provided for microbiome ID ${microbiome_id} did not yield any bin files")
         ids           : Collections.nCopies((int) bin_files.size(), microbiome_id)
         files         : bin_files
         bin_basenames : bin_files.collect{ it.name - fasta_suffix }
-    }.set{ch_microbiomes_bins_archives}
+    }.set{ ch_bins_archives_input }
 
 // Concatenate the channels for nucleotide based inputs
-ch_nucl_input_ids           = ch_assembly_input.ids.concat(ch_microbiomes_bins_archives.ids.flatten(), ch_microbiomes_bins_folders.ids.flatten())
-ch_nucl_input_files         = ch_assembly_input.files.concat(ch_microbiomes_bins_archives.files.flatten(), ch_microbiomes_bins_folders.files.flatten())
-ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_microbiomes_bins_archives.bin_basenames.flatten(), ch_microbiomes_bins_folders.bin_basenames.flatten())
+ch_nucl_input_ids           = ch_assembly_input.ids.concat(ch_bins_archives_input.ids.flatten(), ch_bins_folders_input.ids.flatten())
+ch_nucl_input_files         = ch_assembly_input.files.concat(ch_bins_archives_input.files.flatten(), ch_bins_folders_input.files.flatten())
+ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_archives_input.bin_basenames.flatten(), ch_bins_folders_input.bin_basenames.flatten())
 
 
 // ####################################################################################################
