@@ -27,7 +27,7 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('-m', "--microbiome-ids", metavar="ID", nargs="*", type=int, help="List of microbiome IDs")
     parser.add_argument('-w', "--weights-files", metavar="PATH", nargs="*", type=str, help="List of corresponding weights files (entity_name, weight)")
-    parser.add_argument('-o', "--out", required=True, type=argparse.FileType('w'), help="Output TSV file (entity_name, microbiome_id, weight)")
+    parser.add_argument('-o', "--out", required=True, type=argparse.FileType('w'), help="Output TSV file (entity_name, microbiome_id, entity_weight)")
     return parser.parse_args(args)
 
 args = parse_args()

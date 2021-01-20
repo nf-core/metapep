@@ -34,11 +34,11 @@ def parse_args():
     """Parse the command line arguments"""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-eme",  "--entrez-microbiomes-entities",    required=True, metavar="PATH", type=str,                   nargs="?", help="Microbiomes entities map from Entrez (microbiome_id, entity_name, weight)")
-    parser.add_argument("-nme",  "--nucl-microbiomes-entities",      required=True, metavar="PATH", type=str,                   nargs="?", help="Microbiomes entities map from nucleotide methods (microbiome_id, entity_name, weight)")
+    parser.add_argument("-eme",  "--entrez-microbiomes-entities",    required=True, metavar="PATH", type=str,                   nargs="?", help="Microbiomes entities map from Entrez (microbiome_id, entity_name, entity_weight)")
+    parser.add_argument("-nme",  "--nucl-microbiomes-entities",      required=True, metavar="PATH", type=str,                   nargs="?", help="Microbiomes entities map from nucleotide methods (microbiome_id, entity_name, entity_weight)")
     parser.add_argument("-menw", "--microbiomes-entities-noweights", required=True, metavar="PATH", type=str,                              help="Preliminary microbiome entity map (microbiome_id, entity_id) w/o weights.")
     parser.add_argument("-ent",  "--entities",                       required=True, metavar="PATH", type=str,                              help="Entity map (entity_id, entity_name)")
-    parser.add_argument("-o",    "--output",                         required=True, metavar="PATH", type=argparse.FileType('w'),           help="Output file (microbiome_id, entity_id, weight)")
+    parser.add_argument("-o",    "--output",                         required=True, metavar="PATH", type=argparse.FileType('w'),           help="Output file (microbiome_id, entity_id, entity_weight)")
 
     return parser.parse_args()
 
