@@ -22,7 +22,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 - [#60](https://github.com/skrakau/metapep/pull/60) - Add entities to data model
 - [#60](https://github.com/skrakau/metapep/pull/60) - Add option for `bins` input type
 - [#60](https://github.com/skrakau/metapep/pull/60) - Add plotting of entity-wise binder ratios
-- [#64](https://github.com/skrakau/metapep/pull/64) - Add process to collect some stats (`results/db_tables/stats.txt`)
+- [#64](https://github.com/skrakau/metapep/pull/64) - Add process to collect stats (`results/db_tables/stats.txt`)
 
 ### `Fixed`
 
