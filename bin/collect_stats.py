@@ -56,14 +56,14 @@ def main(args=None):
 
     print("Joining input data...", flush=True)
 
-    results = conditions\
+    conditions_proteins = conditions\
             .merge(microbiomes_entities_occs)\
             .drop(columns="microbiome_id")\
             .merge(entities_proteins_occs)\
             .drop(columns="entity_id")
-    
+
     # condition_name, unique_proteins
-    unique_protein_counts = results[["condition_name", "protein_id"]]\
+    unique_protein_counts = conditions_proteins[["condition_name", "protein_id"]]\
             .drop_duplicates()\
             .groupby("condition_name")\
             .size()\
@@ -75,7 +75,7 @@ def main(args=None):
         print(row["condition_name"], row["unique_protein_count"], file = args.outfile, sep='\t', flush=True)
 
     # condition_name, peptide_id, condition_peptide_count
-    conditions_peptides = results\
+    conditions_peptides = conditions_proteins\
             .merge(protein_peptide_occs)\
             .drop(columns="protein_id")\
             .groupby(["condition_name", "peptide_id"])["count"]\
