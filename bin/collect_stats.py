@@ -82,7 +82,7 @@ def main(args=None):
             .sum()\
             .reset_index(name="condition_peptide_count")
 
-    # condition_name, unique_peptide_count
+    # condition_name, total_peptide_count
     total_peptide_counts = conditions_peptides\
             .groupby("condition_name")["condition_peptide_count"]\
             .sum()\
