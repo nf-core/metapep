@@ -204,17 +204,6 @@ workflow METAPEP {
 
     // ####################################################################################################
 
-    ch_weights = Channel.empty()
-    INPUT_CHECK.out.ch_microbiomes
-        .splitCsv(sep:'\t', header:true)
-        .map { row ->
-                def meta = [:]
-                meta.id = row.microbiome_id
-                if (row.microbiome_type != 'taxa' && row.weights_path) [meta, row.weights_path]
-            }
-        .set { ch_weights }
-        ch_weights.dump(tag:"weights")
-
     /*
     * Download proteins from entrez
     */
@@ -235,11 +224,11 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
 
-    ASSIGN_NUCL_ENTITY_WEIGHTS (
-        ch_weights.map { meta, file -> meta.id }.collect().ifEmpty([]),
-        ch_weights.map { meta, file -> file }.collect().ifEmpty([])
-    )
-    ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
+    // ASSIGN_NUCL_ENTITY_WEIGHTS (
+    //     ch_weights.map { meta, file -> meta.id }.collect().ifEmpty([]),
+    //     ch_weights.map { meta, file -> file }.collect().ifEmpty([])
+    // )
+    // ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
 
     /*
      * concat files and assign new, unique ids for all proteins (from different sources)
@@ -258,13 +247,13 @@ workflow METAPEP {
     /*
      * Create microbiome_entities
      */
-    FINALIZE_MICROBIOME_ENTITIES (
-        DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
-        ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
-        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
-        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities
-    )
-    ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
+    // FINALIZE_MICROBIOME_ENTITIES (
+    //     DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
+    //     ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
+    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
+    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities
+    // )
+    // ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
 
     /*
     * Generate peptides
@@ -296,7 +285,7 @@ workflow METAPEP {
     GENERATE_PEPTIDES.out.ch_peptides,
     GENERATE_PEPTIDES.out.ch_proteins_peptides,
     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+    GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
     INPUT_CHECK.out.ch_conditions,
     INPUT_CHECK.out.ch_conditions_alleles,
     INPUT_CHECK.out.ch_alleles
@@ -332,43 +321,43 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
 
-    /*
-    * Generate figures
-    */
-    PREPARE_SCORE_DISTRIBUTION (
-        MERGE_PREDICTIONS.out.ch_predictions,
-        GENERATE_PEPTIDES.out.ch_proteins_peptides,
-        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-        INPUT_CHECK.out.ch_conditions,
-        INPUT_CHECK.out.ch_conditions_alleles,
-        INPUT_CHECK.out.ch_alleles
-    )
-    ch_versions = ch_versions.mix(PREPARE_SCORE_DISTRIBUTION.out.versions)
+    // /*
+    // * Generate figures
+    // */
+    // PREPARE_SCORE_DISTRIBUTION (
+    //     MERGE_PREDICTIONS.out.ch_predictions,
+    //     GENERATE_PEPTIDES.out.ch_proteins_peptides,
+    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+    //     FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+    //     INPUT_CHECK.out.ch_conditions,
+    //     INPUT_CHECK.out.ch_conditions_alleles,
+    //     INPUT_CHECK.out.ch_alleles
+    // )
+    // ch_versions = ch_versions.mix(PREPARE_SCORE_DISTRIBUTION.out.versions)
 
-    PLOT_SCORE_DISTRIBUTION (
-        PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
-        INPUT_CHECK.out.ch_alleles,
-        INPUT_CHECK.out.ch_conditions
-    )
-    ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
+    // PLOT_SCORE_DISTRIBUTION (
+    //     PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
+    //     INPUT_CHECK.out.ch_alleles,
+    //     INPUT_CHECK.out.ch_conditions
+    // )
+    // ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
 
-    PREPARE_ENTITY_BINDING_RATIOS (
-        MERGE_PREDICTIONS.out.ch_predictions,
-        GENERATE_PEPTIDES.out.ch_proteins_peptides,
-        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-        INPUT_CHECK.out.ch_conditions,
-        INPUT_CHECK.out.ch_conditions_alleles,
-        INPUT_CHECK.out.ch_alleles
-    )
-    ch_versions = ch_versions.mix(PREPARE_ENTITY_BINDING_RATIOS.out.versions)
+    // PREPARE_ENTITY_BINDING_RATIOS (
+    //     MERGE_PREDICTIONS.out.ch_predictions,
+    //     GENERATE_PEPTIDES.out.ch_proteins_peptides,
+    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+    //     FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+    //     INPUT_CHECK.out.ch_conditions,
+    //     INPUT_CHECK.out.ch_conditions_alleles,
+    //     INPUT_CHECK.out.ch_alleles
+    // )
+    // ch_versions = ch_versions.mix(PREPARE_ENTITY_BINDING_RATIOS.out.versions)
 
-    PLOT_ENTITY_BINDING_RATIOS (
-        PREPARE_ENTITY_BINDING_RATIOS.out.ch_prep_entity_binding_ratios.flatten(),
-        INPUT_CHECK.out.ch_alleles
-    )
-    ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
+    // PLOT_ENTITY_BINDING_RATIOS (
+    //     PREPARE_ENTITY_BINDING_RATIOS.out.ch_prep_entity_binding_ratios.flatten(),
+    //     INPUT_CHECK.out.ch_alleles
+    // )
+    // ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

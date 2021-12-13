@@ -76,7 +76,7 @@ try:
     peptides                  = pd.read_csv(args.peptides, sep='\t')
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t').drop(columns="entity_weight")
+    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
     conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
     condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
