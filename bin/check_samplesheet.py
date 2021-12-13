@@ -5,6 +5,7 @@ import sys
 import errno
 import argparse
 import pandas as pd
+import numpy as np
 
 
 def parse_args(args=None):
@@ -13,10 +14,12 @@ def parse_args(args=None):
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument('-i', "--input", required=True, metavar='FILE', type=argparse.FileType('r'), help="Input samplesheet file containing: condition, type, microbiome_path, alleles, weights_path.")
-    parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type, weights_path.")
+    parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type.")
     parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name, microbiome_id.")
     parser.add_argument('-a', "--alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: allele_id, allele_name.")
+    parser.add_argument('-w', "--weights", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: weights_id, weights_path.")
     parser.add_argument('-ca', "--conditions_alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, allele_id.")
+    parser.add_argument('-cw', "--conditions_weights", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, weights_id.")
     return parser.parse_args(args)
 
 
@@ -83,31 +86,37 @@ def check_samplesheet(args):
             sys.exit("In " + args.input.name + " specified 'weights_path' " + weights_path + " has invalid file extension. The extension must be '.tsv'.")
 
     # microbiome_id - microbiome_path - microbiome_type
-    microbiomes = input_table[["microbiome_path", "type", "weights_path"]].drop_duplicates().rename({"type":"microbiome_type"}, axis=1)
-    microbiomes["microbiome_id"] = range(len(microbiomes))
+    microbiome_group = input_table.groupby(["microbiome_path", "type"], sort=False)
 
-    if len(microbiomes) != len(microbiomes["microbiome_path"].drop_duplicates()):
-        sys.exit("Conflicting types or weights were specified for the same microbiome path!")
+    if microbiome_group.ngroups != len(input_table["microbiome_path"].drop_duplicates()):
+        sys.exit("Conflicting types were specified for the same microbiome path!")
 
-    microbiomes[["microbiome_id", "microbiome_path", "microbiome_type", "weights_path"]].to_csv(args.microbiomes, sep="\t", index=False)
+    input_table["microbiome_id"] = microbiome_group.ngroup()
+    microbiome_group.agg('first').reset_index().rename({"type":"microbiome_type"}, axis=1)[["microbiome_id", "microbiome_path", "microbiome_type"]].to_csv(args.microbiomes, sep="\t", index=False)
 
     # condition id - condition name - microbiome id
-    conditions = input_table.merge(microbiomes)[["condition", "microbiome_id"]].rename({"condition":"condition_name"}, axis=1)    # conditions unique (checked in nextflow)
-    conditions["condition_id"] = range(len(conditions))
-
-    conditions[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, sep="\t", index=False)
+    input_table = input_table.reset_index().rename({'index':'condition_id', 'condition':'condition_name'}, axis=1)
+    input_table[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, sep="\t", index=False)
 
     # allele id - allele name
-    unique_alleles = { allele for allele_list in input_table["alleles"] for allele in allele_list.split(' ') }
-
-    alleles = pd.DataFrame({"allele_name":list(unique_alleles)})
-    alleles["allele_id"] = range(len(alleles))
-    alleles[["allele_id", "allele_name"]].to_csv(args.alleles, sep="\t", index=False)
+    input_table["alleles"] = input_table.apply(lambda row: list(row.alleles.split(' ')), axis=1)
+    alleles_exploded = input_table[["condition_id", "alleles"]].explode("alleles")
+    allele_group = alleles_exploded.groupby(["alleles"], sort=False)
+    alleles_exploded["allele_id"] = allele_group.ngroup()
+    allele_group.agg('first').reset_index().rename({"alleles":"allele_name"}, axis=1)[["allele_id", "allele_name"]].to_csv(args.alleles, sep="\t", index=False)
 
     # condition id - allele id
-    conditions_alleles = pd.DataFrame([ (row["condition"], allele_name) for _, row in input_table.iterrows() for allele_name in row["alleles"].split(' ') ], columns = ["condition_name", "allele_name"])
-    conditions_alleles = conditions_alleles.merge(conditions).merge(alleles)[["condition_id", "allele_id"]]
-    conditions_alleles.to_csv(args.conditions_alleles, sep="\t", index=False)
+    alleles_exploded[["condition_id", "allele_id"]].to_csv(args.conditions_alleles, sep="\t", index=False)
+
+    # weights id - weights path
+    weights_group = input_table.groupby(["weights_path"], sort=False)
+    
+    input_table["weights_id"] = weights_group.ngroup() if weights_group.ngroups > 0 else np.nan
+        
+    weights_group.agg('first').reset_index()[["weights_id", "weights_path"]].to_csv(args.weights, sep="\t", index=False)
+
+    # condition id - weights id
+    input_table[["condition_id", "weights_id"]].to_csv(args.conditions_weights, sep="\t", index=False)
 
     print("Done!")
 
