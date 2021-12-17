@@ -7,10 +7,11 @@ process FINALIZE_MICROBIOME_ENTITIES {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path(entrez_microbiomes_entities)
-    path(nucl_microbiomes_entities)
-    path(microbiomes_entities_noweights)
-    path(entities)
+    path    entrez_microbiomes_entities
+    path    nucl_microbiomes_entities
+    path    microbiomes_entities_noweights
+    path    entities
+    path    conditions
 
     output:
     path    "microbiomes_entities.tsv"  , emit: ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
@@ -24,6 +25,7 @@ process FINALIZE_MICROBIOME_ENTITIES {
         -nme $nucl_microbiomes_entities \\
         -menw $microbiomes_entities_noweights \\
         -ent "$entities" \\
+        -cond "$conditions" \\
         -o microbiomes_entities.tsv
 
     cat <<-END_VERSIONS > versions.yml
