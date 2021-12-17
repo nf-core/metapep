@@ -326,18 +326,16 @@ workflow METAPEP {
     /*
     * Collect some numbers: proteins, peptides, unique peptides per conditon
     */
-    // if (!params.skip_stats){
-    //     COLLECT_STATS (
-    //         GENERATE_PEPTIDES.out.ch_peptides,
-    //         GENERATE_PEPTIDES.out.ch_proteins_peptides,
-    //         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    //         FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-    //         INPUT_CHECK.out.ch_conditions
-    //     )
-    //     ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
-    // }
-
-
+    if (!params.skip_stats){
+        COLLECT_STATS (
+            GENERATE_PEPTIDES.out.ch_peptides,
+            GENERATE_PEPTIDES.out.ch_proteins_peptides,
+            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
+            INPUT_CHECK.out.ch_conditions
+        )
+        ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
+    }
 
     // /*
     // * Generate figures

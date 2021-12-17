@@ -24,7 +24,7 @@ process COLLECT_STATS {
     collect_stats.py --peptides "$peptides" \\
                     --protein-peptide-occ "$proteins_peptides" \\
                     --entities-proteins-occ "$entities_proteins" \\
-                    --microbiomes-entities-occ "$microbiomes_entities" \\
+                    --microbiomes-entities-no-weights-occ "$microbiomes_entities" \\
                     --conditions "$conditions" \\
                     --outfile stats.txt
 
