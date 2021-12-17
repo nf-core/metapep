@@ -224,12 +224,6 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
 
-    // ASSIGN_NUCL_ENTITY_WEIGHTS (
-    //     ch_weights.map { meta, file -> meta.id }.collect().ifEmpty([]),
-    //     ch_weights.map { meta, file -> file }.collect().ifEmpty([])
-    // )
-    // ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
-
     /*
      * concat files and assign new, unique ids for all proteins (from different sources)
      */
@@ -245,37 +239,12 @@ workflow METAPEP {
     ch_versions = ch_versions.mix(GENERATE_PROTEIN_AND_ENTITY_IDS.out.versions)
 
     /*
-     * Create microbiome_entities
-     */
-    // FINALIZE_MICROBIOME_ENTITIES (
-    //     DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
-    //     ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities
-    // )
-    // ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
-
-    /*
     * Generate peptides
     */
     GENERATE_PEPTIDES (
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_proteins
     )
     ch_versions = ch_versions.mix(GENERATE_PEPTIDES.out.versions)
-
-    /*
-    * Collect some numbers: proteins, peptides, unique peptides per conditon
-    */
-    if (!params.skip_stats){
-        COLLECT_STATS (
-            GENERATE_PEPTIDES.out.ch_peptides,
-            GENERATE_PEPTIDES.out.ch_proteins_peptides,
-            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-            FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-            INPUT_CHECK.out.ch_conditions
-        )
-        ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
-    }
 
     /*
     * Split prediction tasks (peptide, allele) into chunks of peptides that are to
@@ -320,6 +289,40 @@ workflow METAPEP {
         MERGE_PREDICTIONS_BUFFER.out.ch_prediction_warnings_merged_buffer.collect()
     )
     ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
+
+    ASSIGN_NUCL_ENTITY_WEIGHTS (
+        INPUT_CHECK.out.ch_weights,
+        INPUT_CHECK.out.ch_conditions_weights
+    )
+    ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
+
+    /*
+     * Create microbiome_entities
+     */
+    FINALIZE_MICROBIOME_ENTITIES (
+        DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
+        ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities,
+        INPUT_CHECK.out.ch_conditions
+    )
+    ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
+
+    /*
+    * Collect some numbers: proteins, peptides, unique peptides per conditon
+    */
+    // if (!params.skip_stats){
+    //     COLLECT_STATS (
+    //         GENERATE_PEPTIDES.out.ch_peptides,
+    //         GENERATE_PEPTIDES.out.ch_proteins_peptides,
+    //         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+    //         FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+    //         INPUT_CHECK.out.ch_conditions
+    //     )
+    //     ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
+    // }
+
+
 
     // /*
     // * Generate figures
