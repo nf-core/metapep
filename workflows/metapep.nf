@@ -322,43 +322,43 @@ workflow METAPEP {
         ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
     }
 
-    // /*
-    // * Generate figures
-    // */
-    // PREPARE_SCORE_DISTRIBUTION (
-    //     MERGE_PREDICTIONS.out.ch_predictions,
-    //     GENERATE_PEPTIDES.out.ch_proteins_peptides,
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    //     FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-    //     INPUT_CHECK.out.ch_conditions,
-    //     INPUT_CHECK.out.ch_conditions_alleles,
-    //     INPUT_CHECK.out.ch_alleles
-    // )
-    // ch_versions = ch_versions.mix(PREPARE_SCORE_DISTRIBUTION.out.versions)
+    /*
+    * Generate figures
+    */
+    PREPARE_SCORE_DISTRIBUTION (
+        MERGE_PREDICTIONS.out.ch_predictions,
+        GENERATE_PEPTIDES.out.ch_proteins_peptides,
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+        INPUT_CHECK.out.ch_conditions,
+        INPUT_CHECK.out.ch_conditions_alleles,
+        INPUT_CHECK.out.ch_alleles
+    )
+    ch_versions = ch_versions.mix(PREPARE_SCORE_DISTRIBUTION.out.versions)
 
-    // PLOT_SCORE_DISTRIBUTION (
-    //     PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
-    //     INPUT_CHECK.out.ch_alleles,
-    //     INPUT_CHECK.out.ch_conditions
-    // )
-    // ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
+    PLOT_SCORE_DISTRIBUTION (
+        PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
+        INPUT_CHECK.out.ch_alleles,
+        INPUT_CHECK.out.ch_conditions
+    )
+    ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
 
-    // PREPARE_ENTITY_BINDING_RATIOS (
-    //     MERGE_PREDICTIONS.out.ch_predictions,
-    //     GENERATE_PEPTIDES.out.ch_proteins_peptides,
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    //     FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-    //     INPUT_CHECK.out.ch_conditions,
-    //     INPUT_CHECK.out.ch_conditions_alleles,
-    //     INPUT_CHECK.out.ch_alleles
-    // )
-    // ch_versions = ch_versions.mix(PREPARE_ENTITY_BINDING_RATIOS.out.versions)
+    PREPARE_ENTITY_BINDING_RATIOS (
+        MERGE_PREDICTIONS.out.ch_predictions,
+        GENERATE_PEPTIDES.out.ch_proteins_peptides,
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+        INPUT_CHECK.out.ch_conditions,
+        INPUT_CHECK.out.ch_conditions_alleles,
+        INPUT_CHECK.out.ch_alleles
+    )
+    ch_versions = ch_versions.mix(PREPARE_ENTITY_BINDING_RATIOS.out.versions)
 
-    // PLOT_ENTITY_BINDING_RATIOS (
-    //     PREPARE_ENTITY_BINDING_RATIOS.out.ch_prep_entity_binding_ratios.flatten(),
-    //     INPUT_CHECK.out.ch_alleles
-    // )
-    // ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
+    PLOT_ENTITY_BINDING_RATIOS (
+        PREPARE_ENTITY_BINDING_RATIOS.out.ch_prep_entity_binding_ratios.flatten(),
+        INPUT_CHECK.out.ch_alleles
+    )
+    ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
