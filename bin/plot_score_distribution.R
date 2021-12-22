@@ -41,9 +41,9 @@ allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 
 if (args$method == "syfpeithi"){
-  score_threshold <- 0.50
+    score_threshold <- 0.50
 } else {
-  score_threshold <- 500
+    score_threshold <- 500
 }
 
 data$condition_name <- as.factor(data$condition_name)
@@ -53,7 +53,7 @@ p <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum,
     xlab("Condition") +
     ggtitle(allele_name) +
     geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
-    scale_fill_brewer(palette="Dark2") + 
+    scale_fill_brewer(palette="Dark2") +
     geom_hline(yintercept=score_threshold) +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))

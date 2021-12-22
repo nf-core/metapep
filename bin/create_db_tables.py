@@ -41,7 +41,7 @@ def main(args=None):
 
     input_table = pd.read_csv(args.input, sep='\t')
 
-   # check if microbiome_path file extensions are valid
+    # check if microbiome_path file extensions are valid
     for type, fname in zip(input_table["type"], input_table["microbiome_path"]):
         if type == "proteins":
             sys.exit("Invalid type '" + type + "' specified in " + args.input.name + ". Type 'proteins' is not yet supported! Valid types are 'taxa', 'bins' and 'assembly'.")
