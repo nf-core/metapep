@@ -204,18 +204,13 @@ def main(args=None):
             sys.exit("Entrez elink download failed!")
 
     ### for each nucleotide sequence get list of protein ids
-    dict_proteinId_assemblyIds = {}
+    dict_proteinId_assemblyIds = defaultdict(lambda : set())
     for nucleotide_record in protein_results:
         seqId = nucleotide_record["IdList"][0]
         assemblyIds = dict_seqId_assemblyIds[seqId]
         if len(nucleotide_record["LinkSetDb"]) > 0:
             for protein_record in nucleotide_record["LinkSetDb"][0]["Link"]:
-                if protein_record["Id"] not in dict_proteinId_assemblyIds:
-                    dict_proteinId_assemblyIds[protein_record["Id"]] = assemblyIds
-                else:
-                    for i in assemblyIds:
-                        if i not in dict_proteinId_assemblyIds[protein_record["Id"]]:
-                            dict_proteinId_assemblyIds[protein_record["Id"]].append(i)
+                dict_proteinId_assemblyIds[protein_record["Id"]].update(assemblyIds)
 
     # NOTE:
     # some proteins, such as 487413233, occur within multiple sequences of the assembly!
