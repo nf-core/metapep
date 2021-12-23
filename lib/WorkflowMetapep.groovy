@@ -9,23 +9,6 @@ class WorkflowMetapep {
     //
     public static void initialise(params, log) {
         genomeExistsError(params, log)
-
-        // switch (params.pred_method) {
-        // case "syfpeithi":
-        //     pred_method_version = "1.0";
-        //     break;
-        // case "mhcflurry":
-        //     pred_method_version = "1.4.3";
-        //     break;
-        // case "mhcnuggets-class-1":
-        //     pred_method_version = "2.3.2";
-        //     break;
-        // case "mhcnuggets-class-2":
-        //     pred_method_version = "2.3.2";
-        //     break;
-        // default:
-        //     exit 1, "Epitope prediction method specified with --pred_method not recognized."
-        // }
     }
 
     //

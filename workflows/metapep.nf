@@ -69,7 +69,7 @@ workflow METAPEP {
     INPUT_CHECK (
         ch_input
     )
-    // ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
+    ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
     //
     // MODULE: Run FastQC
