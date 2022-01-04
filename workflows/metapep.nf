@@ -32,7 +32,8 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ========================================================================================
 */
 
-include { UNPACK_BIN_ARCHIVES } from '../modules/local/unpack_bin_archives'
+include { UNPACK_BIN_ARCHIVES   } from '../modules/local/unpack_bin_archives'
+include { DOWNLOAD_PROTEINS     } from '../modules/local/download_proteins'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -185,6 +186,15 @@ workflow METAPEP {
                 weights_paths: weights_path
         }
         .set { ch_weights }
+
+    /*
+    * Download proteins from entrez
+    */
+    DOWNLOAD_PROTEINS (
+        ch_taxa_input.ids.collect(),
+        ch_taxa_input.files.collect()
+    )
+    ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

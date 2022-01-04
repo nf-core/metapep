@@ -91,7 +91,7 @@ def main(args=None):
     taxIds = []
     print("entity_name", "microbiome_id", "entity_weight", sep='\t', file=args.microbiomes_entities)
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
-        reader = csv.DictReader(taxid_input, delimiter='\t')
+        reader = csv.DictReader(taxid_input)
         for row in reader:
             taxIds.append(row['taxon_id'])
             try:
