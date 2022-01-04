@@ -32,6 +32,8 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ========================================================================================
 */
 
+include { UNPACK_BIN_ARCHIVES } from '../modules/local/unpack_bin_archives'
+
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
@@ -71,18 +73,124 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    //
-    // MODULE: Run FastQC
-    //
-    // FASTQC (
-    //     INPUT_CHECK.out.reads
-    // )
-    // ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    INPUT_CHECK.out.ch_microbiomes
+    // Read microbiomes table
+    .splitCsv(header:true)
+    // Convert paths to files
+    .map {
+        row ->
+        row.microbiome_path = file(row.microbiome_path, checkIfExists: true)
+        row
+    }
+    // Split into types
+    .branch {
+        row->
+        taxa:      row.microbiome_type == 'taxa'
+        proteins : row.microbiome_type == 'proteins'
+        assembly:  row.microbiome_type == 'assembly'
+        bins:      row.microbiome_type == 'bins'
+    }
+    .set{ ch_microbiomes_branch }
+
+    // TAXA
+    ch_microbiomes_branch.taxa
+        .multiMap { row ->
+                ids: row.microbiome_id
+                files: row.microbiome_path
+            }
+        .set { ch_taxa_input }
+
+    // PROTEINS
+    ch_microbiomes_branch.proteins
+        .multiMap { row ->
+                ids: row.microbiome_id
+                files: row.microbiome_path
+            }
+        .set { ch_proteins_input }
+
+    // ASSEMBLY
+    ch_microbiomes_branch.assembly
+        .multiMap { row ->
+                ids: row.microbiome_id
+                files: row.microbiome_path
+                bin_basenames: false
+            }
+        .set { ch_assembly_input }
+
+    // BINS
+    ch_microbiomes_branch.bins
+        .branch {
+                row ->
+                folders : row.microbiome_path.isDirectory()
+                archives : row.microbiome_path.isFile()
+                other: true
+            }
+        .set{ ch_microbiomes_bins }
+
+    // The file ending we expect for FASTA files
+    fasta_suffix = ~/(?i)[.]fa(sta)?(.gz)?$/
+
+    // BINS - LOCAL FOLDERS
+    ch_microbiomes_bins.folders
+        .multiMap { row ->
+            def bin_files = row.microbiome_path.listFiles().findAll{ it.name =~ fasta_suffix }
+            ids           : Collections.nCopies((int) bin_files.size(), row.microbiome_id)
+            files         : bin_files
+            bin_basenames : bin_files.collect{ it.name - fasta_suffix }
+        }.set { ch_bins_folders_input }
+
+    // BINS - LOCAL OR REMOTE ARCHIVES
+    ch_microbiomes_bins.archives
+        .multiMap { row ->
+            ids : row.microbiome_id
+            files: row.microbiome_path
+        }
+        .set{ ch_microbiomes_bins_archives_packed }
+    
+    /*
+    * Unpack archived assembly bins
+    */
+    UNPACK_BIN_ARCHIVES(
+        ch_microbiomes_bins_archives_packed.ids,
+        ch_microbiomes_bins_archives_packed.files
+    )
+    ch_versions = ch_versions.mix(UNPACK_BIN_ARCHIVES.out.versions)
+
+    ch_bins_archives_input = Channel.empty()
+    UNPACK_BIN_ARCHIVES.out.ch_microbiomes_bins_archives_unpacked
+        .multiMap { microbiome_id, bin_files ->
+            bin_files = bin_files.findAll{ it.name =~ fasta_suffix }
+            if (bin_files.isEmpty()) log.warn("WARNING - Archive provided for microbiome ID ${microbiome_id} did not yield any bin files")
+            ids           : Collections.nCopies((int) bin_files.size(), microbiome_id)
+            files         : bin_files
+            bin_basenames : bin_files.collect{ it.name - fasta_suffix }
+        }
+        .set{ ch_bins_archives_input }
+
+    // Concatenate the channels for nucleotide based inputs
+    ch_nucl_input_ids           = ch_assembly_input.ids.concat(ch_bins_archives_input.ids.flatten(), ch_bins_folders_input.ids.flatten())
+    ch_nucl_input_files         = ch_assembly_input.files.concat(ch_bins_archives_input.files.flatten(), ch_bins_folders_input.files.flatten())
+    ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_archives_input.bin_basenames.flatten(), ch_bins_folders_input.bin_basenames.flatten())
+
+    // ####################################################################################################
+
+    ch_weights = Channel.empty()
+    INPUT_CHECK.out.ch_microbiomes
+        .splitCsv(header:true)
+        .map { row ->
+                if (row.microbiome_type != 'taxa' && row.weights_path) [row.microbiome_id, row.weights_path]
+            }
+        .multiMap { microbiome_id, weights_path ->
+                microbiome_ids: microbiome_id
+                weights_paths: weights_path
+        }
+        .set { ch_weights }
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
 
+    
     //
     // MODULE: MultiQC
     //
