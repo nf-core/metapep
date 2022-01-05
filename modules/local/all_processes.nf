@@ -1,42 +1,4 @@
 /*
- * Predict proteins from contigs
- */
-process predict_proteins {
-    publishDir "${params.outdir}/prodigal", mode: params.publish_dir_mode,
-        saveAs: {filename ->
-                    if (filename.indexOf(".fasta") == -1) "$filename"
-                    else null
-        }
-
-    input:
-    val microbiome_id from ch_nucl_input_ids
-    val bin_basename from ch_nucl_input_bin_basenames
-    file microbiome_file from ch_nucl_input_files
-
-    output:
-    val microbiome_id into ch_pred_proteins_microbiome_ids                  // Emit microbiome ID
-    val bin_basename into ch_pred_proteins_bin_basename
-    file("proteins.pred_${microbiome_id}*.tsv.gz") into ch_pred_proteins     // Emit protein tsv
-    file "coords.pred_${microbiome_id}*.gff"
-
-    script:
-    def mode   = params.prodigal_mode
-    def name   = bin_basename ? "${microbiome_id}.${bin_basename}" : "${microbiome_id}"
-    def reader = microbiome_file.name =~ ~/(?i)[.]gz$/ ? "gunzip -c" : "cat"
-    """
-    $reader $microbiome_file | prodigal \
-                -f gff \
-                -o coords.pred_${name}.gff \
-                -a proteins.pred_${name}.fasta \
-                -p $mode
-
-    echo -e "protein_tmp_id\tprotein_sequence" > proteins.pred_${name}.tsv
-    fasta_to_tsv.py --remove-asterisk --input proteins.pred_${name}.fasta >> proteins.pred_${name}.tsv
-    gzip proteins.pred_${name}.tsv
-    """
-}
-
-/*
  * Assign entity weights for input type 'assembly' and 'bins'
  */
 process assign_nucl_entity_weights {

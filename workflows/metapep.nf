@@ -34,6 +34,7 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 
 include { UNPACK_BIN_ARCHIVES   } from '../modules/local/unpack_bin_archives'
 include { DOWNLOAD_PROTEINS     } from '../modules/local/download_proteins'
+include { CREATE_PROTEIN_TSV    } from '../modules/local/create_protein_tsv'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -49,6 +50,8 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
+include { GUNZIP                      } from '../modules/nf-core/modules/gunzip/main'
+include { PRODIGAL                    } from '../modules/nf-core/modules/prodigal/main'
 include { FASTQC                      } from '../modules/nf-core/modules/fastqc/main'
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
@@ -210,6 +213,31 @@ workflow METAPEP {
         ch_taxa_input.map { meta, file -> file }.collect().dump(tag:"taxa")
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
+
+    ch_nucl_input
+        .branch{ meta, file -> 
+            zipped: file.name =~ ~/(?i)[.]gz$/ 
+            unzipped: true
+        }
+        .set {ch_nucl_unzip}
+
+    GUNZIP(
+        ch_nucl_unzip.zipped
+    )
+    ch_versions = ch_versions.mix(GUNZIP.out.versions)
+
+    ch_nucl_input_unzipped = GUNZIP.out.gunzip.concat(ch_nucl_unzip.unzipped)
+
+    PRODIGAL(
+        ch_nucl_input_unzipped,
+        "gff"
+    )
+    ch_versions = ch_versions.mix(PRODIGAL.out.versions)
+
+    CREATE_PROTEIN_TSV (
+        PRODIGAL.out.amino_acid_fasta
+    )
+    ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
