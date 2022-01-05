@@ -95,28 +95,34 @@ workflow METAPEP {
 
     // TAXA
     ch_microbiomes_branch.taxa
-        .multiMap { row ->
-                ids: row.microbiome_id
-                files: row.microbiome_path
+        .map { row ->
+                def meta = [:]
+                meta.id = row.microbiome_id
+                return [ meta, row.microbiome_path ]
             }
         .set { ch_taxa_input }
+    ch_taxa_input.dump(tag:"taxa")
 
     // PROTEINS
     ch_microbiomes_branch.proteins
-        .multiMap { row ->
-                ids: row.microbiome_id
-                files: row.microbiome_path
+        .map { row ->
+                def meta = [:]
+                meta.id = row.microbiome_id
+                return [ meta, row.microbiome_path ]
             }
         .set { ch_proteins_input }
+    ch_proteins_input.dump(tag:"proteins")
 
     // ASSEMBLY
     ch_microbiomes_branch.assembly
-        .multiMap { row ->
-                ids: row.microbiome_id
-                files: row.microbiome_path
-                bin_basenames: false
+        .map { row ->
+                def meta = [:]
+                meta.id = row.microbiome_id
+                meta.bin_basename = false
+                return [ meta, row.microbiome_path ]
             }
         .set { ch_assembly_input }
+    ch_assembly_input.dump(tag:"assembly")
 
     // BINS
     ch_microbiomes_branch.bins
@@ -133,45 +139,55 @@ workflow METAPEP {
 
     // BINS - LOCAL FOLDERS
     ch_microbiomes_bins.folders
-        .multiMap { row ->
-            def bin_files = row.microbiome_path.listFiles().findAll{ it.name =~ fasta_suffix }
-            ids           : Collections.nCopies((int) bin_files.size(), row.microbiome_id)
-            files         : bin_files
-            bin_basenames : bin_files.collect{ it.name - fasta_suffix }
-        }.set { ch_bins_folders_input }
+        .flatMap { row ->
+                def bin_files = row.microbiome_path.listFiles().findAll{ it.name =~ fasta_suffix }
+                return bin_files.collect {
+                    def meta = [:]
+                    meta.id = row.microbiome_id
+                    meta.bin_basename = it.name - fasta_suffix 
+                    return [ meta, it ]
+                }
+            }
+        .set { ch_bins_folders_input }
+        ch_bins_folders_input.dump(tag:"bins_folders")
 
     // BINS - LOCAL OR REMOTE ARCHIVES
     ch_microbiomes_bins.archives
-        .multiMap { row ->
-            ids : row.microbiome_id
-            files: row.microbiome_path
-        }
+        .map { row ->
+                def meta = [:]
+                meta.id = row.microbiome_id
+                return [ meta, row.microbiome_path ]
+            }
         .set{ ch_microbiomes_bins_archives_packed }
+        ch_microbiomes_bins_archives_packed.dump(tag:"bins_archives")
     
     /*
     * Unpack archived assembly bins
     */
     UNPACK_BIN_ARCHIVES(
-        ch_microbiomes_bins_archives_packed.ids,
-        ch_microbiomes_bins_archives_packed.files
+        ch_microbiomes_bins_archives_packed
     )
     ch_versions = ch_versions.mix(UNPACK_BIN_ARCHIVES.out.versions)
+    UNPACK_BIN_ARCHIVES.out.ch_microbiomes_bins_archives_unpacked.dump(tag:"bins_archives")
 
     ch_bins_archives_input = Channel.empty()
     UNPACK_BIN_ARCHIVES.out.ch_microbiomes_bins_archives_unpacked
-        .multiMap { microbiome_id, bin_files ->
-            bin_files = bin_files.findAll{ it.name =~ fasta_suffix }
-            if (bin_files.isEmpty()) log.warn("WARNING - Archive provided for microbiome ID ${microbiome_id} did not yield any bin files")
-            ids           : Collections.nCopies((int) bin_files.size(), microbiome_id)
-            files         : bin_files
-            bin_basenames : bin_files.collect{ it.name - fasta_suffix }
-        }
+        .flatMap { meta, bin_files ->
+                bin_files = bin_files.findAll{ it.name =~ fasta_suffix }
+                if (bin_files.isEmpty()) log.warn("WARNING - Archive provided for microbiome ID ${microbiome_id} did not yield any bin files")
+                return bin_files.collect {
+                    def meta_new = [:]
+                    meta_new.id = meta.id
+                    meta_new.bin_basename = it.name - fasta_suffix
+                    return [ meta_new, it ]
+                }
+            }
         .set{ ch_bins_archives_input }
+    ch_bins_archives_input.dump(tag:"bins_archives")
 
     // Concatenate the channels for nucleotide based inputs
-    ch_nucl_input_ids           = ch_assembly_input.ids.concat(ch_bins_archives_input.ids.flatten(), ch_bins_folders_input.ids.flatten())
-    ch_nucl_input_files         = ch_assembly_input.files.concat(ch_bins_archives_input.files.flatten(), ch_bins_folders_input.files.flatten())
-    ch_nucl_input_bin_basenames = ch_assembly_input.bin_basenames.concat(ch_bins_archives_input.bin_basenames.flatten(), ch_bins_folders_input.bin_basenames.flatten())
+    ch_nucl_input           = ch_assembly_input.concat(ch_bins_archives_input, ch_bins_folders_input)
+    ch_nucl_input.dump(tag:"nucl")
 
     // ####################################################################################################
 
@@ -179,20 +195,19 @@ workflow METAPEP {
     INPUT_CHECK.out.ch_microbiomes
         .splitCsv(header:true)
         .map { row ->
-                if (row.microbiome_type != 'taxa' && row.weights_path) [row.microbiome_id, row.weights_path]
+                def meta = [:]
+                meta.id = row.microbiome_id
+                if (row.microbiome_type != 'taxa' && row.weights_path) [meta, row.weights_path]
             }
-        .multiMap { microbiome_id, weights_path ->
-                microbiome_ids: microbiome_id
-                weights_paths: weights_path
-        }
         .set { ch_weights }
+        ch_weights.dump(tag:"weights")
 
     /*
     * Download proteins from entrez
     */
     DOWNLOAD_PROTEINS (
-        ch_taxa_input.ids.collect(),
-        ch_taxa_input.files.collect()
+        ch_taxa_input.map { meta, file -> meta.id }.collect().dump(tag:"taxa"),
+        ch_taxa_input.map { meta, file -> file }.collect().dump(tag:"taxa")
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 

@@ -1,5 +1,5 @@
 process UNPACK_BIN_ARCHIVES {
-    tag "$microbiome_id"
+    tag "$meta.id"
     label 'process_low'
 
     conda (params.enable_conda ? "conda-forge::sed=4.7" : null)
@@ -8,11 +8,10 @@ process UNPACK_BIN_ARCHIVES {
         'biocontainers/biocontainers:v1.2.0_cv1' }"
 
     input:
-    val microbiome_id
-    path microbiome_path
+    tuple val(meta), path(microbiome_path)
 
     output:
-    tuple val(microbiome_id), path("unpacked/*")    , emit: ch_microbiomes_bins_archives_unpacked
+    tuple val(meta), path("unpacked/*")             , emit: ch_microbiomes_bins_archives_unpacked
     path "versions.yml"                             , emit: versions
 
     script:
