@@ -32,9 +32,10 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ========================================================================================
 */
 
-include { UNPACK_BIN_ARCHIVES   } from '../modules/local/unpack_bin_archives'
-include { DOWNLOAD_PROTEINS     } from '../modules/local/download_proteins'
-include { CREATE_PROTEIN_TSV    } from '../modules/local/create_protein_tsv'
+include { UNPACK_BIN_ARCHIVES           } from '../modules/local/unpack_bin_archives'
+include { DOWNLOAD_PROTEINS             } from '../modules/local/download_proteins'
+include { CREATE_PROTEIN_TSV            } from '../modules/local/create_protein_tsv'
+include { ASSIGN_NUCL_ENTITY_WEIGHTS    } from '../modules/local/assign_nucl_entity_weights'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -238,6 +239,12 @@ workflow METAPEP {
         PRODIGAL.out.amino_acid_fasta
     )
     ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
+
+    ASSIGN_NUCL_ENTITY_WEIGHTS (
+        ch_weights.map { meta, file -> meta.id }.collect().ifEmpty([]),
+        ch_weights.map { meta, file -> file }.collect().ifEmpty([])
+    )
+    ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

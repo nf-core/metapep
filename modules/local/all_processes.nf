@@ -1,28 +1,4 @@
 /*
- * Assign entity weights for input type 'assembly' and 'bins'
- */
-process assign_nucl_entity_weights {
-    publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
-        saveAs: {filename -> "$filename" }
-
-    input:
-    val  microbiome_ids     from  ch_weights.microbiome_ids.collect().ifEmpty([])
-    path weights_files      from  ch_weights.weights_paths.collect().ifEmpty([])
-
-    output:
-    path   "microbiomes_entities.nucl.tsv"    into   ch_nucl_microbiomes_entities  // entity_name, microbiome_id, entity_weight
-
-    script:
-    microbiome_ids = microbiome_ids.join(' ')
-    """
-    assign_entity_weights.py \
-        --microbiome-ids $microbiome_ids \
-        --weights-files $weights_files \
-        --out microbiomes_entities.nucl.tsv
-    """
-}
-
-/*
  * concat files and assign new, unique ids for all proteins (from different sources)
  */
 process generate_protein_and_entity_ids {
