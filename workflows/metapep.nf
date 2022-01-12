@@ -32,10 +32,11 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 ========================================================================================
 */
 
-include { UNPACK_BIN_ARCHIVES           } from '../modules/local/unpack_bin_archives'
-include { DOWNLOAD_PROTEINS             } from '../modules/local/download_proteins'
-include { CREATE_PROTEIN_TSV            } from '../modules/local/create_protein_tsv'
-include { ASSIGN_NUCL_ENTITY_WEIGHTS    } from '../modules/local/assign_nucl_entity_weights'
+include { UNPACK_BIN_ARCHIVES               } from '../modules/local/unpack_bin_archives'
+include { DOWNLOAD_PROTEINS                 } from '../modules/local/download_proteins'
+include { CREATE_PROTEIN_TSV                } from '../modules/local/create_protein_tsv'
+include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl_entity_weights'
+include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -245,6 +246,20 @@ workflow METAPEP {
         ch_weights.map { meta, file -> file }.collect().ifEmpty([])
     )
     ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
+
+    /*
+    * concat files and assign new, unique ids for all proteins (from different sources)
+    */
+    GENERATE_PROTEIN_AND_ENTITY_IDS (
+        CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> file }.ifEmpty([]),
+        CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> meta }.ifEmpty([]),
+        DOWNLOAD_PROTEINS.out.ch_entrez_proteins.ifEmpty([]),
+        DOWNLOAD_PROTEINS.out.ch_entrez_entities_proteins.ifEmpty([]),
+        DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
+        ch_proteins_input.collect { meta, file -> file }.ifEmpty([]),
+        ch_proteins_input.collect { meta, file -> meta }.ifEmpty([])
+    )
+    ch_versions = ch_versions.mix(GENERATE_PROTEIN_AND_ENTITY_IDS.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

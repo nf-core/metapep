@@ -17,6 +17,7 @@ process CREATE_PROTEIN_TSV {
     script:
     name = meta.bin_basename ? "${meta.id}.${meta.bin_basename}" : "${meta.id}"
     """
+    echo -e "protein_tmp_id\tprotein_sequence" > proteins.pred_${name}.tsv
     fasta_to_tsv.py --remove-asterisk --input ${protein_fasta} >> proteins.pred_${name}.tsv
     gzip proteins.pred_${name}.tsv
 
