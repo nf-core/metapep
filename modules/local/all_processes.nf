@@ -1,32 +1,4 @@
 /*
- * Create microbiome_entities
- */
-process finalize_microbiome_entities {
-    publishDir "${params.outdir}/db_tables", mode: params.publish_dir_mode,
-        saveAs: {filename -> "$filename" }
-
-    input:
-    path   entrez_microbiomes_entities        from       ch_entrez_microbiomes_entities.ifEmpty([])
-    path   nucl_microbiomes_entities          from       ch_nucl_microbiomes_entities.ifEmpty([])
-    path   microbiomes_entities_noweights     from       ch_microbiomes_entities_noweights
-    path   entities                           from       ch_entities
-
-    output:
-    path   "microbiomes_entities.tsv"    into   ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
-
-    script:
-
-    """
-    finalize_microbiome_entities.py \
-        -eme $entrez_microbiomes_entities \
-        -nme $nucl_microbiomes_entities \
-        -menw $microbiomes_entities_noweights \
-        -ent "$entities" \
-        -o microbiomes_entities.tsv
-    """
-}
-
-/*
  * Generate peptides
  */
 process generate_peptides {
