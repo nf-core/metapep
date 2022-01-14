@@ -40,7 +40,7 @@ include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_pr
 include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_microbiome_entities'
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
-
+include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -295,6 +295,21 @@ workflow METAPEP {
         INPUT_CHECK.out.ch_conditions
     )
     ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
+
+    /*
+    * Split prediction tasks (peptide, allele) into chunks of peptides that are to
+    * be predicted against the same allele for parallel prediction
+    */
+    SPLIT_PRED_TASKS (
+    GENERATE_PEPTIDES.out.ch_peptides,
+    GENERATE_PEPTIDES.out.ch_proteins_peptides,
+    GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+    FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+    INPUT_CHECK.out.ch_conditions,
+    INPUT_CHECK.out.ch_conditions_alleles,
+    INPUT_CHECK.out.ch_alleles
+    )
+    ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
