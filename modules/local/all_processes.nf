@@ -1,32 +1,4 @@
 /*
- * Generate peptides
- */
-process generate_peptides {
-    publishDir "${params.outdir}", mode: params.publish_dir_mode,
-        saveAs: {filename -> "db_tables/$filename" }
-
-    input:
-    file proteins from ch_proteins
-
-    output:
-    file "peptides.tsv.gz" into ch_peptides                // peptide_id, peptide_sequence
-    file "proteins_peptides.tsv" into ch_proteins_peptides // protein_id, peptide_id, count
-    //file "proteins_lengths.tsv"
-
-    script:
-    def min_pep_len = params.min_pep_len
-    def max_pep_len = params.max_pep_len
-    """
-    generate_peptides.py -i $proteins \
-                         -min $min_pep_len \
-                         -max $max_pep_len \
-                         -p "peptides.tsv.gz" \
-                         -pp "proteins_peptides.tsv" \
-                         -l "proteins_lengths.tsv"
-    """
-}
-
-/*
  * Collect some numbers: proteins, peptides, unique peptides per conditon
  */
 process collect_stats {

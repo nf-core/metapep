@@ -38,6 +38,7 @@ include { CREATE_PROTEIN_TSV                } from '../modules/local/create_prot
 include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl_entity_weights'
 include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
 include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_microbiome_entities'
+include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -272,7 +273,15 @@ workflow METAPEP {
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities
     )
     ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
-    
+
+    /*
+    * Generate peptides
+    */
+    GENERATE_PEPTIDES (
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_proteins
+    )
+    ch_versions = ch_versions.mix(GENERATE_PEPTIDES.out.versions)
+
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
