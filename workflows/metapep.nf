@@ -39,6 +39,8 @@ include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl
 include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
 include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_microbiome_entities'
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
+include { COLLECT_STATS                     } from '../modules/local/collect_stats'
+
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -83,7 +85,7 @@ workflow METAPEP {
 
     INPUT_CHECK.out.ch_microbiomes
     // Read microbiomes table
-    .splitCsv(header:true)
+    .splitCsv(sep:'\t', header:true)
     // Convert paths to files
     .map {
         row ->
@@ -200,7 +202,7 @@ workflow METAPEP {
 
     ch_weights = Channel.empty()
     INPUT_CHECK.out.ch_microbiomes
-        .splitCsv(header:true)
+        .splitCsv(sep:'\t', header:true)
         .map { row ->
                 def meta = [:]
                 meta.id = row.microbiome_id
@@ -282,10 +284,21 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(GENERATE_PEPTIDES.out.versions)
 
+    /*
+    * Collect some numbers: proteins, peptides, unique peptides per conditon
+    */
+    COLLECT_STATS (
+        GENERATE_PEPTIDES.out.ch_peptides,
+        GENERATE_PEPTIDES.out.ch_proteins_peptides,
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+        INPUT_CHECK.out.ch_conditions
+    )
+    ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
+
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
-
     
     //
     // MODULE: MultiQC

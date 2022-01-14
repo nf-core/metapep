@@ -1,32 +1,4 @@
 /*
- * Collect some numbers: proteins, peptides, unique peptides per conditon
- */
-process collect_stats {
-    publishDir "${params.outdir}", mode: params.publish_dir_mode,
-        saveAs: {filename -> "db_tables/$filename" }
-
-    input:
-    path  peptides              from  ch_peptides
-    path  proteins_peptides     from  ch_proteins_peptides
-    path  entities_proteins     from  ch_entities_proteins
-    path  microbiomes_entities  from  ch_microbiomes_entities
-    path  conditions            from  ch_conditions
-
-    output:
-    file "stats.txt" into ch_stats
-
-    script:
-    """
-    collect_stats.py --peptides "$peptides" \
-                     --protein-peptide-occ "$proteins_peptides" \
-                     --entities-proteins-occ "$entities_proteins" \
-                     --microbiomes-entities-occ "$microbiomes_entities" \
-                     --conditions "$conditions" \
-                     --outfile stats.txt
-    """
-}
-
-/*
  * Split prediction tasks (peptide, allele) into chunks of peptides that are to
  * be predicted against the same allele for parallel prediction
  */

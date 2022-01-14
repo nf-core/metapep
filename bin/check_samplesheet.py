@@ -91,25 +91,25 @@ def check_samplesheet(args):
     if len(microbiomes) != len(microbiomes["microbiome_path"].drop_duplicates()):
         sys.exit("Conflicting types or weights were specified for the same microbiome path!")
 
-    microbiomes[["microbiome_id", "microbiome_path", "microbiome_type", "weights_path"]].to_csv(args.microbiomes, index=False)
+    microbiomes[["microbiome_id", "microbiome_path", "microbiome_type", "weights_path"]].to_csv(args.microbiomes, sep="\t", index=False)
 
     # condition id - condition name - microbiome id
     conditions = input_table.merge(microbiomes)[["condition", "microbiome_id"]].rename({"condition":"condition_name"}, axis=1)    # conditions unique (checked in nextflow)
     conditions["condition_id"] = range(len(conditions))
 
-    conditions[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, index=False)
+    conditions[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, sep="\t", index=False)
 
     # allele id - allele name
     unique_alleles = { allele for allele_list in input_table["alleles"] for allele in allele_list.split(' ') }
 
     alleles = pd.DataFrame({"allele_name":list(unique_alleles)})
     alleles["allele_id"] = range(len(alleles))
-    alleles[["allele_id", "allele_name"]].to_csv(args.alleles, index=False)
+    alleles[["allele_id", "allele_name"]].to_csv(args.alleles, sep="\t", index=False)
 
     # condition id - allele id
     conditions_alleles = pd.DataFrame([ (row["condition"], allele_name) for _, row in input_table.iterrows() for allele_name in row["alleles"].split(' ') ], columns = ["condition_name", "allele_name"])
     conditions_alleles = conditions_alleles.merge(conditions).merge(alleles)[["condition_id", "allele_id"]]
-    conditions_alleles.to_csv(args.conditions_alleles, index=False)
+    conditions_alleles.to_csv(args.conditions_alleles, sep="\t", index=False)
 
     print("Done!")
 

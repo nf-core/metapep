@@ -13,7 +13,7 @@ process GENERATE_PEPTIDES {
     output:
     path "peptides.tsv.gz",         emit: ch_peptides               // peptide_id, peptide_sequence
     path "proteins_peptides.tsv",   emit: ch_proteins_peptides      // protein_id, peptide_id, count
-    path   "versions.yml",          emit:   versions
+    path "versions.yml",            emit: versions
     //file "proteins_lengths.tsv"
 
     script:
