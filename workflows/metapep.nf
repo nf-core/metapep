@@ -42,6 +42,8 @@ include { GENERATE_PEPTIDES                 } from '../modules/local/generate_pe
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
 include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
+include { MERGE_PREDICTIONS_BUFFER          } from '../modules/local/merge_predictions_buffer'
+include { MERGE_PREDICTIONS                 } from '../modules/local/merge_predictions'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -320,29 +322,51 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(PREDICT_EPITOPES.out.versions)
 
+    /*
+    * Merge prediction results from peptide chunks into one prediction result
+    */
+    // gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
+    // (causing "sbatch: error: Batch job submission failed: Pathname of a file, directory or other parameter too long")
+    // sort and buffer to ensure resume will work (inefficient, since this causes waiting for all predictions)
+    ch_epitope_predictions_buffered = PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten().buffer(size: 1000, remainder: true)
+    ch_epitope_prediction_warnings_buffered = PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten().buffer(size: 1000, remainder: true)
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    MERGE_PREDICTIONS_BUFFER (
+        ch_epitope_predictions_buffered,
+        ch_epitope_prediction_warnings_buffered
     )
+    ch_versions = ch_versions.mix(MERGE_PREDICTIONS_BUFFER.out.versions)
+
+    MERGE_PREDICTIONS (
+        MERGE_PREDICTIONS_BUFFER.out.ch_predictions_merged_buffer.collect(),
+        MERGE_PREDICTIONS_BUFFER.out.ch_prediction_warnings_merged_buffer.collect()
+    )
+    ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
+
+
+
+//     CUSTOM_DUMPSOFTWAREVERSIONS (
+//         ch_versions.unique().collectFile(name: 'collated_versions.yml')
+//     )
     
-    //
-    // MODULE: MultiQC
-    //
-    workflow_summary    = WorkflowMetapep.paramsSummaryMultiqc(workflow, summary_params)
-    ch_workflow_summary = Channel.value(workflow_summary)
+//     //
+//     // MODULE: MultiQC
+//     //
+//     workflow_summary    = WorkflowMetapep.paramsSummaryMultiqc(workflow, summary_params)
+//     ch_workflow_summary = Channel.value(workflow_summary)
 
-    ch_multiqc_files = Channel.empty()
-    ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    // ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+//     ch_multiqc_files = Channel.empty()
+//     ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
+//     ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+//     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+//     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+//     // ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
 
-    MULTIQC (
-        ch_multiqc_files.collect()
-    )
-    multiqc_report = MULTIQC.out.report.toList()
-    ch_versions    = ch_versions.mix(MULTIQC.out.versions)
+//     MULTIQC (
+//         ch_multiqc_files.collect()
+//     )
+//     multiqc_report = MULTIQC.out.report.toList()
+//     ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 }
 
 /*
