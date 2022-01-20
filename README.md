@@ -19,7 +19,11 @@
 ## Introduction
 
 <!-- TODO nf-core: Write a 1-2 sentence summary of what data the pipeline is for and what it does -->
-**nf-core/metapep** is a bioinformatics best-practice analysis pipeline for epitope prediction specifically designed for metagenomes.
+**nf-core/metapep** is a bioinformatics best-practice analysis pipeline for epitope prediction specifically designed for metagenomes. It integrates multiple types of input (proteins, taxa, assemblies and bins), generates peptides and predicts their MHC-/HLA-affinity.
+
+<p align="center">
+    <img src="docs/images/metapep_workflow_figure.png" alt="nf-core/metapep workflow overview" width="90%">
+</p>
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It uses Docker/Singularity containers making installation trivial and results highly reproducible. The [Nextflow DSL2](https://www.nextflow.io/docs/latest/dsl2.html) implementation of this pipeline uses one container per process which makes it much easier to maintain and update software dependencies. Where possible, these processes have been submitted to and installed from [nf-core/modules](https://github.com/nf-core/modules) in order to make them available to all nf-core pipelines, and to everyone within the Nextflow community!
 
@@ -30,8 +34,12 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 <!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Download proteins for input type taxa from [Entrez](https://www.ncbi.nlm.nih.gov/Web/Search/entrezfs.html).
+2. Predict proteins for input type assembly or bins using [Prodigal](https://github.com/hyattpd/Prodigal).
+3. Generate peptides from proteins.
+4. Split peptide files into chunks for parallel prediction and report stats.
+5. Predict epitopes for given alleles and peptides using [SYFPEITHI](http://www.syfpeithi.de), [MHCflurry](https://github.com/openvax/mhcflurry) or [MHCnuggets](https://github.com/KarchinLab/mhcnuggets).
+6. Produce plots.
 
 ## Quick Start
 

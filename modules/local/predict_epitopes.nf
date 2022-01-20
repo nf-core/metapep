@@ -2,7 +2,7 @@ process PREDICT_EPITOPES {
     label 'process_low'
 
     // TODO: conda
-    conda (params.enable_conda ? "bioconda::fred2=2.0.7 bioconda::mhcflurry=1.4.3 bioconda::mhcnuggets=2.3.2" : null)
+    conda (params.enable_conda ? { exit 1 "Conda is currently not available for metapep" } : null)
     container 'skrakau/metapep:dev'
     
     input:
