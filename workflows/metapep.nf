@@ -41,6 +41,7 @@ include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_mi
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
+include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -310,6 +311,15 @@ workflow METAPEP {
     INPUT_CHECK.out.ch_alleles
     )
     ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
+
+    /*
+    * Perform epitope prediction
+    */
+    PREDICT_EPITOPES (
+        SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks.flatten()
+    )
+    ch_versions = ch_versions.mix(PREDICT_EPITOPES.out.versions)
+
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
