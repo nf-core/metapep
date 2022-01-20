@@ -44,6 +44,8 @@ include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_
 include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
 include { MERGE_PREDICTIONS_BUFFER          } from '../modules/local/merge_predictions_buffer'
 include { MERGE_PREDICTIONS                 } from '../modules/local/merge_predictions'
+include { PREPARE_SCORE_DISTRIBUTION        } from '../modules/local/prepare_score_distribution'
+include { PLOT_SCORE_DISTRIBUTION           } from '../modules/local/plot_score_distribution'
 
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
@@ -343,7 +345,26 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
 
+    /*
+    * Generate figures
+    */
+    PREPARE_SCORE_DISTRIBUTION (
+        MERGE_PREDICTIONS.out.ch_predictions,
+        GENERATE_PEPTIDES.out.ch_proteins_peptides,
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+        INPUT_CHECK.out.ch_conditions,
+        INPUT_CHECK.out.ch_conditions_alleles,
+        INPUT_CHECK.out.ch_alleles
+    )
+    ch_versions = ch_versions.mix(PREPARE_SCORE_DISTRIBUTION.out.versions)
 
+    PLOT_SCORE_DISTRIBUTION (
+        PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
+        INPUT_CHECK.out.ch_alleles,
+        INPUT_CHECK.out.ch_conditions
+    )
+    ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
 
 //     CUSTOM_DUMPSOFTWAREVERSIONS (
 //         ch_versions.unique().collectFile(name: 'collated_versions.yml')

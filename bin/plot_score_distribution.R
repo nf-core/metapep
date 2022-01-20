@@ -21,26 +21,23 @@
 library(ggplot2)
 library(data.table)
 library(dplyr)
-library(argparser, quietly=TRUE)
 library(stringr)
 
+args = commandArgs(trailingOnly=TRUE)
+scores <- args[1]                       # Input file containing: prediction_score, condition_name, weight_sum
+alleles <- args[2]                      # Input file containing: allele_id, allele_name
+conditions <- args[3]                   # Input file containing: microbiome_id, condition_id, condition_name
+allele_id <- args[4]                    # allele_id
+method <- args[5]                       # Epitope prediction method used
 
-parser <- arg_parser("Description")
-parser <- add_argument(parser, "--scores", nargs=1, help="Input file containing: prediction_score, condition_name, weight_sum.")
-parser <- add_argument(parser, "--alleles", nargs=1, help="Input file containing: allele_id, allele_name.")
-parser <- add_argument(parser, "--conditions", nargs=1, help="Input file containing: microbiome_id, condition_id, condition_name.")
-parser <- add_argument(parser, "--allele_id", nargs=1, help="allele_id.")
-parser <- add_argument(parser, "--method", nargs=1, help="Epitope prediction method used.")
-args <- parse_args(parser)
+data <- fread(scores)
+alleles <- fread(alleles)
 
-data <- fread(args$scores)
-alleles <- fread(args$alleles)
-
-allele_name <- alleles[alleles$allele_id == args$allele_id, ]$allele_name
+allele_name <- alleles[allele_id == allele_id, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 
-if (args$method == "syfpeithi"){
+if (method == "syfpeithi"){
     score_threshold <- 0.50
 } else {
     score_threshold <- 500
