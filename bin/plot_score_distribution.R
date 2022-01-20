@@ -33,7 +33,7 @@ method <- args[5]                       # Epitope prediction method used
 data <- fread(scores)
 alleles <- fread(alleles)
 
-allele_name <- alleles[allele_id == allele_id, ]$allele_name
+allele_name <- alleles[alleles$allele_id == allele_id, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 
