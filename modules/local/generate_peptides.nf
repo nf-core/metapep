@@ -21,12 +21,12 @@ process GENERATE_PEPTIDES {
     def max_pep_len = params.max_pep_len
     """
     generate_peptides.py -i $proteins \
-                         -min $min_pep_len \
-                         -max $max_pep_len \
-                         -p "peptides.tsv.gz" \
-                         -pp "proteins_peptides.tsv" \
-                         -l "proteins_lengths.tsv"
-                         
+                        -min $min_pep_len \
+                        -max $max_pep_len \
+                        -p "peptides.tsv.gz" \
+                        -pp "proteins_peptides.tsv" \
+                        -l "proteins_lengths.tsv"
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

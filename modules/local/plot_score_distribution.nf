@@ -1,5 +1,5 @@
 process PLOT_SCORE_DISTRIBUTION {
-    
+
     conda (params.enable_conda ? "bioconda::bioconductor-alphabeta:1.8.0--r41hdfd78af_0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' :
@@ -21,7 +21,7 @@ process PLOT_SCORE_DISTRIBUTION {
     echo \$allele_id
 
     plot_score_distribution.R $prep_scores $alleles $conditions \$allele_id ${params.pred_method}
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         R: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')

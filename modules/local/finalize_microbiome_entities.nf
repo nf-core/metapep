@@ -25,7 +25,7 @@ process FINALIZE_MICROBIOME_ENTITIES {
         -menw $microbiomes_entities_noweights \
         -ent "$entities" \
         -o microbiomes_entities.tsv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

@@ -22,7 +22,7 @@ process PLOT_ENTITY_BINDING_RATIOS {
     echo \$allele_id
 
     plot_entity_binding_ratios.R $prep_entity_binding_ratios $alleles \$allele_id
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         R: \$(echo \$(R --version 2>&1) | sed 's/^.*R version //; s/ .*\$//')

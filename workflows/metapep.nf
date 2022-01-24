@@ -158,7 +158,7 @@ workflow METAPEP {
                 return bin_files.collect {
                     def meta = [:]
                     meta.id = row.microbiome_id
-                    meta.bin_basename = it.name - fasta_suffix 
+                    meta.bin_basename = it.name - fasta_suffix
                     return [ meta, it ]
                 }
             }
@@ -174,7 +174,7 @@ workflow METAPEP {
             }
         .set{ ch_microbiomes_bins_archives_packed }
         ch_microbiomes_bins_archives_packed.dump(tag:"bins_archives")
-    
+
     /*
     * Unpack archived assembly bins
     */
@@ -226,8 +226,8 @@ workflow METAPEP {
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
     ch_nucl_input
-        .branch{ meta, file -> 
-            zipped: file.name =~ ~/(?i)[.]gz$/ 
+        .branch{ meta, file ->
+            zipped: file.name =~ ~/(?i)[.]gz$/
             unzipped: true
         }
         .set {ch_nucl_unzip}
@@ -386,7 +386,7 @@ workflow METAPEP {
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')
     )
-    
+
     //
     // MODULE: MultiQC
     //

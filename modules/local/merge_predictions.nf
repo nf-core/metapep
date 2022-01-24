@@ -1,6 +1,6 @@
 process MERGE_PREDICTIONS {
     label "process_high_memory"
-    
+
     conda (params.enable_conda ? "bioconda::csvtk=0.23.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/csvtk:0.23.0--h9ee0642_0' :

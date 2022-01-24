@@ -42,7 +42,7 @@ process GENERATE_PROTEIN_AND_ENTITY_IDS {
         --out-entities-proteins               entities_proteins.tsv                \
         --out-entities                        entities.tsv                         \
         --out-microbiomes-entities            microbiomes_entities.no_weights.tsv
-    
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

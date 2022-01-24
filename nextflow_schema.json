@@ -251,7 +251,7 @@
                     "type": "string",
                     "default": "meta",
                     "description": "Prodigal mode, 'meta' or 'single'."
-                } 
+                }
             }
         }
     },

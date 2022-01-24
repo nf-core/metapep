@@ -4,7 +4,7 @@ process PREDICT_EPITOPES {
     // TODO: conda
     conda (params.enable_conda ? { exit 1 "Conda is currently not available for metapep" } : null)
     container 'skrakau/metapep:dev'
-    
+
     input:
     path(peptides)
 
@@ -48,15 +48,15 @@ process PREDICT_EPITOPES {
     # The --syfpeithi-norm flag enables score normalization when syfpeithi is
     # used and is ignored otherwise
     if ! epytope_predict.py --peptides "$peptides" \
-                       --method "$pred_method" \
-                       --method_version "$pred_method_version" \
-		       --syfpeithi-norm \
-                       "\$allele_name" \
-                       2>stderr.log \
-                       | tail -n +2 \
-                       | cut -f 1,3 \
-                       | sed -e "s/\$/	\$allele_id/" \
-                       >>"\$out_basename"_predictions.tsv; then
+                    --method "$pred_method" \
+                    --method_version "$pred_method_version" \
+                    --syfpeithi-norm \
+                    "\$allele_name" \
+                    2>stderr.log \
+                    | tail -n +2 \
+                    | cut -f 1,3 \
+                    | sed -e "s/\$/	\$allele_id/" \
+                    >>"\$out_basename"_predictions.tsv; then
         cat stderr.log >&2
         exit 1
     fi
@@ -73,5 +73,5 @@ process PREDICT_EPITOPES {
         mhcflurry: \$(mhcflurry-predict --version 2>&1 | sed 's/^mhcflurry //; s/ .*\$//')
         mhcnuggets: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('mhcnuggets').version)")
     END_VERSIONS
-    """  
+    """
 }
