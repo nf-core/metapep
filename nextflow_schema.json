@@ -211,39 +211,46 @@
             "help_text": "These options modify the behaviour of tools used in the pipeline",
             "properties": {
                 "publish_dir_mode": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Method used to save pipeline results to output directory."
                 },
                 "ncbi_key": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Required for downloading proteins from ncbi."
                 },
                 "ncbi_email": {
-                    "type": "string"
+                    "type": "string",
+                    "description": "Required for downloading proteins from ncbi."
                 },
                 "min_pep_len": {
                     "type": "integer",
-                    "default": 9
+                    "default": 9,
+                    "description": "Minimum length of produced peptides."
                 },
                 "max_pep_len": {
                     "type": "integer",
-                    "default": 11
+                    "default": 11,
+                    "description": "Maximum length of produced peptides."
                 },
                 "sample_n": {
                     "type": "integer",
-                    "default": false
+                    "default": false,
+                    "description": "Number of peptides to subsample for epitope prediction."
                 },
                 "pred_method": {
                     "type": "string",
                     "default": "syfpeithi",
-                "description": "Epitope prediction method to use"
+                    "description": "Epitope prediction method to use"
                 },
                 "pred_chunk_size": {
                     "type": "integer",
                     "default": 75000,
-                "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
+                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
                 },
                 "prodigal_mode": {
                     "type": "string",
-                    "default": "meta"
+                    "default": "meta",
+                    "description": "Prodigal mode, 'meta' or 'single'."
                 } 
             }
         }

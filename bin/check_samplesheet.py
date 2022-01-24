@@ -38,8 +38,6 @@ def print_error(error, context="Line", context_str=""):
     print(error_str)
     sys.exit(1)
 
-
-# TODO nf-core: Update the check_samplesheet function
 # TODO for 'proteins' type
 # - allow weight input for type 'proteins' as well! (for now use equal weight ?)
 
