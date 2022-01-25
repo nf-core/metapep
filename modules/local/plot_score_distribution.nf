@@ -1,6 +1,8 @@
 process PLOT_SCORE_DISTRIBUTION {
+    label 'cache_lenient'
+    label 'process_medium_memory'
 
-    conda (params.enable_conda ? "bioconda::bioconductor-alphabeta:1.8.0--r41hdfd78af_0" : null)
+    conda (params.enable_conda ? "bioconda::bioconductor-alphabeta:1.8.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' :
         'quay.io/biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
@@ -11,8 +13,8 @@ process PLOT_SCORE_DISTRIBUTION {
     path conditions
 
     output:
-    path "prediction_score_distribution.*.pdf"
-    path "versions.yml",                        emit:   versions
+    path "prediction_score_distribution.*.pdf",     emit:   ch_plot_score_distribution
+    path "versions.yml",                            emit:   versions
 
     script:
     """
@@ -20,7 +22,12 @@ process PLOT_SCORE_DISTRIBUTION {
     allele_id="\${BASH_REMATCH[1]}"
     echo \$allele_id
 
-    plot_score_distribution.R $prep_scores $alleles $conditions \$allele_id ${params.pred_method}
+    plot_score_distribution.R \\
+        $prep_scores \\
+        $alleles \\
+        $conditions \\
+        \$allele_id \\
+        ${params.pred_method}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

@@ -2,7 +2,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     label "process_long"
     label "process_high_memory"
 
-    conda (params.enable_conda ? "pandas=1.1.5" : null)
+    conda (params.enable_conda ? "conda-forge::pandas=1.1.5" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
         'quay.io/biocontainers/pandas:1.1.5' }"
@@ -22,14 +22,14 @@ process PREPARE_ENTITY_BINDING_RATIOS {
 
     script:
     """
-    prepare_entity_binding_ratios.py --predictions "$predictions" \
-                            --protein-peptide-occ "$proteins_peptides" \
-                            --entities-proteins-occ "$entities_proteins" \
-                            --microbiomes-entities-occ "$microbiomes_entities" \
-                            --conditions "$conditions" \
-                            --condition-allele-map "$conditions_alleles" \
-                            --alleles "$alleles" \
-                            --method ${params.pred_method} \
+    prepare_entity_binding_ratios.py --predictions "$predictions" \\
+                            --protein-peptide-occ "$proteins_peptides" \\
+                            --entities-proteins-occ "$entities_proteins" \\
+                            --microbiomes-entities-occ "$microbiomes_entities" \\
+                            --conditions "$conditions" \\
+                            --condition-allele-map "$conditions_alleles" \\
+                            --alleles "$alleles" \\
+                            --method ${params.pred_method} \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml

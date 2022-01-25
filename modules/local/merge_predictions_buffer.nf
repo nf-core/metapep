@@ -1,4 +1,6 @@
 process MERGE_PREDICTIONS_BUFFER {
+    label 'cache_lenient'
+    label 'process_medium_memory'
 
     conda (params.enable_conda ? "bioconda::csvtk=0.23.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

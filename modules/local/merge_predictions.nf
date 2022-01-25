@@ -1,5 +1,6 @@
 process MERGE_PREDICTIONS {
     label "process_high_memory"
+    label 'cache_lenient'
 
     conda (params.enable_conda ? "bioconda::csvtk=0.23.0" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -12,7 +13,7 @@ process MERGE_PREDICTIONS {
 
     output:
     path "predictions.tsv.gz",          emit: ch_predictions
-    path "prediction_warnings.log"
+    path "prediction_warnings.log",     emit: ch_prediction_warnings
     path "versions.yml",                emit: versions
 
     script:

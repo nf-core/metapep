@@ -1,6 +1,7 @@
 process GENERATE_PEPTIDES {
     label 'process_long'
     label 'process_high_memory'
+    label 'cache_lenient'
 
     conda (params.enable_conda ? "conda-forge::pandas=1.1.2 conda-forge::biopython=1.78 conda-forge::numpy=1.18.1" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -20,11 +21,11 @@ process GENERATE_PEPTIDES {
     def min_pep_len = params.min_pep_len
     def max_pep_len = params.max_pep_len
     """
-    generate_peptides.py -i $proteins \
-                        -min $min_pep_len \
-                        -max $max_pep_len \
-                        -p "peptides.tsv.gz" \
-                        -pp "proteins_peptides.tsv" \
+    generate_peptides.py -i $proteins \\
+                        -min $min_pep_len \\
+                        -max $max_pep_len \\
+                        -p "peptides.tsv.gz" \\
+                        -pp "proteins_peptides.tsv" \\
                         -l "proteins_lengths.tsv"
 
     cat <<-END_VERSIONS > versions.yml

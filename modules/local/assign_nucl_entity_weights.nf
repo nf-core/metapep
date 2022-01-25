@@ -2,7 +2,7 @@ process ASSIGN_NUCL_ENTITY_WEIGHTS {
     tag "$microbiome_ids"
     label 'process_low'
 
-    conda (params.enable_conda ? "pandas=1.1.5" : null)
+    conda (params.enable_conda ? "conda-forge::pandas=1.1.5" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
         'quay.io/biocontainers/pandas:1.1.5' }"
@@ -19,9 +19,9 @@ process ASSIGN_NUCL_ENTITY_WEIGHTS {
     script:
     microbiome_ids = microbiome_ids.join(' ')
     """
-    assign_entity_weights.py \
-        --microbiome-ids $microbiome_ids \
-        --weights-files $weights_files \
+    assign_entity_weights.py \\
+        --microbiome-ids $microbiome_ids \\
+        --weights-files $weights_files \\
         --out microbiomes_entities.nucl.tsv
 
     cat <<-END_VERSIONS > versions.yml

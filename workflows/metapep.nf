@@ -220,8 +220,8 @@ workflow METAPEP {
     * Download proteins from entrez
     */
     DOWNLOAD_PROTEINS (
-        ch_taxa_input.map { meta, file -> meta.id }.collect().dump(tag:"taxa"),
-        ch_taxa_input.map { meta, file -> file }.collect().dump(tag:"taxa")
+        ch_taxa_input.map { meta, file -> meta.id }.collect(),
+        ch_taxa_input.map { meta, file -> file }.collect()
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 

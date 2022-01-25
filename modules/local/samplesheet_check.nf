@@ -1,7 +1,7 @@
 process SAMPLESHEET_CHECK {
     tag "$samplesheet"
 
-    conda (params.enable_conda ? "pandas=1.1.5" : null)
+    conda (params.enable_conda ? "conda-forge::pandas=1.1.5" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
         'quay.io/biocontainers/pandas:1.1.5' }"
@@ -19,10 +19,10 @@ process SAMPLESHEET_CHECK {
     script: // This script is bundled with the pipeline, in nf-core/metapep/bin/
     """
     check_samplesheet.py \\
-        -i $samplesheet \
-        -m microbiomes.tsv \
-        -c conditions.tsv \
-        -a alleles.tsv \
+        -i $samplesheet \\
+        -m microbiomes.tsv \\
+        -c conditions.tsv \\
+        -a alleles.tsv \\
         -ca conditions_alleles.tsv
 
     cat <<-END_VERSIONS > versions.yml

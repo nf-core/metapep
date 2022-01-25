@@ -30,17 +30,17 @@ process GENERATE_PROTEIN_AND_ENTITY_IDS {
 
     """
     generate_protein_and_entity_ids.py \
-        --predicted-proteins                  $predicted_proteins                  \
-        --predicted-proteins-microbiome-ids   $predicted_proteins_microbiome_ids   \
-        --predicted-proteins-bin-basenames    $predicted_proteins_bin_basenames    \
-        --entrez-proteins                     "$entrez_proteins"                   \
-        --entrez-entities-proteins            "$entrez_entities_proteins"          \
-        --entrez-microbiomes-entities         "$entrez_microbiomes_entities"       \
-        --bare-proteins                       $bare_proteins                       \
-        --bare-proteins-microbiome-ids        $bare_proteins_microbiome_ids        \
-        --out-proteins                        proteins.tsv.gz                      \
-        --out-entities-proteins               entities_proteins.tsv                \
-        --out-entities                        entities.tsv                         \
+        --predicted-proteins                  $predicted_proteins                  \\
+        --predicted-proteins-microbiome-ids   $predicted_proteins_microbiome_ids   \\
+        --predicted-proteins-bin-basenames    $predicted_proteins_bin_basenames    \\
+        --entrez-proteins                     "$entrez_proteins"                   \\
+        --entrez-entities-proteins            "$entrez_entities_proteins"          \\
+        --entrez-microbiomes-entities         "$entrez_microbiomes_entities"       \\
+        --bare-proteins                       $bare_proteins                       \\
+        --bare-proteins-microbiome-ids        $bare_proteins_microbiome_ids        \\
+        --out-proteins                        proteins.tsv.gz                      \\
+        --out-entities-proteins               entities_proteins.tsv                \\
+        --out-entities                        entities.tsv                         \\
         --out-microbiomes-entities            microbiomes_entities.no_weights.tsv
 
     cat <<-END_VERSIONS > versions.yml

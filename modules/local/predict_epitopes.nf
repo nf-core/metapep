@@ -1,5 +1,6 @@
 process PREDICT_EPITOPES {
     label 'process_low'
+    label 'cache_lenient'
 
     // TODO: conda
     conda (params.enable_conda ? { exit 1 "Conda is currently not available for metapep" } : null)
@@ -45,15 +46,15 @@ process PREDICT_EPITOPES {
     # Process file
     # The --syfpeithi-norm flag enables score normalization when syfpeithi is
     # used and is ignored otherwise
-    if ! epytope_predict.py --peptides "$peptides" \
-                    --method "$pred_method" \
-                    --method_version "$pred_method_version" \
-                    --syfpeithi-norm \
-                    "\$allele_name" \
-                    2>stderr.log \
-                    | tail -n +2 \
-                    | cut -f 1,3 \
-                    | sed -e "s/\$/	\$allele_id/" \
+    if ! epytope_predict.py --peptides "$peptides" \\
+                    --method "$pred_method" \\
+                    --method_version "$pred_method_version" \\
+                    --syfpeithi-norm \\
+                    "\$allele_name" \\
+                    2>stderr.log \\
+                    | tail -n +2 \\
+                    | cut -f 1,3 \\
+                    | sed -e "s/\$/	\$allele_id/" \\
                     >>"\$out_basename"_predictions.tsv; then
         cat stderr.log >&2
         exit 1

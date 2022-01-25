@@ -1,7 +1,7 @@
 process FINALIZE_MICROBIOME_ENTITIES {
     label 'process_low'
 
-    conda (params.enable_conda ? "pandas=1.1.5" : null)
+    conda (params.enable_conda ? "conda-forge::pandas=1.1.5" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
         'quay.io/biocontainers/pandas:1.1.5' }"
@@ -19,11 +19,11 @@ process FINALIZE_MICROBIOME_ENTITIES {
     script:
 
     """
-    finalize_microbiome_entities.py \
-        -eme $entrez_microbiomes_entities \
-        -nme $nucl_microbiomes_entities \
-        -menw $microbiomes_entities_noweights \
-        -ent "$entities" \
+    finalize_microbiome_entities.py \\
+        -eme $entrez_microbiomes_entities \\
+        -nme $nucl_microbiomes_entities \\
+        -menw $microbiomes_entities_noweights \\
+        -ent "$entities" \\
         -o microbiomes_entities.tsv
 
     cat <<-END_VERSIONS > versions.yml

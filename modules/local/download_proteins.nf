@@ -25,13 +25,13 @@ process DOWNLOAD_PROTEINS {
     """
     # provide new home dir to avoid permission errors with Docker and other artefacts
     export HOME="\${PWD}/HOME"
-    download_proteins_entrez.py --email $email \
-                                --key $key \
-                                -t $microbiome_files \
-                                -m $microbiome_ids \
-                                -p proteins.entrez.tsv.gz \
-                                -ta taxa_assemblies.tsv \
-                                -ep entities_proteins.entrez.tsv \
+    download_proteins_entrez.py --email $email \\
+                                --key $key \\
+                                -t $microbiome_files \\
+                                -m $microbiome_ids \\
+                                -p proteins.entrez.tsv.gz \\
+                                -ta taxa_assemblies.tsv \\
+                                -ep entities_proteins.entrez.tsv \\
                                 -me microbiomes_entities.entrez.tsv
 
     cat <<-END_VERSIONS > versions.yml

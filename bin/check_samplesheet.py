@@ -48,7 +48,7 @@ def check_samplesheet(args):
     condition,type,microbiome_path,alleles,weights_path
 
     For an example see:
-    TODO
+    https://github.com/nf-core/metapep/raw/dev/assets/samplesheet.csv
     """
     input_table = pd.read_csv(args.input)
 
