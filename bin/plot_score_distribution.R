@@ -21,29 +21,26 @@
 library(ggplot2)
 library(data.table)
 library(dplyr)
-library(argparser, quietly=TRUE)
 library(stringr)
 
+args = commandArgs(trailingOnly=TRUE)
+scores <- args[1]                       # Input file containing: prediction_score, condition_name, weight_sum
+args_alleles <- args[2]                      # Input file containing: allele_id, allele_name
+conditions <- args[3]                   # Input file containing: microbiome_id, condition_id, condition_name
+allele_id <- args[4]                    # allele_id
+method <- args[5]                       # Epitope prediction method used
 
-parser <- arg_parser("Description")
-parser <- add_argument(parser, "--scores", nargs=1, help="Input file containing: prediction_score, condition_name, weight_sum.")
-parser <- add_argument(parser, "--alleles", nargs=1, help="Input file containing: allele_id, allele_name.")
-parser <- add_argument(parser, "--conditions", nargs=1, help="Input file containing: microbiome_id, condition_id, condition_name.")
-parser <- add_argument(parser, "--allele_id", nargs=1, help="allele_id.")
-parser <- add_argument(parser, "--method", nargs=1, help="Epitope prediction method used.")
-args <- parse_args(parser)
-
-data <- fread(args$scores)
-alleles <- fread(args$alleles)
-
-allele_name <- alleles[alleles$allele_id == args$allele_id, ]$allele_name
+data <- fread(scores)
+alleles <- fread(args_alleles)
+match <- (alleles$allele_id == allele_id)
+allele_name <- alleles[match, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 
-if (args$method == "syfpeithi"){
-  score_threshold <- 0.50
+if (method == "syfpeithi"){
+    score_threshold <- 0.50
 } else {
-  score_threshold <- 500
+    score_threshold <- 500
 }
 
 data$condition_name <- as.factor(data$condition_name)
@@ -53,7 +50,7 @@ p <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum,
     xlab("Condition") +
     ggtitle(allele_name) +
     geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
-    scale_fill_brewer(palette="Dark2") + 
+    scale_fill_brewer(palette="Dark2") +
     geom_hline(yintercept=score_threshold) +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))

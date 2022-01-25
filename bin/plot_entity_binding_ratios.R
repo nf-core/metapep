@@ -21,22 +21,19 @@
 library(ggplot2)
 library(data.table)
 library(dplyr)
-library(argparser, quietly=TRUE)
 library(stringr)
 
+args = commandArgs(trailingOnly=TRUE)
+binding_rates <- args[1]                # Input file containing: condition_name, binding_rate, entity_weight.
+args_alleles <- args[2]                      # Input file containing: allele_id, allele_namee
+allele_id <- args[3]                    # allele_id
 
-parser <- arg_parser("Description")
-parser <- add_argument(parser, "--binding-rates", nargs=1, help="Input file containing: condition_name, binding_rate, entity_weight.")
-parser <- add_argument(parser, "--alleles", nargs=1, help="Input file containing: allele_id, allele_name.")
-parser <- add_argument(parser, "--allele_id", nargs=1, help="allele_id.")
-args <- parse_args(parser)
-
-data <- fread(args$binding_rates)
-alleles <- fread(args$alleles)
-allele_name <- alleles[alleles$allele_id == args$allele_id, ]$allele_name
+data <- fread(binding_rates)
+alleles <- fread(args_alleles)
+match <- (alleles$allele_id == allele_id)
+allele_name <- alleles[match, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
-
 
 data$condition_name <- as.factor(data$condition_name)
 p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
