@@ -240,7 +240,13 @@
                 "pred_method": {
                     "type": "string",
                     "default": "syfpeithi",
-                    "description": "Epitope prediction method to use"
+                    "description": "Epitope prediction method to use",
+                    "enum": [
+                        "syfpeithi",
+                        "mhcflurry",
+                        "mhcnuggets-class-1",
+                        "mhcnuggets-class-2"
+                    ]
                 },
                 "pred_chunk_size": {
                     "type": "integer",

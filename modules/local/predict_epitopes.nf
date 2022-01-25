@@ -28,8 +28,6 @@ process PREDICT_EPITOPES {
         case "mhcnuggets-class-2":
             pred_method_version = "2.3.2";
             break;
-        default:
-            exit 1, "Epitope prediction method specified with --pred_method not recognized."
         }
     """
 
