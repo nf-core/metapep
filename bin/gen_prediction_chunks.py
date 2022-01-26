@@ -25,7 +25,6 @@
 import argparse
 import sys
 import os
-from tqdm import tqdm
 
 import pandas as pd
 
@@ -118,8 +117,7 @@ try:
 
     # Write the necessary predictions into chunks of peptide lists
     cur_chunk = 0
-    with tqdm(total=len(to_predict), ascii=True, unit=" peptides") as pbar:
-        to_predict.groupby("allele_id").apply(lambda x : write_chunks(x, pbar=pbar))
+    to_predict.groupby("allele_id").apply(lambda x : write_chunks(x))
 
     # We're happy if we got here
     print(f"All done. Written {len(to_predict)} peptide prediction requests into {cur_chunk} chunks.")
