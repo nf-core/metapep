@@ -59,7 +59,7 @@ def main(args=None):
     microbiomes_proteins = microbiomes_entities_occs\
             .merge(entities_proteins_occs)\
             .drop(columns="entity_id")
-    
+
     # condition_name, unique_proteins
     unique_protein_counts = microbiomes_proteins\
                             .drop_duplicates()\
