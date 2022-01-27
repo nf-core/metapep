@@ -104,13 +104,12 @@ def check_samplesheet(args):
 
     # weights id - weights path
     weights_group = input_table.groupby(["weights_path"], sort=False)
-    
-    input_table["weights_id"] = weights_group.ngroup() if weights_group.ngroups > 0 else np.nan
-        
+
+    input_table["weights_id"] = pd.Series([n if n >= 0 else np.nan for n in weights_group.ngroup()], dtype="Int64")
     weights_group.agg('first').reset_index()[["weights_id", "weights_path"]].to_csv(args.weights, sep="\t", index=False)
 
     # condition id - weights id
-    input_table[["condition_id", "weights_id"]].to_csv(args.conditions_weights, sep="\t", index=False)
+    input_table[["condition_id", "weights_id"]].dropna().to_csv(args.conditions_weights, sep="\t", index=False)
 
     input_table_cp.to_csv("samplesheet.valid.csv", index=False)
     print("Done!")
