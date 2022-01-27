@@ -51,6 +51,7 @@ def parse_args(args=None):
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
     parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Output file (compressed) containing: protein_tmp_id, protein_sequence.")
+    parser.add_argument('-f', "--fasta", required=True, metavar='FILE', help="Output fasta file (compressed).")
     parser.add_argument('-ta', "--taxa_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
     parser.add_argument('-ep', "--entities_proteins", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_tmp_id, entity_name (taxon_id).")
     parser.add_argument('-me', "--microbiomes_entities", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, entity_name (taxon_id), entity_weight.")
@@ -263,9 +264,12 @@ def main(args=None):
     for attempt in range(3):
         try:
             with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
+                records = list(SeqIO.parse(entrez_handle, "fasta"))
+                with gzip.open(args.fasta, 'wt') as out_handle:
+                    SeqIO.write(records, out_handle, 'fasta')
                 with gzip.open(args.proteins, 'wt') as out_handle:
                     print("protein_tmp_id", "protein_sequence", sep='\t', file=out_handle)
-                    for record in SeqIO.parse(entrez_handle, "fasta"):
+                    for record in records:
                         print(record.id, record.seq, sep='\t', file=out_handle, flush=True)
             time.sleep(1)   # avoid getting blocked by ncbi
             success = True

@@ -14,6 +14,7 @@ process DOWNLOAD_PROTEINS {
 
     output:
     path    "proteins.entrez.tsv.gz"            , emit:  ch_entrez_proteins
+    path    "proteins.entrez.fasta.gz"          , emit:  ch_entrez_fasta
     path    "taxa_assemblies.tsv"               , emit:  ch_entrez_assemblies
     path    "entities_proteins.entrez.tsv"      , emit:  ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
     path    "microbiomes_entities.entrez.tsv"   , emit:  ch_entrez_microbiomes_entities  // entity_name, microbiome_id, entity_weight
@@ -33,6 +34,7 @@ process DOWNLOAD_PROTEINS {
                                 -m $microbiome_ids \\
                                 -cm $conditions_microbiomes \\
                                 -p proteins.entrez.tsv.gz \\
+                                -f proteins.entrez.fasta.gz \\
                                 -ta taxa_assemblies.tsv \\
                                 -ep entities_proteins.entrez.tsv \\
                                 -me microbiomes_entities.entrez.tsv \\
