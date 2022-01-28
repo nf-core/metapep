@@ -89,7 +89,11 @@ def check_samplesheet(args):
         sys.exit("Conflicting types were specified for the same microbiome path!")
 
     db_table["microbiome_id"] = microbiome_group.ngroup()
-    microbiome_group.agg('first').reset_index().rename({"type":"microbiome_type"}, axis=1)[["microbiome_id", "microbiome_path", "microbiome_type"]].to_csv(args.microbiomes, sep="\t", index=False)
+    microbiome_group \
+        .agg({'microbiome_id': 'first', 'condition': lambda x: ';'.join(list(x)), 'alleles': lambda x: ';'.join(list(x))}) \
+        .reset_index() \
+        .rename({"type":"microbiome_type", "condition":"conditions"}, axis=1)[['microbiome_id', 'microbiome_path', 'microbiome_type', 'conditions', 'alleles']] \
+        .to_csv(args.microbiomes, sep="\t", index=False)
 
     # condition id - condition name - microbiome id
     db_table = db_table.reset_index().rename({'index':'condition_id', 'condition':'condition_name'}, axis=1)
