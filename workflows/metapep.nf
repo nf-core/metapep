@@ -62,7 +62,6 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { GUNZIP                      } from '../modules/nf-core/modules/gunzip/main'
 include { PRODIGAL                    } from '../modules/nf-core/modules/prodigal/main'
 include { MULTIQC                     } from '../modules/nf-core/modules/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/modules/custom/dumpsoftwareversions/main'
@@ -225,22 +224,8 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
-    ch_nucl_input
-        .branch{ meta, file ->
-            zipped: file.name =~ ~/(?i)[.]gz$/
-            unzipped: true
-        }
-        .set {ch_nucl_unzip}
-
-    GUNZIP(
-        ch_nucl_unzip.zipped
-    )
-    ch_versions = ch_versions.mix(GUNZIP.out.versions)
-
-    ch_nucl_input_unzipped = GUNZIP.out.gunzip.concat(ch_nucl_unzip.unzipped)
-
     PRODIGAL(
-        ch_nucl_input_unzipped,
+        ch_nucl_input,
         "gff"
     )
     ch_versions = ch_versions.mix(PRODIGAL.out.versions)
