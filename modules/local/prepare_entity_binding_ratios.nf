@@ -11,7 +11,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     path predictions
     path proteins_peptides
     path entities_proteins
-    path microbiomes_entities
+    path conditions_entities
     path conditions
     path conditions_alleles
     path alleles
@@ -25,7 +25,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     prepare_entity_binding_ratios.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
                             --entities-proteins-occ "$entities_proteins" \\
-                            --microbiomes-entities-occ "$microbiomes_entities" \\
+                            --conditions-entities-occ "$conditions_entities" \\
                             --conditions "$conditions" \\
                             --condition-allele-map "$conditions_alleles" \\
                             --alleles "$alleles" \\

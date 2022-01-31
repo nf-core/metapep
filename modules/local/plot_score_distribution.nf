@@ -10,7 +10,6 @@ process PLOT_SCORE_DISTRIBUTION {
     input:
     path prep_scores
     path alleles
-    path conditions
 
     output:
     path "prediction_score_distribution.*.pdf",     emit:   ch_plot_score_distribution
@@ -25,7 +24,6 @@ process PLOT_SCORE_DISTRIBUTION {
     plot_score_distribution.R \\
         $prep_scores \\
         $alleles \\
-        $conditions \\
         \$allele_id \\
         ${params.pred_method}
 

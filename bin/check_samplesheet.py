@@ -18,9 +18,10 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument('-i', "--input", required=True, metavar='FILE', type=argparse.FileType('r'), help="Input samplesheet file containing: condition, type, microbiome_path, alleles, weights_path.")
     parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type.")
-    parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name, microbiome_id.")
+    parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name.")
     parser.add_argument('-a', "--alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: allele_id, allele_name.")
     parser.add_argument('-w', "--weights", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: weights_id, weights_path.")
+    parser.add_argument('-cm', "--conditions_microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, microbiome_id.")
     parser.add_argument('-ca', "--conditions_alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, allele_id.")
     parser.add_argument('-cw', "--conditions_weights", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, weights_id.")
     return parser.parse_args(args)
@@ -79,22 +80,27 @@ def check_samplesheet(args):
         if not pd.isnull(weights_path) and not weights_path.lower().endswith('.tsv'):
             sys.exit("In " + args.input.name + " specified 'weights_path' " + weights_path + " has invalid file extension. The extension must be '.tsv'.")
 
-    # microbiome_id - microbiome_path - microbiome_type
-    microbiome_group = input_table.groupby(["microbiome_path", "type"], sort=False)
+    db_table = input_table.copy()
 
-    if microbiome_group.ngroups != len(input_table["microbiome_path"].drop_duplicates()):
+    # microbiome_id - microbiome_path - microbiome_type
+    microbiome_group = db_table.groupby(["microbiome_path", "type"], sort=False)
+
+    if microbiome_group.ngroups != len(db_table["microbiome_path"].drop_duplicates()):
         sys.exit("Conflicting types were specified for the same microbiome path!")
 
-    input_table["microbiome_id"] = microbiome_group.ngroup()
+    db_table["microbiome_id"] = microbiome_group.ngroup()
     microbiome_group.agg('first').reset_index().rename({"type":"microbiome_type"}, axis=1)[["microbiome_id", "microbiome_path", "microbiome_type"]].to_csv(args.microbiomes, sep="\t", index=False)
 
     # condition id - condition name - microbiome id
-    input_table = input_table.reset_index().rename({'index':'condition_id', 'condition':'condition_name'}, axis=1)
-    input_table[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, sep="\t", index=False)
+    db_table = db_table.reset_index().rename({'index':'condition_id', 'condition':'condition_name'}, axis=1)
+    db_table[["condition_id", "condition_name"]].to_csv(args.conditions, sep="\t", index=False)
+
+    # condition id - microbiome id
+    db_table[["condition_id", "microbiome_id"]].to_csv(args.conditions_microbiomes, sep="\t", index=False)
 
     # allele id - allele name
-    input_table["alleles"] = input_table.apply(lambda row: list(row.alleles.split(' ')), axis=1)
-    alleles_exploded = input_table[["condition_id", "alleles"]].explode("alleles")
+    db_table["alleles"] = db_table.apply(lambda row: list(row.alleles.split(' ')), axis=1)
+    alleles_exploded = db_table[["condition_id", "alleles"]].explode("alleles")
     allele_group = alleles_exploded.groupby(["alleles"], sort=False)
     alleles_exploded["allele_id"] = allele_group.ngroup()
     allele_group.agg('first').reset_index().rename({"alleles":"allele_name"}, axis=1)[["allele_id", "allele_name"]].to_csv(args.alleles, sep="\t", index=False)
@@ -103,13 +109,13 @@ def check_samplesheet(args):
     alleles_exploded[["condition_id", "allele_id"]].to_csv(args.conditions_alleles, sep="\t", index=False)
 
     # weights id - weights path
-    weights_group = input_table.groupby(["weights_path"], sort=False)
+    weights_group = db_table.groupby(["weights_path"], sort=False)
 
-    input_table["weights_id"] = pd.Series([n if n >= 0 else np.nan for n in weights_group.ngroup()], dtype="Int64")
+    db_table["weights_id"] = pd.Series([n if n >= 0 else np.nan for n in weights_group.ngroup()], dtype="Int64")
     weights_group.agg('first').reset_index()[["weights_id", "weights_path"]].to_csv(args.weights, sep="\t", index=False)
 
     # condition id - weights id
-    input_table[["condition_id", "weights_id"]].dropna().to_csv(args.conditions_weights, sep="\t", index=False)
+    db_table[["condition_id", "weights_id"]].dropna().to_csv(args.conditions_weights, sep="\t", index=False)
 
     input_table_cp.to_csv("samplesheet.valid.csv", index=False)
     print("Done!")

@@ -11,8 +11,8 @@ process ASSIGN_NUCL_ENTITY_WEIGHTS {
     path conditions_weights
 
     output:
-    path   "microbiomes_entities.nucl.tsv", emit: ch_nucl_microbiomes_entities  // condition_id, entity_name, entity_weight
-    path    "versions.yml"                , emit: versions
+    path   "conditions_entities.nucl.tsv", emit: ch_nucl_conditions_entities  // condition_id, entity_name, entity_weight
+    path   "versions.yml"                , emit: versions
 
 
     script:
@@ -20,7 +20,7 @@ process ASSIGN_NUCL_ENTITY_WEIGHTS {
     assign_entity_weights.py \\
         --weights $weights \\
         --conditions_weights $conditions_weights \\
-        --out microbiomes_entities.nucl.tsv
+        --out conditions_entities.nucl.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

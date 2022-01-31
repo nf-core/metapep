@@ -33,8 +33,9 @@ def parse_args(args=None):
     parser.add_argument("-p"     , "--peptides"                             , help="Path to the peptides input file"                        , type=str   , required=True)
     parser.add_argument("-ppo"   , "--protein-peptide-occ"                  , help="Path to the protein peptide occurences input file"      , type=str   , required=True)
     parser.add_argument("-epo"   , "--entities-proteins-occ"                , help="Path to the entity protein occurences input file"       , type=str   , required=True)
-    parser.add_argument("-meo"   , "--microbiomes-entities-no-weights-occ"  , help="Path to the microbiome entity occurences input file"    , type=str   , required=True)
+    parser.add_argument("-meo"   , "--microbiomes-entities-occ"             , help="Path to the microbiome entity occurences input file"    , type=str   , required=True)
     parser.add_argument("-c"     , "--conditions"                           , help="Path to the conditions input file"                      , type=str   , required=True)
+    parser.add_argument("-cm"    , "--conditions-microbiomes"               , help="Path to the conditions - microbiomes map input file"    , type=str   , required=True)
 
     # OUTPUT FILES
     parser.add_argument("-o"     , "--outfile"                              , help="Path to the output file"                               , type=argparse.FileType('w')   , required=True)
@@ -51,8 +52,9 @@ def main(args=None):
     peptides                  = pd.read_csv(args.peptides, sep='\t')
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t')
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_no_weights_occ, sep='\t')
-    conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_id")
+    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
+    conditions                = pd.read_csv(args.conditions, sep='\t')
+    conditions_microbiomes    = pd.read_csv(args.conditions_microbiomes, sep='\t').merge(conditions)
 
     print("Joining input data...", flush=True)
 
@@ -66,7 +68,7 @@ def main(args=None):
                             .groupby("microbiome_id")["protein_id"]\
                             .size()\
                             .reset_index(name="unique_protein_count")\
-                            .merge(conditions)
+                            .merge(conditions_microbiomes)
 
     print("Unique protein counts:", file = args.outfile, sep='\t', flush=True)
     print("condition_name", "unique_protein_count", file = args.outfile, sep='\t', flush=True)
@@ -88,7 +90,7 @@ def main(args=None):
     total_peptide_counts = peptide_counts_group["microbiome_peptide_count"]\
             .sum()\
             .reset_index(name="total_peptide_count")\
-            .merge(conditions)
+            .merge(conditions_microbiomes)
 
     print(file = args.outfile)
     print("Total peptide counts:", file = args.outfile, sep='\t', flush=True)
@@ -100,7 +102,7 @@ def main(args=None):
     unique_peptide_counts = peptide_counts_group\
             .size()\
             .reset_index(name="unique_peptide_count")\
-            .merge(conditions)
+            .merge(conditions_microbiomes)
 
     print(file = args.outfile)
     print("Unique peptide counts:", file = args.outfile, sep='\t', flush=True)

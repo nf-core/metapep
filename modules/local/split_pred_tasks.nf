@@ -9,13 +9,13 @@ process SPLIT_PRED_TASKS {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path(peptides            )
-    path(proteins_peptides   )
-    path(entities_proteins   )
-    path(microbiomes_entities)
-    path(conditions          )
-    path(conditions_alleles  )
-    path(alleles             )
+    path(peptides              )
+    path(proteins_peptides     )
+    path(entities_proteins     )
+    path(microbiomes_entities  )
+    path(conditions_microbiomes)
+    path(conditions_alleles    )
+    path(alleles               )
     // The tables are joined to map peptide -> protein -> microbiome -> condition -> allele
     // and thus to enumerate, which (peptide, allele) combinations have to be predicted.
 
@@ -31,7 +31,7 @@ process SPLIT_PRED_TASKS {
                             --protein-peptide-occ "$proteins_peptides" \\
                             --entities-proteins-occ "$entities_proteins" \\
                             --microbiomes-entities-occ "$microbiomes_entities" \\
-                            --conditions "$conditions" \\
+                            --conditions-microbiomes "$conditions_microbiomes" \\
                             --condition-allele-map "$conditions_alleles" \\
                             --max-chunk-size $pred_chunk_size \\
                             $subsampling \\

@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument("-ppo"   , "--protein-peptide-occ"      , help="Path to the protein peptide occurences input file"      , type=str   , required=True)
     parser.add_argument("-epo"   , "--entities-proteins-occ"    , help="Path to the entity protein occurences input file"       , type=str   , required=True)
     parser.add_argument("-meo"   , "--microbiomes-entities-occ" , help="Path to the microbiome entity occurences input file"    , type=str   , required=True)
-    parser.add_argument("-c"     , "--conditions"               , help="Path to the conditions input file"                      , type=str   , required=True)
+    parser.add_argument("-cmm"   , "--conditions-microbiomes"   , help="Path to the conditions - microbiomes map input file"    , type=str   , required=True)
     parser.add_argument("-cam"   , "--condition-allele-map"     , help="Path to the condition allele map input file"            , type=str   , required=True)
     parser.add_argument("-a"     , "--alleles"                  , help="Path to the allele input file"                          , type=str   , required=True)
 
@@ -77,7 +77,7 @@ try:
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
-    conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
+    conditions_microbiomes    = pd.read_csv(args.conditions_microbiomes, sep='\t')
     condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
 
@@ -97,7 +97,7 @@ try:
             .drop(columns="protein_id")\
             .merge(microbiomes_entities_occs)\
             .drop(columns="entity_id")\
-            .merge(conditions)\
+            .merge(conditions_microbiomes)\
             .drop(columns="microbiome_id")
 
     if args.sample_n is not None:
