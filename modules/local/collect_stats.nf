@@ -9,11 +9,11 @@ process COLLECT_STATS {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path(peptides            )
-    path(proteins_peptides   )
-    path(entities_proteins   )
-    path(microbiomes_entities)
-    path(conditions          )
+    path(peptides               )
+    path(proteins_peptides      )
+    path(entities_proteins      )
+    path(microbiomes_entities   )
+    path(conditions             )
 
     output:
     path "stats.txt",       emit:   ch_stats
@@ -24,7 +24,7 @@ process COLLECT_STATS {
     collect_stats.py --peptides "$peptides" \\
                     --protein-peptide-occ "$proteins_peptides" \\
                     --entities-proteins-occ "$entities_proteins" \\
-                    --microbiomes-entities-no-weights-occ "$microbiomes_entities" \\
+                    --microbiomes-entities-occ "$microbiomes_entities" \\
                     --conditions "$conditions" \\
                     --outfile stats.txt
 

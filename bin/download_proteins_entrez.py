@@ -33,6 +33,7 @@ from pprint import pprint
 from datetime import datetime
 from collections import Counter, defaultdict
 from urllib.error import HTTPError
+import pandas as pd
 
 import sys
 
@@ -46,12 +47,14 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', "--taxid_input", required=True, nargs="+", metavar='FILE', type=argparse.FileType('r'), help="List of microbiome files containing: taxon_id [, abundance].")
     parser.add_argument('-m', "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs.")
+    parser.add_argument('-c', "--conditions", required=True, metavar="PATH", type=str, help="Input file containing: condition_id, condition_name, microbiome_id.")
     parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
     parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
     parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Output file (compressed) containing: protein_tmp_id, protein_sequence.")
     parser.add_argument('-ta', "--taxa_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
     parser.add_argument('-ep', "--entities_proteins", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_tmp_id, entity_name (taxon_id).")
-    parser.add_argument('-me', "--microbiomes_entities", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: entity_name (taxon_id), microbiome_id, entity_weight.")
+    parser.add_argument('-me', "--microbiomes_entities", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, entity_name (taxon_id), entity_weight.")
+    parser.add_argument('-ce', "--conditions_entities", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, entity_name (taxon_id), entity_weight.")
     return parser.parse_args(args)
 
 
@@ -89,21 +92,27 @@ def main(args=None):
 
     # read taxonomic ids for download (together with abundances) and write 'microbiomes_entities' output
     taxIds = []
-    print("entity_name", "microbiome_id", "entity_weight", sep='\t', file=args.microbiomes_entities)
+    microbiomes_entities_list = []
+    microbiomes_entities_columns = ["microbiome_id", "entity_name", "entity_weight"]
+    # print("entity_name", "microbiome_id", "entity_weight", sep='\t', file=args.microbiomes_entities)
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
         reader = csv.DictReader(taxid_input)
         for row in reader:
             taxIds.append(row['taxon_id'])
             try:
-                print(row['taxon_id'], microbiomeId, row['abundance'], sep='\t', file=args.microbiomes_entities, flush=True)
+                microbiomes_entities_list.append([int(microbiomeId), row['taxon_id'], row['abundance']])
             except KeyError:
                 try:
-                    print(row['taxon_id'], microbiomeId, 1, sep='\t', file=args.microbiomes_entities, flush=True)
+                    microbiomes_entities_list.append([int(microbiomeId), row['taxon_id'], 1])
                 except KeyError:
                     sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
+    microbiomes_entities = pd.DataFrame(microbiomes_entities_list, columns = microbiomes_entities_columns)
+    microbiomes_entities.to_csv(args.microbiomes_entities, sep='\t', index=False)
+    conditions = pd.read_csv(args.conditions, sep='\t')
+    microbiomes_entities.merge(conditions)[["condition_id", "entity_name", "entity_weight"]].to_csv(args.conditions_entities, sep="\t", index=False)
 
     taxIds = list(set(taxIds))
-    print("Processing the following taxonmy IDs:")
+    print("Processing the following taxonomy IDs:")
     print(taxIds)
 
     ####################################################################################################

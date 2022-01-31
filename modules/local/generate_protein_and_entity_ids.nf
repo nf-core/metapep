@@ -19,7 +19,7 @@ process GENERATE_PROTEIN_AND_ENTITY_IDS {
     path   "proteins.tsv.gz"                        , emit:   ch_proteins
     path   "entities_proteins.tsv"                  , emit:   ch_entities_proteins
     path   "entities.tsv"                           , emit:   ch_entities
-    path   "microbiomes_entities.no_weights.tsv"    , emit:   ch_microbiomes_entities_noweights  // microbiome_id, entitiy_id  (no weights yet!)
+    path   "microbiomes_entities.tsv"               , emit:   ch_microbiomes_entities  // microbiome_id, entitiy_id  (no weights yet!)
     path   "versions.yml"                           , emit:   versions
 
     script:
@@ -41,7 +41,7 @@ process GENERATE_PROTEIN_AND_ENTITY_IDS {
         --out-proteins                        proteins.tsv.gz                      \\
         --out-entities-proteins               entities_proteins.tsv                \\
         --out-entities                        entities.tsv                         \\
-        --out-microbiomes-entities            microbiomes_entities.no_weights.tsv
+        --out-microbiomes-entities            microbiomes_entities.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

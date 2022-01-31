@@ -25,25 +25,25 @@ import pandas as pd
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-w',   "--weights",            required=True, metavar="PATH",  type=str,                       help="Path to the weights input file")
-    parser.add_argument('-cw',  "--conditions_weights", required=True, metavar="PATH",  type=str,                       help="Path to the condition weights map input file")
+    parser.add_argument('-w',   "--weights",            required=True, metavar="PATH",  type=str,                       help="Path to the weights input file containing: weights_id, weights_path.")
+    parser.add_argument('-cw',  "--conditions_weights", required=True, metavar="PATH",  type=str,                       help="Path to the condition weights map input file containing: condition_id, weights_id.")
     parser.add_argument('-o',   "--out",                required=True,                  type=argparse.FileType('w'),    help="Output TSV file (condition_id, entity_name, entity_weight)")
     return parser.parse_args(args)
 
 args = parse_args()
 
-weights_input = pd.read_csv(args.weights, sep="\t")
+weights = pd.read_csv(args.weights, sep="\t")
 conditions_weights = pd.read_csv(args.conditions_weights, sep="\t")
 
 # Read all input files and rename columns accoring to data model
 dfs = []
-for weights in weights_input.itertuples():
-    df = pd.read_csv(weights.weights_path, sep="\t").rename(columns={
+for w in weights.itertuples():
+    df = pd.read_csv(w.weights_path, sep="\t").rename(columns={
         'contig_name' : 'entity_name',
         'bin_basename' : 'entity_name',
         'weight' : 'entity_weight'
         })
-    df["weights_id"] = weights.weights_id
+    df["weights_id"] = w.weights_id
     dfs.append(df)
 
 column_names = ["condition_id", "entity_name", "entity_weight"]

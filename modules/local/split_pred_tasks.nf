@@ -9,13 +9,13 @@ process SPLIT_PRED_TASKS {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path(peptides            )
-    path(proteins_peptides   )
-    path(entities_proteins   )
-    path(microbiomes_entities)
-    path(conditions          )
-    path(conditions_alleles  )
-    path(alleles             )
+    path(peptides              )
+    path(proteins_peptides     )
+    path(entities_proteins     )
+    path(microbiomes_entities  )
+    path(conditions)
+    path(conditions_alleles    )
+    path(alleles               )
     // The tables are joined to map peptide -> protein -> microbiome -> condition -> allele
     // and thus to enumerate, which (peptide, allele) combinations have to be predicted.
 

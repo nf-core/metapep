@@ -34,14 +34,15 @@ def parse_args():
     """Parse the command line arguments"""
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-eme",     "--entrez-microbiomes-entities",    required=True, metavar="PATH", type=str,                   nargs="?", help="Microbiomes entities map from Entrez (microbiome_id, entity_name, entity_weight)")
-    parser.add_argument("-nme",     "--nucl-microbiomes-entities",      required=True, metavar="PATH", type=str,                   nargs="?", help="Microbiomes entities map from nucleotide methods (condition_id, entity_name, entity_weight)")
-    parser.add_argument("-menw",    "--microbiomes-entities-noweights", required=True, metavar="PATH", type=str,                              help="Preliminary microbiome entity map (microbiome_id, entity_id) w/o weights.")
+    parser.add_argument("-ece",     "--entrez-conditions-entities",     required=True, metavar="PATH", type=str,                   nargs="?", help="Conditions entities map from Entrez (condition_id, entity_name, entity_weight)")
+    parser.add_argument("-nce",     "--nucl-conditions-entities",       required=True, metavar="PATH", type=str,                   nargs="?", help="Conditions entities map from nucleotide methods (condition_id, entity_name, entity_weight)")
+    parser.add_argument("-menw",    "--microbiomes-entities",           required=True, metavar="PATH", type=str,                              help="Microbiome entity map (microbiome_id, entity_id).")
     parser.add_argument("-ent",     "--entities",                       required=True, metavar="PATH", type=str,                              help="Entity map (entity_id, entity_name)")
     parser.add_argument("-cond",    "--conditions",                     required=True, metavar="PATH", type=str,                              help="Conditions - microbiomes map (condition_id, condition_name, microbiome_id)")
-    parser.add_argument("-o",       "--output",                         required=True, metavar="PATH", type=argparse.FileType('w'),           help="Output file (microbiome_id, entity_id, entity_weight)")
+    parser.add_argument("-o",       "--output",                         required=True, metavar="PATH", type=argparse.FileType('w'),           help="Output file (condition_id, entity_id, entity_weight)")
 
     return parser.parse_args()
+
 
 def process_weights(subset):
     """Check the integrity of the weights for a subset of the data representing
@@ -60,38 +61,30 @@ def process_weights(subset):
 
 args = parse_args()
 
-if not args.entrez_microbiomes_entities and not args.nucl_microbiomes_entities:
-    sys.exit("Neither --entrez-microbiome-entities nor --nucl-microbiome-entities were specified. Aborting.")
-    # What about input type "proteins"?
+if not args.entrez_conditions_entities and not args.nucl_conditions_entities:
+    sys.exit("Neither --entrez-conditions-entities nor --nucl-conditions-entities were specified. Aborting.")
 
 # Read and join the tables that provide microbiome_id, entity_id and entity_name
-entity_microbiome = pd.read_csv(args.microbiomes_entities_noweights, sep='\t')
+entity_microbiome = pd.read_csv(args.microbiomes_entities, sep='\t')
 entity            = pd.read_csv(args.entities, sep='\t')
+
 conditions        = pd.read_csv(args.conditions, sep="\t")
 
 entity_condition = entity_microbiome.merge(entity).merge(conditions)
 
 # Read the tables that provide the weights and concatenate them
-microbiomes_entities_entrez = pd.DataFrame(columns=["condition_id", "entity_name","entity_weight"])
-microbiomes_entities_nucl = pd.DataFrame(columns=["condition_id", "entity_name","entity_weight"])
-if args.entrez_microbiomes_entities:
-    microbiomes_entities_entrez = pd.read_csv(args.entrez_microbiomes_entities, sep='\t', dtype={"entity_name":str})\
-        .merge(conditions)\
-        .drop(columns=["condition_name", "microbiome_id"])
-if args.nucl_microbiomes_entities:
-    microbiomes_entities_nucl = pd.read_csv(args.nucl_microbiomes_entities, sep='\t', dtype={"entity_name":str})
-input_data = pd.concat([microbiomes_entities_entrez, microbiomes_entities_nucl])
+input_data = pd.concat([ pd.read_csv(e, sep='\t', dtype={"entity_name":str}) for e in [args.entrez_conditions_entities, args.nucl_conditions_entities] if e ])
 
 # Join the weights against the entity ids table, which contains all entities
-# that we have observed in upstream processes. Thus, per microbiome, we expect
+# that we have observed in upstream processes. Thus, per condition, we expect
 # to find weights either for all of them or for none of them.
 result = entity_condition.merge(input_data, how="left").drop(columns="entity_name")
 
-# For each microbiome, we now check whether this assumption is true. If we find
-# no weights for a microbiome, we add uniform weights.
+# For each condition, we now check whether this assumption is true. If we find
+# no weights for a condition, we add uniform weights.
 try:
-    result = result.groupby(["condition_id"], dropna=False)\
+    result = result.groupby("condition_id")\
             .apply(process_weights)
-    result[["condition_id", "condition_name", "entity_id", "entity_weight"]].sort_values(by=["condition_id", "entity_id"]).to_csv(args.output, sep='\t', index=False, header=True)
+    result[["condition_id", "entity_id", "entity_weight"]].to_csv(args.output, sep='\t', index=False, header=True)
 except PartialWeightsError as e:
-    sys.exit(f"Inconsistent weight specifications. Weights were specified for only a subset of entities in microbiome with microbiome ID {e}.")
+    sys.exit(f"Inconsist weight specifications. Weights were specified for only a subset of entities in condition with condition ID {e}.")

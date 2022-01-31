@@ -1,4 +1,4 @@
-process FINALIZE_MICROBIOME_ENTITIES {
+process FINALIZE_CONDITION_ENTITIES {
     label 'process_low'
 
     conda (params.enable_conda ? "conda-forge::pandas=1.1.5" : null)
@@ -7,26 +7,26 @@ process FINALIZE_MICROBIOME_ENTITIES {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path    entrez_microbiomes_entities
-    path    nucl_microbiomes_entities
-    path    microbiomes_entities_noweights
+    path    entrez_conditions_entities
+    path    nucl_conditions_entities
+    path    microbiomes_entities
     path    entities
     path    conditions
 
     output:
-    path    "microbiomes_entities.tsv"  , emit: ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
+    path    "conditions_entities.tsv"   , emit: ch_conditions_entities  // "condition_id", "condition_name", "entity_id", "entity_weight"
     path    "versions.yml"              , emit: versions
 
     script:
 
     """
-    finalize_microbiome_entities.py \\
-        -eme $entrez_microbiomes_entities \\
-        -nme $nucl_microbiomes_entities \\
-        -menw $microbiomes_entities_noweights \\
+    finalize_condition_entities.py \\
+        -ece $entrez_conditions_entities \\
+        -nce $nucl_conditions_entities \\
+        -men $microbiomes_entities \\
         -ent "$entities" \\
         -cond "$conditions" \\
-        -o microbiomes_entities.tsv
+        -o conditions_entities.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

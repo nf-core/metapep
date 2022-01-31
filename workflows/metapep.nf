@@ -36,7 +36,7 @@ include { DOWNLOAD_PROTEINS                 } from '../modules/local/download_pr
 include { CREATE_PROTEIN_TSV                } from '../modules/local/create_protein_tsv'
 include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl_entity_weights'
 include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
-include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_microbiome_entities'
+include { FINALIZE_CONDITION_ENTITIES       } from '../modules/local/finalize_condition_entities'
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
@@ -210,7 +210,8 @@ workflow METAPEP {
     */
     DOWNLOAD_PROTEINS (
         ch_taxa_input.map { meta, file -> meta.id }.collect(),
-        ch_taxa_input.map { meta, file -> file }.collect()
+        ch_taxa_input.map { meta, file -> file }.collect(),
+        INPUT_CHECK.out.ch_conditions
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
@@ -269,7 +270,7 @@ workflow METAPEP {
     GENERATE_PEPTIDES.out.ch_peptides,
     GENERATE_PEPTIDES.out.ch_proteins_peptides,
     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
+    GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities,
     INPUT_CHECK.out.ch_conditions,
     INPUT_CHECK.out.ch_conditions_alleles,
     INPUT_CHECK.out.ch_alleles
@@ -314,14 +315,14 @@ workflow METAPEP {
     /*
      * Create microbiome_entities
      */
-    FINALIZE_MICROBIOME_ENTITIES (
-        DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
-        ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
-        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
+    FINALIZE_CONDITION_ENTITIES (
+        DOWNLOAD_PROTEINS.out.ch_entrez_conditions_entities.ifEmpty([]),
+        ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_conditions_entities.ifEmpty([]),
+        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities,
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities,
         INPUT_CHECK.out.ch_conditions
     )
-    ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
+    ch_versions = ch_versions.mix(FINALIZE_CONDITION_ENTITIES.out.versions)
 
     /*
     * Collect some numbers: proteins, peptides, unique peptides per conditon
@@ -331,7 +332,7 @@ workflow METAPEP {
             GENERATE_PEPTIDES.out.ch_peptides,
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
+            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities,
             INPUT_CHECK.out.ch_conditions
         )
         ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
@@ -344,7 +345,7 @@ workflow METAPEP {
         MERGE_PREDICTIONS.out.ch_predictions,
         GENERATE_PEPTIDES.out.ch_proteins_peptides,
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+        FINALIZE_CONDITION_ENTITIES.out.ch_conditions_entities,
         INPUT_CHECK.out.ch_conditions,
         INPUT_CHECK.out.ch_conditions_alleles,
         INPUT_CHECK.out.ch_alleles
@@ -353,8 +354,7 @@ workflow METAPEP {
 
     PLOT_SCORE_DISTRIBUTION (
         PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
-        INPUT_CHECK.out.ch_alleles,
-        INPUT_CHECK.out.ch_conditions
+        INPUT_CHECK.out.ch_alleles
     )
     ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
 
@@ -362,7 +362,7 @@ workflow METAPEP {
         MERGE_PREDICTIONS.out.ch_predictions,
         GENERATE_PEPTIDES.out.ch_proteins_peptides,
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+        FINALIZE_CONDITION_ENTITIES.out.ch_conditions_entities,
         INPUT_CHECK.out.ch_conditions,
         INPUT_CHECK.out.ch_conditions_alleles,
         INPUT_CHECK.out.ch_alleles

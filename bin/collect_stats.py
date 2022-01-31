@@ -33,7 +33,7 @@ def parse_args(args=None):
     parser.add_argument("-p"     , "--peptides"                             , help="Path to the peptides input file"                        , type=str   , required=True)
     parser.add_argument("-ppo"   , "--protein-peptide-occ"                  , help="Path to the protein peptide occurences input file"      , type=str   , required=True)
     parser.add_argument("-epo"   , "--entities-proteins-occ"                , help="Path to the entity protein occurences input file"       , type=str   , required=True)
-    parser.add_argument("-meo"   , "--microbiomes-entities-no-weights-occ"  , help="Path to the microbiome entity occurences input file"    , type=str   , required=True)
+    parser.add_argument("-meo"   , "--microbiomes-entities-occ"             , help="Path to the microbiome entity occurences input file"    , type=str   , required=True)
     parser.add_argument("-c"     , "--conditions"                           , help="Path to the conditions input file"                      , type=str   , required=True)
 
     # OUTPUT FILES
@@ -51,7 +51,7 @@ def main(args=None):
     peptides                  = pd.read_csv(args.peptides, sep='\t')
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t')
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_no_weights_occ, sep='\t')
+    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
     conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_id")
 
     print("Joining input data...", flush=True)
