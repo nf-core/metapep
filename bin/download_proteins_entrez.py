@@ -164,7 +164,7 @@ def main(args=None):
         try:
             with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
                 records = list(SeqIO.parse(entrez_handle, "fasta"))
-                with gzip.open(args.fasta, 'wt') as out_handle:
+                with open(args.fasta, 'w') as out_handle:
                     SeqIO.write(records, out_handle, 'fasta')
                 with gzip.open(args.proteins, 'wt') as out_handle:
                     print("protein_tmp_id", "protein_sequence", sep='\t', file=out_handle)

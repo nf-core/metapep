@@ -36,6 +36,7 @@ include { CREATE_PROTEIN_TSV                } from '../modules/local/create_prot
 include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl_entity_weights'
 include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
 include { FINALIZE_CONDITION_ENTITIES       } from '../modules/local/finalize_condition_entities'
+include { FRED2_GENERATEPEPTIDES            } from '../modules/local/fred2_generatepeptides.nf'
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
@@ -101,6 +102,12 @@ workflow METAPEP {
         "gff"
     )
     ch_versions = ch_versions.mix(PRODIGAL.out.versions)
+
+    FRED2_GENERATEPEPTIDES (
+        DOWNLOAD_PROTEINS.out.ch_entrez_fasta
+        .mix (PRODIGAL.out.amino_acid_fasta)
+    )
+    ch_versions = ch_versions.mix(FRED2_GENERATEPEPTIDES.out.versions)
 
     // CREATE_PROTEIN_TSV (
     //     PRODIGAL.out.amino_acid_fasta

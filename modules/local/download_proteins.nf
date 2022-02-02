@@ -11,11 +11,11 @@ process DOWNLOAD_PROTEINS {
     tuple val(meta), val(taxon)
 
     output:
-    path    "proteins*.entrez.tsv.gz"           , emit:  ch_entrez_proteins
-    path    "proteins*.entrez.fasta.gz"         , emit:  ch_entrez_fasta
-    path    "taxa_assemblies.tsv"               , emit:  ch_entrez_assemblies
-    path    "entities_proteins.entrez.tsv"      , emit:  ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
-    path    "versions.yml"                      , emit:  versions
+    tuple val(meta), path("proteins*.entrez.tsv.gz")        , emit:  ch_entrez_proteins
+    tuple val(meta), path("proteins*.entrez.fasta")         , emit:  ch_entrez_fasta
+    tuple val(meta), path("taxa_assemblies.tsv")            , emit:  ch_entrez_assemblies
+    tuple val(meta), path("entities_proteins.entrez.tsv")   , emit:  ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
+    path "versions.yml"                                     , emit:  versions
 
     script:
     def key = params.ncbi_key
@@ -28,7 +28,7 @@ process DOWNLOAD_PROTEINS {
                                 --key $key \\
                                 -t $taxon \\
                                 -p ${protein_prefix}.tsv.gz \\
-                                -f ${protein_prefix}.fasta.gz \\
+                                -f ${protein_prefix}.fasta \\
                                 -ta taxa_assemblies.tsv \\
                                 -ep entities_proteins.entrez.tsv
 

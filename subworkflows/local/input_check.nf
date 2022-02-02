@@ -45,6 +45,7 @@ workflow INPUT_CHECK {
                 return bin_files.collect {
                     def meta_new = [:]
                     meta_new.id             = meta.id
+                    meta_new.sample         = meta.sample
                     meta_new.conditions     = meta.conditions
                     meta_new.alleles        = meta.alleles
                     meta_new.type           = meta.type
@@ -64,7 +65,16 @@ workflow INPUT_CHECK {
         .map { meta, taxon ->
             return [meta, taxon.taxon_id]}
         .groupTuple(by:1)
+        .map { meta, taxon_id ->
+            def meta_new = [:]
+            meta_new.id             = taxon_id
+            meta_new.sample         = taxon_id
+            meta_new.microbiomes    = meta
+            return [meta_new, taxon_id]
+        }
         .set{ ch_taxa_input }
+
+        ch_taxa_input.view()
 
     emit:
     ch_taxa_input
@@ -84,6 +94,7 @@ workflow INPUT_CHECK {
 def create_meta(LinkedHashMap row) {
     def meta = [:]
     meta.id             = row.microbiome_id
+    meta.sample         = row.microbiome_id
     meta.conditions     = row.conditions
     meta.alleles        = row.alleles
     meta.type           = row.microbiome_type
