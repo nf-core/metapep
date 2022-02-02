@@ -39,6 +39,8 @@ include { FINALIZE_CONDITION_ENTITIES       } from '../modules/local/finalize_co
 include { FRED2_GENERATEPEPTIDES            } from '../modules/local/fred2_generatepeptides.nf'
 include { SPLIT_PEPTIDES                    } from '../modules/local/split_peptides.nf'
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
+include { GET_PREDICTION_VERSIONS           } from '../modules/local/get_prediction_versions'
+include { PEPTIDE_PREDICTION                } from '../modules/local/peptide_prediction'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
 include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
@@ -88,8 +90,7 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
 
-    // // ####################################################################################################
-
+    // ####################################################################################################
     /*
     * Download proteins from entrez
     */
@@ -113,10 +114,22 @@ workflow METAPEP {
     SPLIT_PEPTIDES(
         FRED2_GENERATEPEPTIDES.out.splitted
     )
-     ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
+    ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
+
+    GET_PREDICTION_VERSIONS([])
+    ch_prediction_tool_versions = GET_PREDICTION_VERSIONS.out.versions.ifEmpty("")
+
+    PEPTIDE_PREDICTION (
+        SPLIT_PEPTIDES
+            .out
+            .splitted
+            .combine( ch_prediction_tool_versions )
+            .transpose()
+    )
+    ch_versions = ch_versions.mix( PEPTIDE_PREDICTION.out.versions )
 
     // CREATE_PROTEIN_TSV (
-    //     PRODIGAL.out.amino_acid_fasta
+    //     PRODIGAL.out.amino_acid_fastac
     // )
     // ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
 

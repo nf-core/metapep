@@ -23,6 +23,7 @@ process DOWNLOAD_PROTEINS {
     def protein_prefix = "proteins_${taxon}.entrez"
     """
     # provide new home dir to avoid permission errors with Docker and other artefacts
+    original_home=\$HOME
     export HOME="\${PWD}/HOME"
     download_proteins_entrez.py --email $email \\
                                 --key $key \\
@@ -31,7 +32,8 @@ process DOWNLOAD_PROTEINS {
                                 -f ${protein_prefix}.fasta \\
                                 -ta taxa_assemblies.tsv \\
                                 -ep entities_proteins.entrez.tsv
-
+    # go back to original home dir to avoid issues with meta map
+    export HOME=\${original_home}
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

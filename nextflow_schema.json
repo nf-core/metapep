@@ -266,6 +266,34 @@
                 "skip_stats": {
                     "type": "boolean",
                     "description": "Skip collect_stats"
+                },
+                "tool_thresholds": {
+                    "type": "string",
+                    "description": "Specifies tool-specific binder thresholds in a JSON file. This can be used to override the given default binder threshold values.",
+                    "help_text": "Default affinity thresholds to determine whether a peptide is considered as a binder are the following:: `syfpeithi` > 50, `mhcflurry` <=500, `mhcnuggets-class-1` <= 500, `mhcnuggets-class-2` <= 500, `netmhc` <= 500, `netmhcpan` <= 500, `netmhcii` <= 500, `netmhciipan` <= 500. Thresholds can be customized in a JSON file: `tool-name:value`"
+                },
+                "wild_type": {
+                    "type": "boolean",
+                    "help_text": "Specifies whether wild-type sequences of mutated peptides should be predicted as well.",
+                    "description": "Specifies whether wild-type sequences should be predicted."
+                },
+                "fasta_output": {
+                    "type": "boolean",
+                    "description": "Specifies that sequences of proteins, affected by provided variants, will be written to a FASTA file.",
+                    "help_text": "Specifies that sequences of proteins that are affected by the provided genomic variants are written to a `FASTA` file. The resulting `FASTA` file will contain the wild-type and mutated protein sequences."
+                }
+            }
+        },
+         "reference_options": {
+            "title": "Reference options",
+            "type": "object",
+            "description": "Options for the genome and proteome reference.",
+            "fa_icon": "fas fa-stream",
+            "properties": {
+                "proteome": {
+                    "type": "string",
+                    "help_text": "Specifies the reference proteome files that are used for self-filtering. Should be either a folder of FASTA files or a single FASTA file containing the reference proteome(s).",
+                    "description": "Specifies the reference proteome."
                 }
             }
         }
@@ -285,6 +313,9 @@
         },
         {
             "$ref": "#/definitions/pipeline_options"
+        },
+        {
+            "$ref": "#/definitions/reference_options"
         }
     ]
 }
