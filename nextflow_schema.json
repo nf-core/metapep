@@ -246,10 +246,17 @@
                     "description": "Epitope prediction method to use",
                     "enum": ["syfpeithi", "mhcflurry", "mhcnuggets-class-1", "mhcnuggets-class-2"]
                 },
-                "pred_chunk_size": {
+                "peptides_split_maxchunks": {
                     "type": "integer",
-                    "default": 75000,
-                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
+                    "default": 100,
+                    "help_text": "Used in combination with `--peptides` or `--proteins`. Maximum number of peptide chunks that will be created for parallelisation.",
+                    "description": "Specifies the maximum number of peptide chunks."
+                },
+                "peptides_split_minchunksize": {
+                    "type": "integer",
+                    "default": 5000,
+                    "help_text": "Used in combination with `--peptides` or `--proteins`: minimum number of peptides that should be written into one chunk.",
+                    "description": "Specifies the minimum number of peptides that should be written into one chunk."
                 },
                 "prodigal_mode": {
                     "type": "string",
