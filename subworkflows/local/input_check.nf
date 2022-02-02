@@ -58,8 +58,16 @@ workflow INPUT_CHECK {
     ch_nucl_input           = ch_microbiomes_branch.assembly.concat(ch_bins_input)
     ch_nucl_input.dump(tag:"nucl")
 
+    ch_microbiomes_branch.taxa
+        .map { meta, file -> [meta, file.splitCsv(sep:"\t", header:true)] }
+        .transpose()
+        .map { meta, taxon ->
+            return [meta, taxon.taxon_id]}
+        .groupTuple(by:1)
+        .set{ ch_taxa_input }
+
     emit:
-    ch_taxa_input               = ch_microbiomes_branch.taxa
+    ch_taxa_input
     ch_proteins_input           = ch_microbiomes_branch.proteins
     ch_nucl_input
     ch_microbiomes              = SAMPLESHEET_CHECK.out.microbiomes

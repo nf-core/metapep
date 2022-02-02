@@ -88,20 +88,19 @@ workflow METAPEP {
 
     // // ####################################################################################################
 
-    // /*
-    // * Download proteins from entrez
-    // */
-    // DOWNLOAD_PROTEINS (
-    //     ch_taxa_input.map { meta, file -> meta.id }.collect(),
-    //     ch_taxa_input.map { meta, file -> file }.collect()
-    // )
-    // ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
+    /*
+    * Download proteins from entrez
+    */
+    DOWNLOAD_PROTEINS (
+        INPUT_CHECK.out.ch_taxa_input
+    )
+    ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
-    // PRODIGAL(
-    //     ch_nucl_input,
-    //     "gff"
-    // )
-    // ch_versions = ch_versions.mix(PRODIGAL.out.versions)
+    PRODIGAL(
+        INPUT_CHECK.out.ch_nucl_input,
+        "gff"
+    )
+    ch_versions = ch_versions.mix(PRODIGAL.out.versions)
 
     // CREATE_PROTEIN_TSV (
     //     PRODIGAL.out.amino_acid_fasta
@@ -244,9 +243,9 @@ workflow METAPEP {
     // )
     // ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
+    // CUSTOM_DUMPSOFTWAREVERSIONS (
+    //     ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    // )
 
     // //
     // // MODULE: MultiQC

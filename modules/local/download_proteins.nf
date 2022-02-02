@@ -1,5 +1,5 @@
 process DOWNLOAD_PROTEINS {
-    tag "$microbiome_ids"
+    tag "$taxon"
     label 'process_low'
 
     conda (params.enable_conda ? "conda-forge::pandas=1.1.2 conda-forge::biopython=1.78 conda-forge::numpy=1.18.1" : null)
@@ -8,37 +8,29 @@ process DOWNLOAD_PROTEINS {
         'quay.io/biocontainers/mulled-v2-1e9d4f78feac0eb2c8d8246367973b3f6358defc:41ffac721ff9b03ca1121742e969d0e7d78e589f-0' }"
 
     input:
-    val    microbiome_ids
-    path   microbiome_files
-    path   conditions_microbiomes
+    tuple val(meta), val(taxon)
 
     output:
-    path    "proteins.entrez.tsv.gz"            , emit:  ch_entrez_proteins
-    path    "proteins.entrez.fasta.gz"          , emit:  ch_entrez_fasta
+    path    "proteins*.entrez.tsv.gz"           , emit:  ch_entrez_proteins
+    path    "proteins*.entrez.fasta.gz"         , emit:  ch_entrez_fasta
     path    "taxa_assemblies.tsv"               , emit:  ch_entrez_assemblies
     path    "entities_proteins.entrez.tsv"      , emit:  ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
-    path    "microbiomes_entities.entrez.tsv"   , emit:  ch_entrez_microbiomes_entities  // entity_name, microbiome_id, entity_weight
-    path    "conditions_entities.entrez.tsv"    , emit:  ch_entrez_conditions_entities  // entity_name, microbiome_id, entity_weight
     path    "versions.yml"                      , emit:  versions
 
     script:
     def key = params.ncbi_key
     def email = params.ncbi_email
-    def microbiome_ids = microbiome_ids.join(' ')
+    def protein_prefix = "proteins_${taxon}.entrez"
     """
     # provide new home dir to avoid permission errors with Docker and other artefacts
     export HOME="\${PWD}/HOME"
     download_proteins_entrez.py --email $email \\
                                 --key $key \\
-                                -t $microbiome_files \\
-                                -m $microbiome_ids \\
-                                -cm $conditions_microbiomes \\
-                                -p proteins.entrez.tsv.gz \\
-                                -f proteins.entrez.fasta.gz \\
+                                -t $taxon \\
+                                -p ${protein_prefix}.tsv.gz \\
+                                -f ${protein_prefix}.fasta.gz \\
                                 -ta taxa_assemblies.tsv \\
-                                -ep entities_proteins.entrez.tsv \\
-                                -me microbiomes_entities.entrez.tsv \\
-                                -ce conditions_entities.entrez.tsv
+                                -ep entities_proteins.entrez.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
