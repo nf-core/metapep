@@ -41,6 +41,11 @@ include { SPLIT_PEPTIDES                    } from '../modules/local/split_pepti
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { GET_PREDICTION_VERSIONS           } from '../modules/local/get_prediction_versions'
 include { PEPTIDE_PREDICTION                } from '../modules/local/peptide_prediction'
+include { CAT_FILES as CAT_TSV              } from '../modules/local/cat_files'
+include { CAT_FILES as CAT_FASTA            } from '../modules/local/cat_files'
+include { CSVTK_CONCAT                      } from '../modules/local/csvtk_concat'
+include { MERGE_JSON as MERGE_JSON_SINGLE   } from '../modules/local/merge_json'
+include { MERGE_JSON as MERGE_JSON_MULTI    } from '../modules/local/merge_json'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
 include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
@@ -127,6 +132,71 @@ workflow METAPEP {
             .transpose()
     )
     ch_versions = ch_versions.mix( PEPTIDE_PREDICTION.out.versions )
+
+    PEPTIDE_PREDICTION
+        .out
+        .predicted
+        .groupTuple()
+        .map { meta, predicted ->
+            meta.files = predicted.size()
+            return [meta, predicted]}
+        .branch {
+            meta_data, predicted ->
+                multi: meta_data.files > 1
+                    return [ meta_data, predicted ]
+                single: meta_data.files == 1
+                    return [ meta_data, predicted ]
+        }
+        .set { ch_predicted_peptides }
+
+    // ch_predicted_peptides.multi.dump(tag:'pred1')
+    // ch_predicted_peptides.single.dump(tag:'pred2')
+
+    // Combine epitope prediction results
+    CAT_TSV(
+        ch_predicted_peptides.single
+    )
+    CSVTK_CONCAT(
+        ch_predicted_peptides.multi
+    )
+    ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
+
+    CAT_TSV.out.output.mix(CSVTK_CONCAT.out.predicted).dump(tag:'pred')
+
+     // Combine protein sequences
+    CAT_FASTA(
+        PEPTIDE_PREDICTION
+            .out
+            .fasta
+            .groupTuple()
+    )
+
+    PEPTIDE_PREDICTION
+        .out
+        .json
+        .groupTuple()
+        .map { meta, json ->
+            meta.files = json.size()
+            return [meta, json]}
+        .branch {
+            meta, json ->
+                multi: meta.files > 1
+                    return [ meta, json ]
+                single: meta.files == 1
+                    return [ meta, json ]
+        }
+        .set { ch_json_reports }
+
+    // Combine epitope prediction reports
+    MERGE_JSON_SINGLE(
+        ch_json_reports.single
+    )
+    MERGE_JSON_MULTI(
+        ch_json_reports.multi
+    )
+    ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
+    ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
+
 
     // CREATE_PROTEIN_TSV (
     //     PRODIGAL.out.amino_acid_fastac
