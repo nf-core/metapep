@@ -8,14 +8,14 @@ process DOWNLOAD_PROTEINS {
         'quay.io/biocontainers/mulled-v2-1e9d4f78feac0eb2c8d8246367973b3f6358defc:41ffac721ff9b03ca1121742e969d0e7d78e589f-0' }"
 
     input:
-    val(taxon)
+    tuple val(meta), val(taxon)
 
     output:
-    tuple path("proteins*.entrez.tsv.gz")     , val(taxon)   , emit:  ch_entrez_proteins
-    tuple path("proteins*.entrez.fasta")      , val(taxon)   , emit:  ch_entrez_fasta
-    tuple path("taxa_assemblies.tsv")         , val(taxon)   , emit:  ch_entrez_assemblies
-    tuple path("entities_proteins.entrez.tsv"), val(taxon)   , emit:  ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
-    path "versions.yml"                                     , emit:  versions
+    tuple val(meta), path("proteins*.entrez.tsv.gz")       , emit:  ch_entrez_proteins
+    tuple val(meta), path("proteins*.entrez.fasta")        , emit:  ch_entrez_fasta
+    tuple val(meta), path("taxa_assemblies.tsv")           , emit:  ch_entrez_assemblies
+    tuple val(meta), path("entities_proteins.entrez.tsv")  , emit:  ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
+    path "versions.yml"                                    , emit:  versions
 
     script:
     def key = params.ncbi_key

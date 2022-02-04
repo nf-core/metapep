@@ -46,6 +46,7 @@ include { CAT_FILES as CAT_FASTA            } from '../modules/local/cat_files'
 include { CSVTK_CONCAT                      } from '../modules/local/csvtk_concat'
 include { MERGE_JSON as MERGE_JSON_SINGLE   } from '../modules/local/merge_json'
 include { MERGE_JSON as MERGE_JSON_MULTI    } from '../modules/local/merge_json'
+include { CREATE_RESULTS_TABLES             } from '../modules/local/create_results_tables'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
 include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
@@ -100,16 +101,9 @@ workflow METAPEP {
     * Download proteins from entrez
     */
     DOWNLOAD_PROTEINS (
-        INPUT_CHECK.out.ch_taxa_input.map {meta, taxon ->  taxon}
+        INPUT_CHECK.out.ch_taxa_input
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
-
-    INPUT_CHECK.out.ch_taxa_input
-        .join(DOWNLOAD_PROTEINS.out.ch_entrez_fasta, by:1)
-        .map { taxon, meta, file ->
-            [meta, file]
-        }
-        .set { ch_downloaded_proteins }
 
     PRODIGAL(
         INPUT_CHECK.out.ch_nucl_input,
@@ -118,7 +112,7 @@ workflow METAPEP {
     ch_versions = ch_versions.mix(PRODIGAL.out.versions)
 
     FRED2_GENERATEPEPTIDES (
-        ch_downloaded_proteins
+        DOWNLOAD_PROTEINS.out.ch_entrez_fasta.dump(tag:'pred')
         .mix (PRODIGAL.out.amino_acid_fasta)
     )
     ch_versions = ch_versions.mix(FRED2_GENERATEPEPTIDES.out.versions)
@@ -183,6 +177,10 @@ workflow METAPEP {
         .transpose()
         .mix(ch_predictions_branch.other).dump(tag:'pred')
         .set { ch_predictions }
+
+    CREATE_RESULTS_TABLES(
+        ch_predictions
+    )
 
 
      // Combine protein sequences
