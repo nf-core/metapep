@@ -100,9 +100,16 @@ workflow METAPEP {
     * Download proteins from entrez
     */
     DOWNLOAD_PROTEINS (
-        INPUT_CHECK.out.ch_taxa_input
+        INPUT_CHECK.out.ch_taxa_input.map {meta, taxon ->  taxon}
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
+
+    INPUT_CHECK.out.ch_taxa_input
+        .join(DOWNLOAD_PROTEINS.out.ch_entrez_fasta, by:1)
+        .map { taxon, meta, file ->
+            [meta, file]
+        }
+        .set { ch_downloaded_proteins }
 
     PRODIGAL(
         INPUT_CHECK.out.ch_nucl_input,
@@ -111,7 +118,7 @@ workflow METAPEP {
     ch_versions = ch_versions.mix(PRODIGAL.out.versions)
 
     FRED2_GENERATEPEPTIDES (
-        DOWNLOAD_PROTEINS.out.ch_entrez_fasta
+        ch_downloaded_proteins
         .mix (PRODIGAL.out.amino_acid_fasta)
     )
     ch_versions = ch_versions.mix(FRED2_GENERATEPEPTIDES.out.versions)
@@ -161,7 +168,22 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
 
-    CAT_TSV.out.output.mix(CSVTK_CONCAT.out.predicted).dump(tag:'pred')
+    CAT_TSV.out.output.mix(CSVTK_CONCAT.out.predicted)
+        .branch {
+        meta, file ->
+        taxa:           meta.type == 'taxa'
+        other:          true
+        }
+        .set { ch_predictions_branch }
+    ch_predictions_branch.taxa
+        .map {meta, predicted ->
+            def microbiomes_new = meta.microbiomes.collect {it -> it.taxon = meta.id}
+            [meta.microbiomes, predicted]
+            }
+        .transpose()
+        .mix(ch_predictions_branch.other).dump(tag:'pred')
+        .set { ch_predictions }
+
 
      // Combine protein sequences
     CAT_FASTA(

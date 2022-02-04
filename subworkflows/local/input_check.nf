@@ -38,26 +38,27 @@ workflow INPUT_CHECK {
     // The file ending we expect for FASTA files
     fasta_suffix = ~/(?i)[.]fa(sta)?(.gz)?$/
 
-    UNPACK_BIN_ARCHIVES.out.ch_microbiomes_bins_archives_unpacked.concat(ch_microbiomes_branch.bins_folders).dump(tag:"test")
+    UNPACK_BIN_ARCHIVES.out.ch_microbiomes_bins_archives_unpacked.mix(ch_microbiomes_branch.bins_folders)
         .flatMap { meta, bin_files ->
                 bin_files = bin_files instanceof List ? bin_files.findAll{ it.name =~ fasta_suffix } : bin_files.listFiles().findAll{ it.name =~ fasta_suffix }
                 if (bin_files.isEmpty()) log.warn("WARNING - Archive or folder provided for microbiome ID ${meta.id} did not yield any bin files")
                 return bin_files.collect {
                     def meta_new = [:]
-                    meta_new.id             = meta.id
-                    meta_new.sample         = meta.sample
-                    meta_new.conditions     = meta.conditions
-                    meta_new.alleles        = meta.alleles
-                    meta_new.type           = meta.type
-                    meta_new.bin_basename   = it.name - fasta_suffix
+                    meta_new.id             =   meta.id
+                    meta_new.sample         =   meta.sample
+                    meta_new.alleles        =   meta.alleles
+                    meta_new.conditions     =   meta.conditions
+                    meta_new.cond_alleles   =   meta.cond_alleles
+                    meta_new.type           =   meta.type
+                    meta_new.bin_basename   =   it.name - fasta_suffix
                     return [ meta_new, it ]
                 }
             }
         .set{ ch_bins_input }
 
     // Concatenate the channels for nucleotide based inputs
-    ch_nucl_input           = ch_microbiomes_branch.assembly.concat(ch_bins_input)
-    ch_nucl_input.dump(tag:"nucl")
+    ch_nucl_input           = ch_microbiomes_branch.assembly.mix(ch_bins_input)
+    ch_nucl_input.dump(tag:'nucl')
 
     ch_microbiomes_branch.taxa
         .map { meta, file -> [meta, file.splitCsv(sep:"\t", header:true)] }
@@ -69,16 +70,17 @@ workflow INPUT_CHECK {
             def meta_new = [:]
             meta_new.id             = taxon_id
             meta_new.sample         = taxon_id
-            meta_new.alleles        = meta.collect {
-                microbiome ->
-                microbiome.alleles.split('[; ]')
-            }
-            .flatten()
-            .unique().join(';')
+            meta_new.alleles        = meta.collect { m ->
+                m.alleles.split(';')}
+                .flatten()
+                .unique()
+                .join(';')
+            meta_new.type           = 'taxa'
             meta_new.microbiomes    = meta.collect { m ->
-                def meta_reduced = [:]
+                def meta_reduced            = [:]
                 meta_reduced.id             = m.id
                 meta_reduced.conditions     = m.conditions
+                meta_reduced.cond_alleles   = m.cond_alleles
                 meta_reduced.type           = m.type
                 meta_reduced.bin_basename   = m.bin_basename
                 return meta_reduced
@@ -86,6 +88,7 @@ workflow INPUT_CHECK {
             return [meta_new, taxon_id]
         }
         .set{ ch_taxa_input }
+    ch_taxa_input.dump(tag:'taxa')
 
     emit:
     ch_taxa_input
@@ -101,13 +104,14 @@ workflow INPUT_CHECK {
     versions                    = ch_versions                               // channel: [ versions.yml ]
 }
 
-// Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
+// Function to create initial meta information
 def create_meta(LinkedHashMap row) {
     def meta = [:]
     meta.id             = row.microbiome_id
     meta.sample         = row.microbiome_id
+    meta.alleles        = row.alleles.split('[; ]').flatten().unique().join(';')
     meta.conditions     = row.conditions
-    meta.alleles        = row.alleles
+    meta.cond_alleles   = row.alleles
     meta.type           = row.microbiome_type
     meta.bin_basename   = false
     return [ meta, file(row.microbiome_path, checkIfExists: true) ]
