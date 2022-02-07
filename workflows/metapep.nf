@@ -37,6 +37,8 @@ include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl
 include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
 include { FINALIZE_CONDITION_ENTITIES       } from '../modules/local/finalize_condition_entities'
 include { FRED2_GENERATEPEPTIDES            } from '../modules/local/fred2_generatepeptides.nf'
+include { SORT_PEPTIDES                     } from '../modules/local/sort_peptides'
+include { REMOVE_DUPLICATE_PEPTIDES         } from '../modules/local/remove_duplicate_peptides'
 include { SPLIT_PEPTIDES                    } from '../modules/local/split_peptides.nf'
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { GET_PREDICTION_VERSIONS           } from '../modules/local/get_prediction_versions'
@@ -112,13 +114,33 @@ workflow METAPEP {
     ch_versions = ch_versions.mix(PRODIGAL.out.versions)
 
     FRED2_GENERATEPEPTIDES (
-        DOWNLOAD_PROTEINS.out.ch_entrez_fasta.dump(tag:'pred')
+        DOWNLOAD_PROTEINS.out.ch_entrez_fasta
         .mix (PRODIGAL.out.amino_acid_fasta)
+        .splitFasta( by: 5000, file:true )
     )
     ch_versions = ch_versions.mix(FRED2_GENERATEPEPTIDES.out.versions)
 
-    SPLIT_PEPTIDES(
+    SORT_PEPTIDES (
         FRED2_GENERATEPEPTIDES.out.splitted
+    )
+
+    REMOVE_DUPLICATE_PEPTIDES (
+        SORT_PEPTIDES.out.output
+        .map { meta, file ->
+        [meta.alleles.tokenize(';'), meta, file]
+        }
+        .transpose()
+        .groupTuple()
+    )
+
+
+
+    SPLIT_PEPTIDES(
+        REMOVE_DUPLICATE_PEPTIDES.out.output.map { allele, file ->
+        meta = [:]
+        meta.alleles = allele
+        return [meta, file]
+    }
     )
     ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
 
@@ -169,18 +191,58 @@ workflow METAPEP {
         other:          true
         }
         .set { ch_predictions_branch }
-    ch_predictions_branch.taxa
+     ch_predictions_branch.taxa
         .map {meta, predicted ->
-            def microbiomes_new = meta.microbiomes.collect {it -> it.taxon = meta.id}
-            [meta.microbiomes, predicted]
+            meta.microbiomes.collect {it ->
+                it.taxon = meta.id
+            }
+            return [meta.microbiomes, predicted]
             }
         .transpose()
-        .mix(ch_predictions_branch.other).dump(tag:'pred')
+        .set { ch_predictions_taxa }
+    ch_predictions_branch.other
+        .map {meta, predicted ->
+            def meta_new = [:]
+            meta_new.id = meta.id
+            meta_new.conditions = meta.conditions
+            meta_new.cond_alleles = meta.cond_alleles
+            meta_new.type = meta.type
+            meta_new.bin_basename = meta.bin_basename
+            meta_new.weights = meta.weights
+            meta_new.taxon = false
+            return [meta_new, predicted]
+        }
+        .mix(ch_predictions_taxa)
         .set { ch_predictions }
 
-    CREATE_RESULTS_TABLES(
-        ch_predictions
-    )
+
+    // ch_predictions.map {meta, prediction ->
+    //         def conditions_new = [meta.conditions.split(';'), meta.cond_alleles.split(';'), meta.weights.split(';')]
+    //         .transpose()
+    //         .collect {cond ->
+    //         def meta_new = [:]
+    //         meta_new.condition = cond[0]
+    //         meta_new.alleles = cond[1]
+    //         meta_new.weights = cond[2]
+    //         meta_new.id = meta.id
+    //         meta_new.type = meta.type
+    //         meta_new.bin_basename = meta.bin_basename
+    //         return meta_new
+    //         }
+    //         // def meta_new = [:]
+    //         // meta_new.microbiome_id = meta.id
+    //         // meta_new.type = meta.type
+    //         // meta_new.bin_basename = meta.bin_basename
+    //         // meta_new.taxon = meta.taxon
+    //         return [conditions_new, meta.taxon, prediction]
+    //     }
+    //     .transpose()
+    //     .groupTuple()
+    //     .set { ch_conditions_predictions }
+
+    // CREATE_RESULTS_TABLES(
+    //     ch_conditions_predictions
+    // )
 
 
      // Combine protein sequences
@@ -216,6 +278,8 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
     ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
+
+
 
 
     // CREATE_PROTEIN_TSV (

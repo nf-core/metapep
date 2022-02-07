@@ -16,8 +16,8 @@ def parse_args(args=None):
     Epilog = "Example usage: python check_samplesheet.py <FILE_IN>"
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
-    parser.add_argument('-i', "--input", required=True, metavar='FILE', type=argparse.FileType('r'), help="Input samplesheet file containing: condition, type, microbiome_path, alleles, weights_path.")
-    parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type, 'conditions', 'alleles', 'weights.")
+    parser.add_argument('-i', "--input", required=True, metavar='FILE', type=argparse.FileType('r'), help="Input samplesheet file containing: condition, type, microbiome_path, alleles, weights_id.")
+    parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type, 'conditions', 'alleles', 'weights_ids.")
     parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name.")
     parser.add_argument('-a', "--alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: allele_id, allele_name.")
     parser.add_argument('-w', "--weights", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: weights_id, weights_path.")
@@ -82,6 +82,12 @@ def check_samplesheet(args):
 
     db_table = input_table.copy()
 
+    # weights id - weights path
+    weights_group = db_table.groupby(["weights_path"], sort=False)
+
+    db_table["weights_id"] = pd.Series([n if n >= 0 else np.nan for n in weights_group.ngroup()], dtype="Int64")
+    weights_group.agg('first').reset_index()[["weights_id", "weights_path"]].to_csv(args.weights, sep="\t", index=False)
+
     # microbiome_id - microbiome_path - microbiome_type
     microbiome_group = db_table.groupby(["microbiome_path", "type"], sort=False)
 
@@ -90,9 +96,9 @@ def check_samplesheet(args):
 
     db_table["microbiome_id"] = microbiome_group.ngroup()
     microbiome_group \
-        .agg({'microbiome_id': 'first', 'condition': lambda x: ';'.join(list(x)), 'alleles': lambda x: ';'.join(list(x)), 'weights_path': lambda x: ';'.join([y if not pd.isna(y) else "" for y in list(x)])}) \
+        .agg({'microbiome_id': 'first', 'condition': lambda x: ';'.join(list(x)), 'alleles': lambda x: ';'.join(list(x)), 'weights_id': lambda x: ';'.join([str(y) if not pd.isna(y) else "" for y in list(x)])}) \
         .reset_index() \
-        .rename({"type":"microbiome_type", "condition":"conditions"}, axis=1)[['microbiome_id', 'microbiome_path', 'microbiome_type', 'conditions', 'alleles', 'weights_path']] \
+        .rename({"type":"microbiome_type", "condition":"conditions", "weights_id":"weights_ids"}, axis=1)[['microbiome_id', 'microbiome_path', 'microbiome_type', 'conditions', 'alleles', 'weights_ids']] \
         .to_csv(args.microbiomes, sep="\t", index=False)
 
     # condition id - condition name - microbiome id
@@ -112,11 +118,7 @@ def check_samplesheet(args):
     # condition id - allele id
     alleles_exploded[["condition_id", "allele_id"]].to_csv(args.conditions_alleles, sep="\t", index=False)
 
-    # weights id - weights path
-    weights_group = db_table.groupby(["weights_path"], sort=False)
 
-    db_table["weights_id"] = pd.Series([n if n >= 0 else np.nan for n in weights_group.ngroup()], dtype="Int64")
-    weights_group.agg('first').reset_index()[["weights_id", "weights_path"]].to_csv(args.weights, sep="\t", index=False)
 
     # condition id - weights id
     db_table[["condition_id", "weights_id"]].dropna().to_csv(args.conditions_weights, sep="\t", index=False)

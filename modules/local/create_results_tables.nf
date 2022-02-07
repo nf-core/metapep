@@ -7,17 +7,17 @@ process CREATE_RESULTS_TABLES {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    tuple val(meta), path(prediction)
+    tuple val(meta), val(taxa), path(prediction)
 
     output:
     tuple val(meta), path("results_*")      , emit: results
     path "versions.yml"                     , emit: versions
 
     script:
-    def name   = "${meta.type}" == 'taxa' ? "${meta.id}_${meta.taxon}" : meta.bin_basename ? "${meta.id}_${meta.bin_basename}" : "${meta.id}"
     """
-    echo "$meta" >> results_${name}.txt
-    echo $prediction >> results_${name}.txt
+    echo "$meta" >> results_${meta.condition}.txt
+    echo "$taxa" >> results_${meta.condition}.txt
+    echo $prediction >> results_${meta.condition}.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

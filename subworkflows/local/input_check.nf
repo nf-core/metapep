@@ -83,6 +83,7 @@ workflow INPUT_CHECK {
                 meta_reduced.cond_alleles   = m.cond_alleles
                 meta_reduced.type           = m.type
                 meta_reduced.bin_basename   = m.bin_basename
+                meta_reduced.weights        = m.weights
                 return meta_reduced
             }
             return [meta_new, taxon_id]
@@ -114,5 +115,6 @@ def create_meta(LinkedHashMap row) {
     meta.cond_alleles   = row.alleles
     meta.type           = row.microbiome_type
     meta.bin_basename   = false
+    meta.weights        = row.weights_ids
     return [ meta, file(row.microbiome_path, checkIfExists: true) ]
 }
