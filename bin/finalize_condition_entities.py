@@ -54,7 +54,7 @@ def process_weights(subset):
     elif not subset['entity_weight'].isnull().any():
         pass
     else:
-        raise PartialWeightsError(subset['microbiome_id'].iloc[0])
+        raise PartialWeightsError(subset['condition_id'].iloc[0])
     return subset
 
 ####################################################################################################
