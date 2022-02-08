@@ -307,8 +307,7 @@ workflow METAPEP {
     ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
 
     ASSIGN_NUCL_ENTITY_WEIGHTS (
-        INPUT_CHECK.out.ch_weights,
-        INPUT_CHECK.out.ch_conditions_weights
+        INPUT_CHECK.out.ch_conditions
     )
     ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
 
@@ -346,7 +345,6 @@ workflow METAPEP {
         GENERATE_PEPTIDES.out.ch_proteins_peptides,
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
         FINALIZE_CONDITION_ENTITIES.out.ch_conditions_entities,
-        INPUT_CHECK.out.ch_conditions,
         INPUT_CHECK.out.ch_conditions_alleles,
         INPUT_CHECK.out.ch_alleles
     )
@@ -363,7 +361,6 @@ workflow METAPEP {
         GENERATE_PEPTIDES.out.ch_proteins_peptides,
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
         FINALIZE_CONDITION_ENTITIES.out.ch_conditions_entities,
-        INPUT_CHECK.out.ch_conditions,
         INPUT_CHECK.out.ch_conditions_alleles,
         INPUT_CHECK.out.ch_alleles
     )

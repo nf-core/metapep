@@ -7,8 +7,7 @@ process ASSIGN_NUCL_ENTITY_WEIGHTS {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path weights
-    path conditions_weights
+    path conditions
 
     output:
     path   "conditions_entities.nucl.tsv", emit: ch_nucl_conditions_entities  // condition_id, entity_name, entity_weight
@@ -18,8 +17,7 @@ process ASSIGN_NUCL_ENTITY_WEIGHTS {
     script:
     """
     assign_entity_weights.py \\
-        --weights $weights \\
-        --conditions_weights $conditions_weights \\
+        --conditions $conditions \\
         --out conditions_entities.nucl.tsv
 
     cat <<-END_VERSIONS > versions.yml

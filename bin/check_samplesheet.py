@@ -15,11 +15,9 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument('-i', "--input", required=True, metavar='FILE', type=argparse.FileType('r'), help="Input samplesheet file containing: condition, type, microbiome_path, alleles, weights_path.")
     parser.add_argument('-m', "--microbiomes", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: microbiome_id, microbiome_path, microbiome_type.")
-    parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name, microbiome_id.")
+    parser.add_argument('-c', "--conditions", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, condition_name, microbiome_id, weights_path.")
     parser.add_argument('-a', "--alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: allele_id, allele_name.")
-    parser.add_argument('-w', "--weights", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: weights_id, weights_path.")
     parser.add_argument('-ca', "--conditions_alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, allele_id.")
-    parser.add_argument('-cw', "--conditions_weights", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, weights_id.")
     return parser.parse_args(args)
 
 
@@ -96,9 +94,9 @@ def check_samplesheet(args):
     db_table["microbiome_id"] = microbiome_group.ngroup()
     microbiome_group.agg('first').reset_index().rename({"type":"microbiome_type"}, axis=1)[["microbiome_id", "microbiome_path", "microbiome_type"]].to_csv(args.microbiomes, sep="\t", index=False)
 
-    # condition id - condition name - microbiome id
+    # condition id - condition name - microbiome id - weights_path
     db_table = db_table.reset_index().rename({'index':'condition_id', 'condition':'condition_name'}, axis=1)
-    db_table[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, sep="\t", index=False)
+    db_table[["condition_id", "condition_name", "microbiome_id", "weights_path"]].to_csv(args.conditions, sep="\t", index=False)
 
     # allele id - allele name
     db_table["alleles"] = db_table.apply(lambda row: list(row.alleles.split(' ')), axis=1)
@@ -109,15 +107,6 @@ def check_samplesheet(args):
 
     # condition id - allele id
     alleles_exploded[["condition_id", "allele_id"]].to_csv(args.conditions_alleles, sep="\t", index=False)
-
-    # weights id - weights path
-    weights_group = db_table.groupby(["weights_path"], sort=False)
-
-    db_table["weights_id"] = pd.Series([n if n >= 0 else np.nan for n in weights_group.ngroup()], dtype="Int64")
-    weights_group.agg('first').reset_index()[["weights_id", "weights_path"]].to_csv(args.weights, sep="\t", index=False)
-
-    # condition id - weights id
-    db_table[["condition_id", "weights_id"]].dropna().to_csv(args.conditions_weights, sep="\t", index=False)
 
     print("Done!")
 

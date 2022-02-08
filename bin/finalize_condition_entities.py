@@ -85,6 +85,6 @@ result = entity_condition.merge(input_data, how="left").drop(columns="entity_nam
 try:
     result = result.groupby("condition_id")\
             .apply(process_weights)
-    result[["condition_id", "entity_id", "entity_weight"]].to_csv(args.output, sep='\t', index=False, header=True)
+    result[["condition_id", "condition_name", "entity_id", "entity_weight"]].to_csv(args.output, sep='\t', index=False, header=True)
 except PartialWeightsError as e:
     sys.exit(f"Inconsist weight specifications. Weights were specified for only a subset of entities in condition with condition ID {e}.")

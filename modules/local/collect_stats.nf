@@ -9,11 +9,11 @@ process COLLECT_STATS {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path(peptides               )
-    path(proteins_peptides      )
-    path(entities_proteins      )
-    path(microbiomes_entities   )
-    path(conditions             )
+    path(peptides            )
+    path(proteins_peptides   )
+    path(entities_proteins   )
+    path(microbiomes_entities)
+    path(conditions          )
 
     output:
     path "stats.txt",       emit:   ch_stats

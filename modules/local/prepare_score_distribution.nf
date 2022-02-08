@@ -12,7 +12,6 @@ process PREPARE_SCORE_DISTRIBUTION {
     path proteins_peptides
     path entities_proteins
     path conditions_entities
-    path conditions
     path conditions_alleles
     path alleles
 
@@ -26,7 +25,6 @@ process PREPARE_SCORE_DISTRIBUTION {
                             --protein-peptide-occ "$proteins_peptides" \\
                             --entities-proteins-occ "$entities_proteins" \\
                             --conditions-entities-occ "$conditions_entities" \\
-                            --conditions "$conditions" \\
                             --condition-allele-map "$conditions_alleles" \\
                             --alleles "$alleles" \\
                             --outdir .
