@@ -51,6 +51,7 @@ workflow INPUT_CHECK {
                     meta_new.cond_alleles   =   meta.cond_alleles
                     meta_new.type           =   meta.type
                     meta_new.bin_basename   =   it.name - fasta_suffix
+                    meta_new.weights        =   meta.weights
                     return [ meta_new, it ]
                 }
             }

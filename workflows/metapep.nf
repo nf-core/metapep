@@ -139,6 +139,7 @@ workflow METAPEP {
         REMOVE_DUPLICATE_PEPTIDES.out.output.map { allele, file ->
         meta = [:]
         meta.alleles = allele
+        meta.sample = allele
         return [meta, file]
     }
     )
@@ -172,8 +173,8 @@ workflow METAPEP {
         }
         .set { ch_predicted_peptides }
 
-    // ch_predicted_peptides.multi.dump(tag:'pred1')
-    // ch_predicted_peptides.single.dump(tag:'pred2')
+    // // ch_predicted_peptides.multi.dump(tag:'pred1')
+    // // ch_predicted_peptides.single.dump(tag:'pred2')
 
     // Combine epitope prediction results
     CAT_TSV(
@@ -184,36 +185,36 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
 
-    CAT_TSV.out.output.mix(CSVTK_CONCAT.out.predicted)
-        .branch {
-        meta, file ->
-        taxa:           meta.type == 'taxa'
-        other:          true
-        }
-        .set { ch_predictions_branch }
-     ch_predictions_branch.taxa
-        .map {meta, predicted ->
-            meta.microbiomes.collect {it ->
-                it.taxon = meta.id
-            }
-            return [meta.microbiomes, predicted]
-            }
-        .transpose()
-        .set { ch_predictions_taxa }
-    ch_predictions_branch.other
-        .map {meta, predicted ->
-            def meta_new = [:]
-            meta_new.id = meta.id
-            meta_new.conditions = meta.conditions
-            meta_new.cond_alleles = meta.cond_alleles
-            meta_new.type = meta.type
-            meta_new.bin_basename = meta.bin_basename
-            meta_new.weights = meta.weights
-            meta_new.taxon = false
-            return [meta_new, predicted]
-        }
-        .mix(ch_predictions_taxa)
-        .set { ch_predictions }
+    // CAT_TSV.out.output.mix(CSVTK_CONCAT.out.predicted)
+    //     .branch {
+    //     meta, file ->
+    //     taxa:           meta.type == 'taxa'
+    //     other:          true
+    //     }
+    //     .set { ch_predictions_branch }
+    //  ch_predictions_branch.taxa
+    //     .map {meta, predicted ->
+    //         meta.microbiomes.collect {it ->
+    //             it.taxon = meta.id
+    //         }
+    //         return [meta.microbiomes, predicted]
+    //         }
+    //     .transpose()
+    //     .set { ch_predictions_taxa }
+    // ch_predictions_branch.other
+    //     .map {meta, predicted ->
+    //         def meta_new = [:]
+    //         meta_new.id = meta.id
+    //         meta_new.conditions = meta.conditions
+    //         meta_new.cond_alleles = meta.cond_alleles
+    //         meta_new.type = meta.type
+    //         meta_new.bin_basename = meta.bin_basename
+    //         meta_new.weights = meta.weights
+    //         meta_new.taxon = false
+    //         return [meta_new, predicted]
+    //     }
+    //     .mix(ch_predictions_taxa)
+    //     .set { ch_predictions }
 
 
     // ch_predictions.map {meta, prediction ->
@@ -245,7 +246,7 @@ workflow METAPEP {
     // )
 
 
-     // Combine protein sequences
+    //  Combine protein sequences
     CAT_FASTA(
         PEPTIDE_PREDICTION
             .out

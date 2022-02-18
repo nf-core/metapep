@@ -14,10 +14,15 @@ process REMOVE_DUPLICATE_PEPTIDES  {
     path "versions.yml", emit: versions
 
     script:
-    def files = peptides.join(' ')
-    def entities = meta.sample.join(' ')
+    def files =         peptides.join(' ')
+    def samples =       meta.sample.join(' ')
+    def conditions =    meta.conditions.collect {w -> "\"$w\""}.join(' ')
+    def type =          meta.type.join(' ')
+    def weights =       meta.weights.join(' ')
+    def bin_basename =  meta.bin_basename.collect {w -> "\"$w\""}.join(' ')
+
     """
-    remove_duplicate_peptides.py -i $files -e $entities -o predict_peptides_${allele}.tsv
+    remove_duplicate_peptides.py -i $files -s $samples -c $conditions -t $type -w $weights -b $bin_basename -o predict_peptides_${allele}.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
