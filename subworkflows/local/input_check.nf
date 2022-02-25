@@ -72,25 +72,24 @@ workflow INPUT_CHECK {
             meta_new.id             = taxon_id
             meta_new.sample         = taxon_id
             meta_new.alleles        = meta.collect { m ->
-                m.alleles.split(';')}
-                .flatten()
-                .unique()
-                .join(';')
+                                        m.alleles.split(';')}
+                                        .flatten()
+                                        .unique()
+                                        .join(';')
             meta_new.type           = 'taxa'
-            meta_new.microbiomes    = meta.collect { m ->
-                def meta_reduced            = [:]
-                meta_reduced.id             = m.id
-                meta_reduced.conditions     = m.conditions
-                meta_reduced.cond_alleles   = m.cond_alleles
-                meta_reduced.type           = m.type
-                meta_reduced.bin_basename   = m.bin_basename
-                meta_reduced.weights        = m.weights
-                return meta_reduced
-            }
+            meta_new.conditions     = meta.collect { m ->
+                                            m.conditions
+                                        }.join(';')
+            meta_new.cond_alleles   = meta.collect { m ->
+                                        m.cond_alleles
+                                        }.join(';')
+            meta_new.bin_basename   = false
+            meta_new.weights        = meta.collect { m ->
+                                            m.weights
+                                        }.join(';')
             return [meta_new, taxon_id]
         }
         .set{ ch_taxa_input }
-    ch_taxa_input.dump(tag:'taxa')
 
     emit:
     ch_taxa_input
