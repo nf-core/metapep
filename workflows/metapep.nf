@@ -116,7 +116,7 @@ workflow METAPEP {
     FRED2_GENERATEPEPTIDES (
         DOWNLOAD_PROTEINS.out.ch_entrez_fasta
         .mix (PRODIGAL.out.amino_acid_fasta)
-        .splitFasta( by: 5000, file:true )
+        .splitFasta( by: 10000, file:true ) // TODO: optimize number of entries
     )
     ch_versions = ch_versions.mix(FRED2_GENERATEPEPTIDES.out.versions)
 
@@ -124,161 +124,99 @@ workflow METAPEP {
         FRED2_GENERATEPEPTIDES.out.splitted
     )
 
-    REMOVE_DUPLICATE_PEPTIDES (
-        SORT_PEPTIDES.out.output
-        .map { meta, file ->
+    SORT_PEPTIDES.out.output
+    .map { meta, file ->
         [meta.alleles.tokenize(';'), meta, file]
-        }
-        .transpose()
-        .groupTuple()
-    )
-
-
-
-    SPLIT_PEPTIDES(
-        REMOVE_DUPLICATE_PEPTIDES.out.output.map { allele, file ->
-        meta = [:]
-        meta.alleles = allele
-        meta.sample = allele
-        return [meta, file]
     }
+    .transpose()
+    .groupTuple()
+    .set {ch_sorted_peptides}
+
+    REMOVE_DUPLICATE_PEPTIDES (
+        ch_sorted_peptides,
+        INPUT_CHECK.out.ch_weights.dump(tag:'weights')
     )
-    ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
 
-    GET_PREDICTION_VERSIONS([])
-    ch_prediction_tool_versions = GET_PREDICTION_VERSIONS.out.versions.ifEmpty("")
+    // SPLIT_PEPTIDES(
+    //     REMOVE_DUPLICATE_PEPTIDES.out.output.map { allele, file ->
+    //     meta = [:]
+    //     meta.alleles = allele
+    //     meta.sample = allele
+    //     return [meta, file]
+    // }
+    // )
+    // ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
 
-    PEPTIDE_PREDICTION (
-        SPLIT_PEPTIDES
-            .out
-            .splitted
-            .combine( ch_prediction_tool_versions )
-            .transpose()
-    )
-    ch_versions = ch_versions.mix( PEPTIDE_PREDICTION.out.versions )
+    // GET_PREDICTION_VERSIONS([])
+    // ch_prediction_tool_versions = GET_PREDICTION_VERSIONS.out.versions.ifEmpty("")
 
-    PEPTIDE_PREDICTION
-        .out
-        .predicted
-        .groupTuple()
-        .map { meta, predicted ->
-            meta.files = predicted.size()
-            return [meta, predicted]}
-        .branch {
-            meta_data, predicted ->
-                multi: meta_data.files > 1
-                    return [ meta_data, predicted ]
-                single: meta_data.files == 1
-                    return [ meta_data, predicted ]
-        }
-        .set { ch_predicted_peptides }
-
-    // // ch_predicted_peptides.multi.dump(tag:'pred1')
-    // // ch_predicted_peptides.single.dump(tag:'pred2')
-
-    // Combine epitope prediction results
-    CAT_TSV(
-        ch_predicted_peptides.single
-    )
-    CSVTK_CONCAT(
-        ch_predicted_peptides.multi
-    )
-    ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
-
-    // CAT_TSV.out.output.mix(CSVTK_CONCAT.out.predicted)
-    //     .branch {
-    //     meta, file ->
-    //     taxa:           meta.type == 'taxa'
-    //     other:          true
-    //     }
-    //     .set { ch_predictions_branch }
-    //  ch_predictions_branch.taxa
-    //     .map {meta, predicted ->
-    //         meta.microbiomes.collect {it ->
-    //             it.taxon = meta.id
-    //         }
-    //         return [meta.microbiomes, predicted]
-    //         }
-    //     .transpose()
-    //     .set { ch_predictions_taxa }
-    // ch_predictions_branch.other
-    //     .map {meta, predicted ->
-    //         def meta_new = [:]
-    //         meta_new.id = meta.id
-    //         meta_new.conditions = meta.conditions
-    //         meta_new.cond_alleles = meta.cond_alleles
-    //         meta_new.type = meta.type
-    //         meta_new.bin_basename = meta.bin_basename
-    //         meta_new.weights = meta.weights
-    //         meta_new.taxon = false
-    //         return [meta_new, predicted]
-    //     }
-    //     .mix(ch_predictions_taxa)
-    //     .set { ch_predictions }
-
-
-    // ch_predictions.map {meta, prediction ->
-    //         def conditions_new = [meta.conditions.split(';'), meta.cond_alleles.split(';'), meta.weights.split(';')]
+    // PEPTIDE_PREDICTION (
+    //     SPLIT_PEPTIDES
+    //         .out
+    //         .splitted
+    //         .combine( ch_prediction_tool_versions )
     //         .transpose()
-    //         .collect {cond ->
-    //         def meta_new = [:]
-    //         meta_new.condition = cond[0]
-    //         meta_new.alleles = cond[1]
-    //         meta_new.weights = cond[2]
-    //         meta_new.id = meta.id
-    //         meta_new.type = meta.type
-    //         meta_new.bin_basename = meta.bin_basename
-    //         return meta_new
-    //         }
-    //         // def meta_new = [:]
-    //         // meta_new.microbiome_id = meta.id
-    //         // meta_new.type = meta.type
-    //         // meta_new.bin_basename = meta.bin_basename
-    //         // meta_new.taxon = meta.taxon
-    //         return [conditions_new, meta.taxon, prediction]
-    //     }
-    //     .transpose()
-    //     .groupTuple()
-    //     .set { ch_conditions_predictions }
+    // )
+    // ch_versions = ch_versions.mix( PEPTIDE_PREDICTION.out.versions )
 
-    // CREATE_RESULTS_TABLES(
-    //     ch_conditions_predictions
+    // PEPTIDE_PREDICTION
+    //     .out
+    //     .predicted
+    //     .groupTuple()
+    //     .map { meta, predicted ->
+    //         meta.files = predicted.size()
+    //         return [meta, predicted]}
+    //     .branch {
+    //         meta_data, predicted ->
+    //             multi: meta_data.files > 1
+    //                 return [ meta_data, predicted ]
+    //             single: meta_data.files == 1
+    //                 return [ meta_data, predicted ]
+    //     }
+    //     .set { ch_predicted_peptides }
+
+    // // Combine epitope prediction results
+    // CAT_TSV(
+    //     ch_predicted_peptides.single
+    // )
+    // CSVTK_CONCAT(
+    //     ch_predicted_peptides.multi
+    // )
+    // ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
+
+    // //  Combine protein sequences
+    // CAT_FASTA(
+    //     PEPTIDE_PREDICTION
+    //         .out
+    //         .fasta
+    //         .groupTuple()
     // )
 
+    // PEPTIDE_PREDICTION
+    //     .out
+    //     .json
+    //     .groupTuple()
+    //     .map { meta, json ->
+    //         meta.files = json.size()
+    //         return [meta, json]}
+    //     .branch {
+    //         meta, json ->
+    //             multi: meta.files > 1
+    //                 return [ meta, json ]
+    //             single: meta.files == 1
+    //                 return [ meta, json ]
+    //     }
+    //     .set { ch_json_reports }
 
-    //  Combine protein sequences
-    CAT_FASTA(
-        PEPTIDE_PREDICTION
-            .out
-            .fasta
-            .groupTuple()
-    )
-
-    PEPTIDE_PREDICTION
-        .out
-        .json
-        .groupTuple()
-        .map { meta, json ->
-            meta.files = json.size()
-            return [meta, json]}
-        .branch {
-            meta, json ->
-                multi: meta.files > 1
-                    return [ meta, json ]
-                single: meta.files == 1
-                    return [ meta, json ]
-        }
-        .set { ch_json_reports }
-
-    // Combine epitope prediction reports
-    MERGE_JSON_SINGLE(
-        ch_json_reports.single
-    )
-    MERGE_JSON_MULTI(
-        ch_json_reports.multi
-    )
-    ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
-    ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
+    // // Combine epitope prediction reports
+    // MERGE_JSON_SINGLE(
+    //     ch_json_reports.single
+    // )
+    // MERGE_JSON_MULTI(
+    //     ch_json_reports.multi
+    // )
+    // ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
+    // ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
 
 
 

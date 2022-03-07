@@ -7,22 +7,22 @@ process REMOVE_DUPLICATE_PEPTIDES  {
         'quay.io/biocontainers/python:3.8.3' }"
 
     input:
-    tuple val(allele), val(meta), val(peptides)
+    tuple val(allele), val(meta), path(peptides)
+    path(weights_table)
 
     output:
-    tuple val(allele), path("predict_peptides_*.tsv"), emit: output
+    tuple val(allele), path("predict_peptides_*.tsv.gz"), emit: output
     path "versions.yml", emit: versions
 
     script:
-    def files =         peptides.join(' ')
     def samples =       meta.sample.join(' ')
     def conditions =    meta.conditions.collect {w -> "\"$w\""}.join(' ')
     def type =          meta.type.join(' ')
-    def weights =       meta.weights.join(' ')
+    def weights_ids =   meta.weights.collect {w -> "\"$w\"" ?: "null"}.join(' ')
     def bin_basename =  meta.bin_basename.collect {w -> "\"$w\""}.join(' ')
 
     """
-    remove_duplicate_peptides.py -i $files -s $samples -c $conditions -t $type -w $weights -b $bin_basename -o predict_peptides_${allele}.tsv
+    remove_duplicate_peptides.py -i $peptides -s $samples -c $conditions -t $type -wi $weights_ids -w $weights_table -b $bin_basename -f -o predict_peptides_${allele}.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
