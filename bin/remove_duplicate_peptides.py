@@ -37,6 +37,7 @@ def parse_args(args=None):
     parser.add_argument('-w',   "--weights_table", required=True, metavar='FILE', help="Table containing weights_id, weights_path")
     parser.add_argument('-b',   "--bin_basename", required=True, nargs='+', metavar='STR', help="List of bin basenames")
     parser.add_argument('-f',   "--filter_by_weights", default=False, action='store_true', help="Discard peptides with weight 0")
+    parser.add_argument('-bs',  "--buffer_size", default=1, type=int, metavar='INT', help="Size of external merge sort buffers")
     parser.add_argument('-o',   "--output", required=True, metavar='FILE', help="Output")
     return parser.parse_args(args)
 
@@ -75,9 +76,9 @@ class Peptide:
     def __repr__(self):
         return self.seq
 
-def gen_peptides(peptide_handle, sample, conditions, input_type, bin_basename, weights_ids, weights):
+def gen_peptides(peptide_handle, sample, conditions, input_type, bin_basename, weights_ids, weights, buffer_size):
     try:
-        buffer = list(peptide_handle.readlines(10000000)) # TODO: optimize size
+        buffer = list(peptide_handle.readlines(buffer_size))
         while buffer:
             for line in buffer:
                 line_split =   line.strip().split('\t')
@@ -85,10 +86,10 @@ def gen_peptides(peptide_handle, sample, conditions, input_type, bin_basename, w
                 peptide_id =   line_split[1]
                 protein_ids =  line_split[2]
                 counts =       line_split[3]
-                # for each condition yield one peptide
+                # for each condition yield one peptide (weights can differ between conditions)
                 for condition, weights_id in zip(conditions.split(';'), weights_ids.split(';')):
                     yield Peptide(seq, peptide_id, protein_ids, counts, sample, condition, input_type, bin_basename, weights_id, weights)
-            buffer = list(peptide_handle.readlines(10000000))
+            buffer = list(peptide_handle.readlines(buffer_size))
     except Exception as e:
         print(e)
 
@@ -156,7 +157,7 @@ def main(args=None):
         [next(f) for f in files] # ignore header
 
         # generate peptides
-        peptides = [gen_peptides(f, s, c, t, b, w, weights) for f, s, c, t, b, w in zip(files, args.samples, args.conditions, args.type, args.bin_basename, args.weights_ids)]
+        peptides = [gen_peptides(f, s, c, t, b, w, weights, args.buffer_size) for f, s, c, t, b, w in zip(files, args.samples, args.conditions, args.type, args.bin_basename, args.weights_ids)]
 
         # write header to output file
         header = ['sequence','ids','protein_ids','counts', 'conditions', 'entities', 'weights', 'types']

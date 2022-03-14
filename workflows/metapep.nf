@@ -116,7 +116,7 @@ workflow METAPEP {
     FRED2_GENERATEPEPTIDES (
         DOWNLOAD_PROTEINS.out.ch_entrez_fasta
         .mix (PRODIGAL.out.amino_acid_fasta)
-        .splitFasta( by: 10000, file:true ) // TODO: optimize number of entries
+        .splitFasta( by: params.max_fasta_size, file:true )
     )
     ch_versions = ch_versions.mix(FRED2_GENERATEPEPTIDES.out.versions)
 
@@ -137,178 +137,86 @@ workflow METAPEP {
         INPUT_CHECK.out.ch_weights.dump(tag:'weights')
     )
 
-    // SPLIT_PEPTIDES(
-    //     REMOVE_DUPLICATE_PEPTIDES.out.output.map { allele, file ->
-    //     meta = [:]
-    //     meta.alleles = allele
-    //     meta.sample = allele
-    //     return [meta, file]
-    // }
-    // )
-    // ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
+    SPLIT_PEPTIDES(
+        REMOVE_DUPLICATE_PEPTIDES.out.output.map { allele, file ->
+        meta = [:]
+        meta.alleles = allele
+        meta.sample = allele
+        return [meta, file]
+    }
+    )
+    ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
 
-    // GET_PREDICTION_VERSIONS([])
-    // ch_prediction_tool_versions = GET_PREDICTION_VERSIONS.out.versions.ifEmpty("")
+    GET_PREDICTION_VERSIONS([])
+    ch_prediction_tool_versions = GET_PREDICTION_VERSIONS.out.versions.ifEmpty("")
 
-    // PEPTIDE_PREDICTION (
-    //     SPLIT_PEPTIDES
-    //         .out
-    //         .splitted
-    //         .combine( ch_prediction_tool_versions )
-    //         .transpose()
-    // )
-    // ch_versions = ch_versions.mix( PEPTIDE_PREDICTION.out.versions )
+    PEPTIDE_PREDICTION (
+        SPLIT_PEPTIDES
+            .out
+            .splitted
+            .combine( ch_prediction_tool_versions )
+            .transpose()
+    )
+    ch_versions = ch_versions.mix( PEPTIDE_PREDICTION.out.versions )
 
-    // PEPTIDE_PREDICTION
-    //     .out
-    //     .predicted
-    //     .groupTuple()
-    //     .map { meta, predicted ->
-    //         meta.files = predicted.size()
-    //         return [meta, predicted]}
-    //     .branch {
-    //         meta_data, predicted ->
-    //             multi: meta_data.files > 1
-    //                 return [ meta_data, predicted ]
-    //             single: meta_data.files == 1
-    //                 return [ meta_data, predicted ]
-    //     }
-    //     .set { ch_predicted_peptides }
+    PEPTIDE_PREDICTION
+        .out
+        .predicted
+        .groupTuple()
+        .map { meta, predicted ->
+            meta.files = predicted.size()
+            return [meta, predicted]}
+        .branch {
+            meta_data, predicted ->
+                multi: meta_data.files > 1
+                    return [ meta_data, predicted ]
+                single: meta_data.files == 1
+                    return [ meta_data, predicted ]
+        }
+        .set { ch_predicted_peptides }
 
-    // // Combine epitope prediction results
-    // CAT_TSV(
-    //     ch_predicted_peptides.single
-    // )
-    // CSVTK_CONCAT(
-    //     ch_predicted_peptides.multi
-    // )
-    // ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
+    // Combine epitope prediction results
+    CAT_TSV(
+        ch_predicted_peptides.single
+    )
+    CSVTK_CONCAT(
+        ch_predicted_peptides.multi
+    )
+    ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
 
-    // //  Combine protein sequences
-    // CAT_FASTA(
-    //     PEPTIDE_PREDICTION
-    //         .out
-    //         .fasta
-    //         .groupTuple()
-    // )
+    //  Combine protein sequences
+    CAT_FASTA(
+        PEPTIDE_PREDICTION
+            .out
+            .fasta
+            .groupTuple()
+    )
 
-    // PEPTIDE_PREDICTION
-    //     .out
-    //     .json
-    //     .groupTuple()
-    //     .map { meta, json ->
-    //         meta.files = json.size()
-    //         return [meta, json]}
-    //     .branch {
-    //         meta, json ->
-    //             multi: meta.files > 1
-    //                 return [ meta, json ]
-    //             single: meta.files == 1
-    //                 return [ meta, json ]
-    //     }
-    //     .set { ch_json_reports }
+    PEPTIDE_PREDICTION
+        .out
+        .json
+        .groupTuple()
+        .map { meta, json ->
+            meta.files = json.size()
+            return [meta, json]}
+        .branch {
+            meta, json ->
+                multi: meta.files > 1
+                    return [ meta, json ]
+                single: meta.files == 1
+                    return [ meta, json ]
+        }
+        .set { ch_json_reports }
 
-    // // Combine epitope prediction reports
-    // MERGE_JSON_SINGLE(
-    //     ch_json_reports.single
-    // )
-    // MERGE_JSON_MULTI(
-    //     ch_json_reports.multi
-    // )
-    // ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
-    // ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
-
-
-
-
-    // CREATE_PROTEIN_TSV (
-    //     PRODIGAL.out.amino_acid_fastac
-    // )
-    // ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
-
-    // /*
-    //  * concat files and assign new, unique ids for all proteins (from different sources)
-    //  */
-    // GENERATE_PROTEIN_AND_ENTITY_IDS (
-    //     CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> file }.ifEmpty([]),
-    //     CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> meta }.ifEmpty([]),
-    //     DOWNLOAD_PROTEINS.out.ch_entrez_proteins.ifEmpty([]),
-    //     DOWNLOAD_PROTEINS.out.ch_entrez_entities_proteins.ifEmpty([]),
-    //     DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
-    //     ch_proteins_input.collect { meta, file -> file }.ifEmpty([]),
-    //     ch_proteins_input.collect { meta, file -> meta }.ifEmpty([])
-    // )
-    // ch_versions = ch_versions.mix(GENERATE_PROTEIN_AND_ENTITY_IDS.out.versions)
-
-    // /*
-    // * Generate peptides
-    // */
-    // GENERATE_PEPTIDES (
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_proteins
-    // )
-    // ch_versions = ch_versions.mix(GENERATE_PEPTIDES.out.versions)
-
-    // /*
-    // * Split prediction tasks (peptide, allele) into chunks of peptides that are to
-    // * be predicted against the same allele for parallel prediction
-    // */
-    // SPLIT_PRED_TASKS (
-    // GENERATE_PEPTIDES.out.ch_peptides,
-    // GENERATE_PEPTIDES.out.ch_proteins_peptides,
-    // GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    // GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
-    // INPUT_CHECK.out.ch_conditions,
-    // INPUT_CHECK.out.ch_conditions_alleles,
-    // INPUT_CHECK.out.ch_alleles
-    // )
-    // ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
-
-    // /*
-    // * Perform epitope prediction
-    // */
-    // PREDICT_EPITOPES (
-    //     SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks.flatten()
-    // )
-    // ch_versions = ch_versions.mix(PREDICT_EPITOPES.out.versions)
-
-    // /*
-    // * Merge prediction results from peptide chunks into one prediction result
-    // */
-    // // gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
-    // // (causing "sbatch: error: Batch job submission failed: Pathname of a file, directory or other parameter too long")
-    // // sort and buffer to ensure resume will work (inefficient, since this causes waiting for all predictions)
-    // ch_epitope_predictions_buffered = PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten().buffer(size: 1000, remainder: true)
-    // ch_epitope_prediction_warnings_buffered = PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten().buffer(size: 1000, remainder: true)
-
-    // MERGE_PREDICTIONS_BUFFER (
-    //     ch_epitope_predictions_buffered,
-    //     ch_epitope_prediction_warnings_buffered
-    // )
-    // ch_versions = ch_versions.mix(MERGE_PREDICTIONS_BUFFER.out.versions)
-
-    // MERGE_PREDICTIONS (
-    //     MERGE_PREDICTIONS_BUFFER.out.ch_predictions_merged_buffer.collect(),
-    //     MERGE_PREDICTIONS_BUFFER.out.ch_prediction_warnings_merged_buffer.collect()
-    // )
-    // ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
-
-    // ASSIGN_NUCL_ENTITY_WEIGHTS (
-    //     INPUT_CHECK.out.ch_weights,
-    //     INPUT_CHECK.out.ch_conditions_weights
-    // )
-    // ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
-
-    // /*
-    //  * Create microbiome_entities
-    //  */
-    // FINALIZE_MICROBIOME_ENTITIES (
-    //     DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
-    //     ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities,
-    //     INPUT_CHECK.out.ch_conditions
-    // )
-    // ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
+    // Combine epitope prediction reports
+    MERGE_JSON_SINGLE(
+        ch_json_reports.single
+    )
+    MERGE_JSON_MULTI(
+        ch_json_reports.multi
+    )
+    ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
+    ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
 
     // /*
     // * Collect some numbers: proteins, peptides, unique peptides per conditon
@@ -362,27 +270,27 @@ workflow METAPEP {
     // )
     // ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
 
-    // CUSTOM_DUMPSOFTWAREVERSIONS (
-    //     ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    // )
+    CUSTOM_DUMPSOFTWAREVERSIONS (
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    )
 
-    // //
-    // // MODULE: MultiQC
-    // //
-    // workflow_summary    = WorkflowMetapep.paramsSummaryMultiqc(workflow, summary_params)
-    // ch_workflow_summary = Channel.value(workflow_summary)
+    //
+    // MODULE: MultiQC
+    //
+    workflow_summary    = WorkflowMetapep.paramsSummaryMultiqc(workflow, summary_params)
+    ch_workflow_summary = Channel.value(workflow_summary)
 
-    // ch_multiqc_files = Channel.empty()
-    // ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
-    // ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
-    // ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
-    // ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+    ch_multiqc_files = Channel.empty()
+    ch_multiqc_files = ch_multiqc_files.mix(Channel.from(ch_multiqc_config))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 
-    // MULTIQC (
-    //     ch_multiqc_files.collect()
-    // )
-    // multiqc_report = MULTIQC.out.report.toList()
-    // ch_versions    = ch_versions.mix(MULTIQC.out.versions)
+    MULTIQC (
+        ch_multiqc_files.collect()
+    )
+    multiqc_report = MULTIQC.out.report.toList()
+    ch_versions    = ch_versions.mix(MULTIQC.out.versions)
 }
 
 /*

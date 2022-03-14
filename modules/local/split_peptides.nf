@@ -15,9 +15,14 @@ process SPLIT_PEPTIDES {
 
     script:
     def prefix = task.ext.suffix ? "${peptide.baseName}_${task.ext.suffix}" : "${peptide.baseName}"
+    def reader = peptide.name =~ ~/(?i)[.]gz$/ ? "gunzip -c" : "cat"
 
     """
-    split_peptides.py --input ${peptide} \\
+    line_count=\$($reader $peptide | tail -n +2 | wc -l)
+    mkfifo peptide_uncompressed
+    $reader $peptide > peptide_uncompressed &
+    split_peptides.py --input peptide_uncompressed \\
+    --line_count \$line_count \\
     --output_base "${prefix}" \\
     $task.ext.args
 

@@ -20,9 +20,20 @@ process REMOVE_DUPLICATE_PEPTIDES  {
     def type =          meta.type.join(' ')
     def weights_ids =   meta.weights.collect {w -> "\"$w\"" ?: "null"}.join(' ')
     def bin_basename =  meta.bin_basename.collect {w -> "\"$w\""}.join(' ')
+    def buffer_size =   params.remove_duplicates_buffer_size
 
     """
-    remove_duplicate_peptides.py -i $peptides -s $samples -c $conditions -t $type -wi $weights_ids -w $weights_table -b $bin_basename -f -o predict_peptides_${allele}.tsv.gz
+    remove_duplicate_peptides.py \\
+    -i $peptides \\
+    -s $samples \\
+    -c $conditions \\
+    -t $type \\
+    -wi $weights_ids \\
+    -w $weights_table \\
+    -b $bin_basename \\
+    -bs $buffer_size \\
+    -f \\
+    -o predict_peptides_${allele}.tsv.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
