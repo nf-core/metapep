@@ -10,6 +10,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 ### `Added`
 
 ### `Fixed`
+* [#11](https://github.com/nf-core/metapep/pull/11)- Template update for nf-core/tools version 2.3
 
 ### `Dependencies`
 
