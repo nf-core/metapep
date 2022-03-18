@@ -60,7 +60,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 4. Start running your own analysis!
 
     ```console
-    nextflow run nf-core/metapep --input samplesheet.csv --outdir <OUTDIR> -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
+    nextflow run nf-core/metapep -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input samplesheet.csv --outdir <OUTDIR>
     ```
 
 ## Documentation
