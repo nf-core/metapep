@@ -10,10 +10,6 @@ workflow INPUT_CHECK {
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
-        // .csv
-        // .splitCsv ( header:true, sep:',' )
-        // .map { create_fastq_channels(it) }
-        // .set { reads }
 
     emit:
     ch_microbiomes          = SAMPLESHEET_CHECK.out.microbiomes
@@ -21,25 +17,4 @@ workflow INPUT_CHECK {
     ch_alleles              = SAMPLESHEET_CHECK.out.alleles
     ch_conditions_alleles   = SAMPLESHEET_CHECK.out.conditions_alleles
     versions                = SAMPLESHEET_CHECK.out.versions            // channel: [ versions.yml ]
-}
-
-// Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
-def create_fastq_channels(LinkedHashMap row) {
-    def meta = [:]
-    meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
-
-    def array = []
-    if (!file(row.fastq_1).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq_1}"
-    }
-    if (meta.single_end) {
-        array = [ meta, [ file(row.fastq_1) ] ]
-    } else {
-        if (!file(row.fastq_2).exists()) {
-            exit 1, "ERROR: Please check input samplesheet -> Read 2 FastQ file does not exist!\n${row.fastq_2}"
-        }
-        array = [ meta, [ file(row.fastq_1), file(row.fastq_2) ] ]
-    }
-    return array
 }
