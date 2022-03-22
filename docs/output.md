@@ -117,12 +117,12 @@ Epitopes are predicted for unique peptide - allele combinations.
 
 * `figures/`
     * `entity_binding_ratios/`
-        * `entity_binding_ratios.allele_*.tsv`: Plots the entity binding ratios per allele. Contains condition_name, binding_rate and entity_weight. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurences of peptides within one protein are not counted.
-    * `entity_binding_ratios.*.pdf`: box plot showing the binding ratios per condition and entity.
-    * `entity_binding_ratios.with_points.*.pdf`: box plot showing the binding ratios per condition and entity. Each point corresponds to one entity (contig or taxon, depending on input type).
+        * `entity_binding_ratios.allele_*.tsv`: data tables for plotting the entity binding ratios per allele. Contain condition_name, binding_rate and entity_weight. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurences of peptides within one protein are not counted.
+    * `entity_binding_ratios.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity.
+    * `entity_binding_ratios.with_points.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity. Each point corresponds to one entity (contig or taxon, depending on input type).
     * `prediction_scores/`
-        * `prediction_scores.allele_*.tsv`: Contains prediction_score, condition_name and weight_sum. The weight_sum is calculated as the sum of all weights that belong to the entites the peptide is contained in.
-    * `prediction_score_distribution.*.pdf`: weighted violin plot showing the distribution of prediction scores per condition.
+        * `prediction_scores.allele_*.tsv`: data tables for plotting the prediction scores per allele. Contain prediction_score, condition_name and weight_sum. The weight_sum is calculated as the sum of all weights that belong to the entites the peptide is contained in.
+    * `prediction_score_distribution.*.pdf`: plots the score distribution per allele. Contains weighted violin plot showing the distribution of prediction scores per condition.
 
 </details>
 
