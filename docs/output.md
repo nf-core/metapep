@@ -57,7 +57,7 @@ Metapep uses a relational data model that consists of tables that can describe r
 
 </details>
 
-Proteins are downloaded for input type taxa from Entrez.
+Proteins are downloaded for input type `taxa` from Entrez.
 
 ### Prodigal
 
