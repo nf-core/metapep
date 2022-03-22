@@ -66,7 +66,7 @@ Proteins are downloaded for input type `taxa` from Entrez.
 
 * `prodigal/`
     * `*.gff`: contains proteins predicted by Prodigal in gff format.
-    * `proteins.pred_*.tsv.gz`: contains proteins predicted by Prodigal in tsv format. The columns are protein_tmp_id (<contig-id_suffix>) and protein_sequence.
+    * `proteins.pred_*.tsv.gz`: contains proteins predicted by Prodigal in tsv format. The columns are `protein_tmp_id` (<contig-id_suffix>) and `protein_sequence`.
 
 </details>
 
