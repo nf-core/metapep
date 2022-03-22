@@ -51,6 +51,7 @@ def check_samplesheet(args):
     https://github.com/nf-core/metapep/raw/dev/assets/samplesheet.csv
     """
     input_table = pd.read_csv(args.input)
+    input_table_cp = input_table.copy()
 
     # check if microbiome_path file extensions are valid
     for type, fname in zip(input_table["type"], input_table["microbiome_path"]):
@@ -109,6 +110,7 @@ def check_samplesheet(args):
     conditions_alleles = conditions_alleles.merge(conditions).merge(alleles)[["condition_id", "allele_id"]]
     conditions_alleles.to_csv(args.conditions_alleles, sep="\t", index=False)
 
+    input_table_cp.to_csv("samplesheet.valid.csv", index=False)
     print("Done!")
 
 def main(args=None):

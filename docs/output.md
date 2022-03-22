@@ -12,30 +12,120 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-* [FastQC](#fastqc) - Raw read QC
+* [Create data model](#data-model) - Create tables according to the relational data model.
+* [Download proteins](#download-proteins) - Download proteins for input type taxa from Entrez.
+* [Prodigal](#prodigal) - Predict proteins for input type assembly or bins.
+* [Generate peptides](#generate-peptides) - Generate peptides from proteins.
+* [Report stats](#report-stats) - Report some statistics on proteins and peptides.
+* [Epitope prediction](#epitope-prediction) - Predict epitopes for given alleles and peptides.
+* [Plot results](#plot-results) - Produce plots that summarize results.
 * [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 * [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-### FastQC
+### Data model
 
 <details markdown="1">
 <summary>Output files</summary>
 
-* `fastqc/`
-    * `*_fastqc.html`: FastQC report containing quality metrics.
-    * `*_fastqc.zip`: Zip archive containing the FastQC report, tab-delimited data file and plot images.
+* `db_tables/`
+    * `alleles.tsv`: contains allele_id and allele_name for all unique alleles used for epitope prediction.
+    * `conditions.tsv`: contains condition_id, condition_name and microbiome_id for all unique conditions.
+    * `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
+    * `microbiomes_entities.nucl.tsv`: matches entities to microbiomes. Contains entity_name, microbiome_id and entity_weight for all entities of input types assembly and bins.
+    * `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type and weights_path for all unique microbiomes (combination of path, type and weights).
+    * `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
+    * `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
+    * `entities_proteins.tsv`: matches proteins to entities. Contains entity_id	and protein_id for all unique entity - protein combinations.
+    * `microbiomes_entities.no_weights.tsv`: matches entities to microbiomes. Contains microbiome_id and entity_id for all unique microbiome - entity combinations.
+    * `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
+    * `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
 
 </details>
 
-[FastQC](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/) gives general quality metrics about your sequenced reads. It provides information about the quality score distribution across your reads, per base sequence content (%A/T/G/C), adapter contamination and overrepresented sequences. For further reading and documentation see the [FastQC help pages](http://www.bioinformatics.babraham.ac.uk/projects/fastqc/Help/).
+Metapep uses a relational data model that consists of tables that can describe relationships between different objects.
 
-![MultiQC - FastQC sequence counts plot](images/mqc_fastqc_counts.png)
+### Download proteins
 
-![MultiQC - FastQC mean quality scores plot](images/mqc_fastqc_quality.png)
+<details markdown="1">
+<summary>Output files</summary>
 
-![MultiQC - FastQC adapter content plot](images/mqc_fastqc_adapter.png)
+* `entrez_data/`
+    * `entities_proteins.entrez.tsv`: matches temporary protein id given by Entrez to entities. Contains protein_tmp_id and entity_name.
+    * `microbiomes_entities.entrez.tsv`: matches entities (taxa) and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for unique microbiome - entity combinations downloaded from Entrez.
+    * `proteins.entrez.tsv.gz`: contains protein_tmp_id (protein id given by Entrez) and protein_sequence for all proteins downloaded from Entrez.
+    * `taxa_assemblies.tsv`: matches taxon id to assembly id.
 
-> **NB:** The FastQC plots displayed in the MultiQC report shows _untrimmed_ reads. They may contain adapter sequence and potentially regions with low quality.
+</details>
+
+Proteins are downloaded for input type taxa from Entrez.
+
+### Prodigal
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `prodigal/`
+    * `*.gff`: contains proteins predicted by Prodigal in gff format.
+    * `proteins.pred_*.tsv.gz`: contains proteins predicted by Prodigal in tsv format. The columns are protein_tmp_id (<contig-id_suffix>) and protein_sequence.
+
+</details>
+
+Proteins are predicted for input type assembly and bins.
+### Generate peptides
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `db_tables/`
+    * `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides.
+
+</details>
+
+Peptides are generated for downloaded or predicted proteins.
+
+### Report stats
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `db_tables/`
+    * `stats.txt`: contains statistics: unique protein counts, total peptide counts, unique peptide counts, unique peptides across all conditions.
+
+</details>
+
+Some statistics on protein and peptide number are calculated.
+
+### Epitope prediction
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `db_tables/`
+    * `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
+* `logs/`
+    * `prediction_warnings.log`: contains warnings that occured during epitope prediction.
+
+</details>
+
+Epitopes are predicted for unique peptide - allele combinations.
+
+### Plot results
+
+<details markdown="1">
+<summary>Output files</summary>
+
+* `figures/`
+    * `entity_binding_ratios/`
+        * `entity_binding_ratios.allele_*.tsv`: Contains condition_name, binding_rate and entity_weight. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurences of peptides within one protein are not counted.
+    * `entity_binding_ratios.*.pdf`: box plot showing the binding ratios per condition and entity.
+    * `entity_binding_ratios.with_points.*.pdf`: box plot showing the binding ratios per condition and entity. Each point corresponds to one entity (contig or taxon, depending on input type).
+    * `prediction_scores/`
+        * `prediction_scores.allele_*.tsv`: Contains prediction_score, condition_name and weight_sum. The weight_sum is calculated as the sum of all weights that belong to the entites the peptide is contained in.
+    * `prediction_score_distribution.*.pdf`: weighted violin plot showing the distribution of prediction scores per condition.
+
+</details>
+
+Results are summarized by plots.
 
 ### MultiQC
 
