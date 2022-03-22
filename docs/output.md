@@ -35,7 +35,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
     * `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type and weights_path for all unique microbiomes (combination of path, type and weights).
     * `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
     * `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
-    * `entities_proteins.tsv`: matches proteins to entities. Contains entity_id	and protein_id for all unique entity - protein combinations.
+    * `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
     * `microbiomes_entities.no_weights.tsv`: matches entities to microbiomes. Contains microbiome_id and entity_id for all unique microbiome - entity combinations.
     * `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
     * `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
@@ -71,6 +71,7 @@ Proteins are downloaded for input type taxa from Entrez.
 </details>
 
 Proteins are predicted for input type assembly and bins.
+
 ### Generate peptides
 
 <details markdown="1">
