@@ -8,8 +8,7 @@ process PLOT_SCORE_DISTRIBUTION {
         'quay.io/biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
 
     input:
-    path prep_scores
-    path alleles
+    tuple val(meta), path(prep_scores)
 
     output:
     path "prediction_score_distribution.*.pdf",     emit:   ch_plot_score_distribution
@@ -17,14 +16,10 @@ process PLOT_SCORE_DISTRIBUTION {
 
     script:
     """
-    [[ ${prep_scores} =~ prediction_scores.allele_(.*).tsv ]];
-    allele_id="\${BASH_REMATCH[1]}"
-    echo \$allele_id
 
     plot_score_distribution.R \\
         $prep_scores \\
-        $alleles \\
-        \$allele_id \\
+        $meta.alleles \\
         ${params.pred_method}
 
     cat <<-END_VERSIONS > versions.yml

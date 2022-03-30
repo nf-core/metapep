@@ -25,14 +25,10 @@ library(stringr)
 
 args = commandArgs(trailingOnly=TRUE)
 scores <- args[1]                       # Input file containing: prediction_score, condition_name, weight_sum
-args_alleles <- args[2]                 # Input file containing: allele_id, allele_name
-allele_id <- args[3]                    # allele_id
-method <- args[4]                       # Epitope prediction method used
+allele_name <- args[2]                 # allele name
+method <- args[3]                       # Epitope prediction method used
 
 data <- fread(scores)
-alleles <- fread(args_alleles)
-match <- (alleles$allele_id == allele_id)
-allele_name <- alleles[match, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 

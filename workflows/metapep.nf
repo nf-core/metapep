@@ -54,6 +54,7 @@ include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_
 include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
 include { MERGE_PREDICTIONS_BUFFER          } from '../modules/local/merge_predictions_buffer'
 include { MERGE_PREDICTIONS                 } from '../modules/local/merge_predictions'
+include { PREPARE_PLOTS                     } from '../modules/local/prepare_plots'
 include { PREPARE_SCORE_DISTRIBUTION        } from '../modules/local/prepare_score_distribution'
 include { PLOT_SCORE_DISTRIBUTION           } from '../modules/local/plot_score_distribution'
 include { PREPARE_ENTITY_BINDING_RATIOS     } from '../modules/local/prepare_entity_binding_ratios'
@@ -184,6 +185,8 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix( CSVTK_CONCAT.out.versions)
 
+    ch_predictions = CAT_TSV.out.output.mix( CSVTK_CONCAT.out.predicted )
+
     //  Combine protein sequences
     CAT_FASTA(
         PEPTIDE_PREDICTION
@@ -217,6 +220,22 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
     ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
+
+    PREPARE_PLOTS(
+        ch_predictions
+    )
+    ch_versions = ch_versions.mix(PREPARE_PLOTS.out.versions)
+
+    PLOT_SCORE_DISTRIBUTION (
+        PREPARE_PLOTS.out.ch_prep_prediction_scores
+    )
+    ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
+
+    PLOT_ENTITY_BINDING_RATIOS (
+        PREPARE_PLOTS.out.ch_prep_entity_binding_ratios
+    )
+    ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
+
 
     // /*
     // * Collect some numbers: proteins, peptides, unique peptides per conditon

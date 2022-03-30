@@ -10,8 +10,7 @@ process PLOT_ENTITY_BINDING_RATIOS {
     publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
 
     input:
-    path prep_entity_binding_ratios
-    path alleles
+    tuple val(meta), path(prep_entity_binding_ratios)
 
     output:
     path "entity_binding_ratios.*.pdf",     emit:   ch_plot_entity_binding_ratios
@@ -19,14 +18,9 @@ process PLOT_ENTITY_BINDING_RATIOS {
 
     script:
     """
-    [[ ${prep_entity_binding_ratios} =~ entity_binding_ratios.allele_(.*).tsv ]];
-    allele_id="\${BASH_REMATCH[1]}"
-    echo \$allele_id
-
     plot_entity_binding_ratios.R \\
         $prep_entity_binding_ratios \\
-        $alleles \\
-        \$allele_id
+        $meta.alleles
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

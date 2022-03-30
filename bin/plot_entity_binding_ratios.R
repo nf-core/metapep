@@ -25,13 +25,9 @@ library(stringr)
 
 args = commandArgs(trailingOnly=TRUE)
 binding_rates <- args[1]                # Input file containing: condition_name, binding_rate, entity_weight.
-args_alleles <- args[2]                      # Input file containing: allele_id, allele_namee
-allele_id <- args[3]                    # allele_id
+allele_name <- args[2]                  # allele name
 
 data <- fread(binding_rates)
-alleles <- fread(args_alleles)
-match <- (alleles$allele_id == allele_id)
-allele_name <- alleles[match, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 
