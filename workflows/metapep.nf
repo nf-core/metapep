@@ -32,15 +32,10 @@ ch_multiqc_custom_config = params.multiqc_config ? Channel.fromPath(params.multi
 */
 
 include { DOWNLOAD_PROTEINS                 } from '../modules/local/download_proteins'
-include { CREATE_PROTEIN_TSV                } from '../modules/local/create_protein_tsv'
-include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl_entity_weights'
-include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
-include { FINALIZE_CONDITION_ENTITIES       } from '../modules/local/finalize_condition_entities'
 include { FRED2_GENERATEPEPTIDES            } from '../modules/local/fred2_generatepeptides.nf'
 include { SORT_PEPTIDES                     } from '../modules/local/sort_peptides'
 include { REMOVE_DUPLICATE_PEPTIDES         } from '../modules/local/remove_duplicate_peptides'
 include { SPLIT_PEPTIDES                    } from '../modules/local/split_peptides.nf'
-include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { GET_PREDICTION_VERSIONS           } from '../modules/local/get_prediction_versions'
 include { PEPTIDE_PREDICTION                } from '../modules/local/peptide_prediction'
 include { CAT_FILES as CAT_TSV              } from '../modules/local/cat_files'
@@ -48,16 +43,8 @@ include { CAT_FILES as CAT_FASTA            } from '../modules/local/cat_files'
 include { CSVTK_CONCAT                      } from '../modules/local/csvtk_concat'
 include { MERGE_JSON as MERGE_JSON_SINGLE   } from '../modules/local/merge_json'
 include { MERGE_JSON as MERGE_JSON_MULTI    } from '../modules/local/merge_json'
-include { CREATE_RESULTS_TABLES             } from '../modules/local/create_results_tables'
-include { COLLECT_STATS                     } from '../modules/local/collect_stats'
-include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
-include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
-include { MERGE_PREDICTIONS_BUFFER          } from '../modules/local/merge_predictions_buffer'
-include { MERGE_PREDICTIONS                 } from '../modules/local/merge_predictions'
 include { PREPARE_PLOTS                     } from '../modules/local/prepare_plots'
-include { PREPARE_SCORE_DISTRIBUTION        } from '../modules/local/prepare_score_distribution'
 include { PLOT_SCORE_DISTRIBUTION           } from '../modules/local/plot_score_distribution'
-include { PREPARE_ENTITY_BINDING_RATIOS     } from '../modules/local/prepare_entity_binding_ratios'
 include { PLOT_ENTITY_BINDING_RATIOS        } from '../modules/local/plot_entity_binding_ratios'
 
 //
@@ -108,12 +95,18 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
+    /*
+    * Predict proteins using prodigal
+    */
     PRODIGAL(
         INPUT_CHECK.out.ch_nucl_input,
         "gff"
     )
     ch_versions = ch_versions.mix(PRODIGAL.out.versions)
 
+    /*
+    * Generate peptides from proteins
+    */
     FRED2_GENERATEPEPTIDES (
         DOWNLOAD_PROTEINS.out.ch_entrez_fasta
         .mix (PRODIGAL.out.amino_acid_fasta)
@@ -121,6 +114,9 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(FRED2_GENERATEPEPTIDES.out.versions)
 
+    /*
+    * Sort chunks of peptides alphabetically to enable external merge sort of process REMOVE_DUPLICATE_PEPTIDES
+    */
     SORT_PEPTIDES (
         FRED2_GENERATEPEPTIDES.out.splitted
     )
@@ -133,11 +129,18 @@ workflow METAPEP {
     .groupTuple()
     .set {ch_sorted_peptides}
 
+    /*
+    * External merge sorting of peptides, removing peptides in the process
+    * Writing additional info to csv that is given to PEPTIDE_PREDICTION
+    */
     REMOVE_DUPLICATE_PEPTIDES (
         ch_sorted_peptides,
         INPUT_CHECK.out.ch_weights.dump(tag:'weights')
     )
 
+    /*
+    * Split peptides into chunks for parallel prediction
+    */
     SPLIT_PEPTIDES(
         REMOVE_DUPLICATE_PEPTIDES.out.output.map { allele, file ->
         meta = [:]
@@ -148,9 +151,15 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(SPLIT_PEPTIDES.out.versions)
 
+    /*
+    * Acquire versions of prediction tools
+    */
     GET_PREDICTION_VERSIONS([])
     ch_prediction_tool_versions = GET_PREDICTION_VERSIONS.out.versions.ifEmpty("")
 
+    /*
+    * Predict epitopes
+    */
     PEPTIDE_PREDICTION (
         SPLIT_PEPTIDES
             .out
@@ -176,7 +185,9 @@ workflow METAPEP {
         }
         .set { ch_predicted_peptides }
 
-    // Combine epitope prediction results
+    /*
+    * Combine epitope prediction results
+    */
     CAT_TSV(
         ch_predicted_peptides.single
     )
@@ -187,7 +198,9 @@ workflow METAPEP {
 
     ch_predictions = CAT_TSV.out.output.mix( CSVTK_CONCAT.out.predicted )
 
-    //  Combine protein sequences
+    /*
+    * Combine protein sequences (if they exist)
+    */
     CAT_FASTA(
         PEPTIDE_PREDICTION
             .out
@@ -211,7 +224,9 @@ workflow METAPEP {
         }
         .set { ch_json_reports }
 
-    // Combine epitope prediction reports
+    /*
+    * Combine epitope prediction reports
+    */
     MERGE_JSON_SINGLE(
         ch_json_reports.single
     )
@@ -221,73 +236,29 @@ workflow METAPEP {
     ch_versions = ch_versions.mix( MERGE_JSON_SINGLE.out.versions.ifEmpty(null) )
     ch_versions = ch_versions.mix( MERGE_JSON_MULTI.out.versions.ifEmpty(null) )
 
+    /*
+    * Create tables used for plotting results
+    */
     PREPARE_PLOTS(
         ch_predictions
     )
     ch_versions = ch_versions.mix(PREPARE_PLOTS.out.versions)
 
+    /*
+    * Plot distribution of prediction scores
+    */
     PLOT_SCORE_DISTRIBUTION (
         PREPARE_PLOTS.out.ch_prep_prediction_scores
     )
     ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
 
+    /*
+    * Plot entity binding ratios
+    */
     PLOT_ENTITY_BINDING_RATIOS (
         PREPARE_PLOTS.out.ch_prep_entity_binding_ratios
     )
     ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
-
-
-    // /*
-    // * Collect some numbers: proteins, peptides, unique peptides per conditon
-    // */
-    // if (!params.skip_stats){
-    //     COLLECT_STATS (
-    //         GENERATE_PEPTIDES.out.ch_peptides,
-    //         GENERATE_PEPTIDES.out.ch_proteins_peptides,
-    //         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    //         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_microbiomes_entities_noweights,
-    //         INPUT_CHECK.out.ch_conditions
-    //     )
-    //     ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
-    // }
-
-    // /*
-    // * Generate figures
-    // */
-    // PREPARE_SCORE_DISTRIBUTION (
-    //     MERGE_PREDICTIONS.out.ch_predictions,
-    //     GENERATE_PEPTIDES.out.ch_proteins_peptides,
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    //     FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-    //     INPUT_CHECK.out.ch_conditions,
-    //     INPUT_CHECK.out.ch_conditions_alleles,
-    //     INPUT_CHECK.out.ch_alleles
-    // )
-    // ch_versions = ch_versions.mix(PREPARE_SCORE_DISTRIBUTION.out.versions)
-
-    // PLOT_SCORE_DISTRIBUTION (
-    //     PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
-    //     INPUT_CHECK.out.ch_alleles,
-    //     INPUT_CHECK.out.ch_conditions
-    // )
-    // ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
-
-    // PREPARE_ENTITY_BINDING_RATIOS (
-    //     MERGE_PREDICTIONS.out.ch_predictions,
-    //     GENERATE_PEPTIDES.out.ch_proteins_peptides,
-    //     GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-    //     FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-    //     INPUT_CHECK.out.ch_conditions,
-    //     INPUT_CHECK.out.ch_conditions_alleles,
-    //     INPUT_CHECK.out.ch_alleles
-    // )
-    // ch_versions = ch_versions.mix(PREPARE_ENTITY_BINDING_RATIOS.out.versions)
-
-    // PLOT_ENTITY_BINDING_RATIOS (
-    //     PREPARE_ENTITY_BINDING_RATIOS.out.ch_prep_entity_binding_ratios.flatten(),
-    //     INPUT_CHECK.out.ch_alleles
-    // )
-    // ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
 
     CUSTOM_DUMPSOFTWAREVERSIONS (
         ch_versions.unique().collectFile(name: 'collated_versions.yml')

@@ -52,13 +52,14 @@ def prepare_plots(reader, pred_scores_file, entity_ratios_file):
             score_dist.append([str(score), condition, str(sum([float(entity_weight) for entity_weight in entity_weights.split(",")]))])
             # prepare entity binding ratio
             n[condition] += sum([int(c) for c in counts.split(",")])
-            if binder:
-                for entity, entity_weight in zip(entities.split(","), entity_weights.split(",")):
-                    no_binder[condition][entity] += sum([int(c) for c in counts.split(",")])
-                    weight[condition][entity] = float(entity_weight)
+            for entity, entity_weight in zip(entities.split(","), entity_weights.split(",")):
+                print(entity)
+                weight[condition][entity] = float(entity_weight)
+                no_binder[condition][entity] += (sum([int(c) for c in counts.split(",")]) if binder else 0)
         for entry in score_dist:
             print("\t".join(entry), file=pred_scores_file)
     for condition in n.keys():
+        print(no_binder)
         for entity in no_binder[condition].keys():
             entry = [condition, get_binding_ratio(no_binder, n, condition, entity), str(weight[condition][entity])]
             print("\t".join(entry), file=entity_ratios_file)
