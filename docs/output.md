@@ -27,18 +27,18 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 <details markdown="1">
 <summary>Output files</summary>
 
-* `db_tables/`
-    * `alleles.tsv`: contains allele_id and allele_name for all unique alleles used for epitope prediction.
-    * `conditions.tsv`: contains condition_id, condition_name and microbiome_id for all unique conditions.
-    * `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
-    * `microbiomes_entities.nucl.tsv`: matches entities to microbiomes. Contains entity_name, microbiome_id and entity_weight for all entities of input types assembly and bins.
-    * `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type and weights_path for all unique microbiomes (combination of path, type and weights).
-    * `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
-    * `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
-    * `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
-    * `microbiomes_entities.no_weights.tsv`: matches entities to microbiomes. Contains microbiome_id and entity_id for all unique microbiome - entity combinations.
-    * `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
-    * `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
+- `db_tables/`
+  - `alleles.tsv`: contains allele_id and allele_name for all unique alleles used for epitope prediction.
+  - `conditions.tsv`: contains condition_id, condition_name and microbiome_id for all unique conditions.
+  - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
+  - `microbiomes_entities.nucl.tsv`: matches entities to microbiomes. Contains entity_name, microbiome_id and entity_weight for all entities of input types assembly and bins.
+  - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type and weights_path for all unique microbiomes (combination of path, type and weights).
+  - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
+  - `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
+  - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
+  - `microbiomes_entities.no_weights.tsv`: matches entities to microbiomes. Contains microbiome_id and entity_id for all unique microbiome - entity combinations.
+  - `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
+  - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
 
 </details>
 
@@ -49,11 +49,11 @@ Metapep uses a relational data model that consists of tables that can describe r
 <details markdown="1">
 <summary>Output files</summary>
 
-* `entrez_data/`
-    * `entities_proteins.entrez.tsv`: matches temporary protein id given by Entrez to entities. Contains protein_tmp_id and entity_name.
-    * `microbiomes_entities.entrez.tsv`: matches entities (taxa) and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for unique microbiome - entity combinations downloaded from Entrez.
-    * `proteins.entrez.tsv.gz`: contains protein_tmp_id (protein id given by Entrez) and protein_sequence for all proteins downloaded from Entrez.
-    * `taxa_assemblies.tsv`: matches taxon id to assembly id.
+- `entrez_data/`
+  - `entities_proteins.entrez.tsv`: matches temporary protein id given by Entrez to entities. Contains protein_tmp_id and entity_name.
+  - `microbiomes_entities.entrez.tsv`: matches entities (taxa) and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for unique microbiome - entity combinations downloaded from Entrez.
+  - `proteins.entrez.tsv.gz`: contains protein_tmp_id (protein id given by Entrez) and protein_sequence for all proteins downloaded from Entrez.
+  - `taxa_assemblies.tsv`: matches taxon id to assembly id.
 
 </details>
 
@@ -64,9 +64,9 @@ Proteins are downloaded for input type `taxa` from Entrez.
 <details markdown="1">
 <summary>Output files</summary>
 
-* `prodigal/`
-    * `*.gff`: contains proteins predicted by Prodigal in gff format.
-    * `proteins.pred_*.tsv.gz`: contains proteins predicted by Prodigal in tsv format. The columns are `protein_tmp_id` (<contig-id_suffix>) and `protein_sequence`.
+- `prodigal/`
+  - `*.gff`: contains proteins predicted by Prodigal in gff format.
+  - `proteins.pred_*.tsv.gz`: contains proteins predicted by Prodigal in tsv format. The columns are `protein_tmp_id` (<contig-id_suffix>) and `protein_sequence`.
 
 </details>
 
@@ -77,8 +77,8 @@ Proteins are predicted for input type assembly and bins.
 <details markdown="1">
 <summary>Output files</summary>
 
-* `db_tables/`
-    * `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides.
+- `db_tables/`
+  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides.
 
 </details>
 
@@ -89,8 +89,8 @@ Peptides are generated for downloaded or predicted proteins.
 <details markdown="1">
 <summary>Output files</summary>
 
-* `db_tables/`
-    * `stats.txt`: contains statistics: unique protein counts, total peptide counts, unique peptide counts, unique peptides across all conditions.
+- `db_tables/`
+  - `stats.txt`: contains statistics: unique protein counts, total peptide counts, unique peptide counts, unique peptides across all conditions.
 
 </details>
 
@@ -101,10 +101,10 @@ Some statistics on protein and peptide number are calculated.
 <details markdown="1">
 <summary>Output files</summary>
 
-* `db_tables/`
-    * `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
-* `logs/`
-    * `prediction_warnings.log`: contains warnings that occured during epitope prediction.
+- `db_tables/`
+  - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
+- `logs/`
+  - `prediction_warnings.log`: contains warnings that occured during epitope prediction.
 
 </details>
 
@@ -115,14 +115,14 @@ Epitopes are predicted for unique peptide - allele combinations.
 <details markdown="1">
 <summary>Output files</summary>
 
-* `figures/`
-    * `entity_binding_ratios/`
-        * `entity_binding_ratios.allele_*.tsv`: data tables for plotting the entity binding ratios per allele. Contain condition_name, binding_rate and entity_weight. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurences of peptides within one protein are not counted.
-    * `entity_binding_ratios.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity.
-    * `entity_binding_ratios.with_points.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity. Each point corresponds to one entity (contig or taxon, depending on input type).
-    * `prediction_scores/`
-        * `prediction_scores.allele_*.tsv`: data tables for plotting the prediction scores per allele. Contain prediction_score, condition_name and weight_sum. The weight_sum is calculated as the sum of all weights that belong to the entites the peptide is contained in.
-    * `prediction_score_distribution.*.pdf`: plots the score distribution per allele. Contains weighted violin plot showing the distribution of prediction scores per condition.
+- `figures/`
+  - `entity_binding_ratios/`
+    - `entity_binding_ratios.allele_*.tsv`: data tables for plotting the entity binding ratios per allele. Contain condition_name, binding_rate and entity_weight. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurences of peptides within one protein are not counted.
+  - `entity_binding_ratios.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity.
+  - `entity_binding_ratios.with_points.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity. Each point corresponds to one entity (contig or taxon, depending on input type).
+  - `prediction_scores/`
+    - `prediction_scores.allele_*.tsv`: data tables for plotting the prediction scores per allele. Contain prediction_score, condition_name and weight_sum. The weight_sum is calculated as the sum of all weights that belong to the entites the peptide is contained in.
+  - `prediction_score_distribution.*.pdf`: plots the score distribution per allele. Contains weighted violin plot showing the distribution of prediction scores per condition.
 
 </details>
 

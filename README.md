@@ -62,7 +62,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
    ```console
     nextflow run nf-core/metapep -profile <docker/singularity/podman/shifter/charliecloud/conda/institute> --input samplesheet.csv --outdir <OUTDIR>
-    ```
+   ```
 
 ## Documentation
 
