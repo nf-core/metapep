@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""Provide a command line tool to validate and transform tabular samplesheets."""
+
+
 import os
 import sys
 import errno
@@ -19,16 +22,6 @@ def parse_args(args=None):
     parser.add_argument('-ca', "--conditions_alleles", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: condition_id, allele_id.")
     return parser.parse_args(args)
 
-
-def make_dir(path):
-    if len(path) > 0:
-        try:
-            os.makedirs(path)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise exception
-
-
 def print_error(error, context="Line", context_str=""):
     error_str = "ERROR: Please check samplesheet -> {}".format(error)
     if context != "" and context_str != "":
@@ -43,7 +36,7 @@ def print_error(error, context="Line", context_str=""):
 
 def check_samplesheet(args):
     """
-    This function checks that the samplesheet follows the following structure:
+    Check that the tabular samplesheet has the structure expected by nf-core pipelines.
 
     condition,type,microbiome_path,alleles,weights_path
 
