@@ -282,7 +282,7 @@
                     "description": "Specifies that sequences of proteins, affected by provided variants, will be written to a FASTA file.",
                     "help_text": "Specifies that sequences of proteins that are affected by the provided genomic variants are written to a `FASTA` file. The resulting `FASTA` file will contain the wild-type and mutated protein sequences."
                 },
-                 "max_fasta_size": {
+                "max_fasta_size": {
                     "type": "integer",
                     "default": 10000,
                     "description": "Maximum number of fasta entries for peptide generation.",
@@ -296,7 +296,7 @@
                 }
             }
         },
-         "reference_options": {
+        "reference_options": {
             "title": "Reference options",
             "type": "object",
             "description": "Options for the genome and proteome reference.",
