@@ -65,23 +65,21 @@ def write_chunks(data, remainder=False, pbar=None):
         print("ERROR: Something went wrong!", file = sys.stderr)
         sys.exit(1)
 
+    written = pd.Index([])
     for start in range(0, len(data), args.max_chunk_size):
         # if not handling remainder: only write out full chunks here
         if remainder or len(data) - start >= args.max_chunk_size:
             with open(os.path.join(args.outdir, "peptides_" + str(cur_chunk).rjust(5,"0") + ".txt"), 'w') as outfile:
                 print(f"#{data.iloc[0].allele_name}#{data.iloc[0].allele_id}", file = outfile)
                 write = data.iloc[start:start+args.max_chunk_size]
+                written = written.append(data.index[start:start+args.max_chunk_size])
                 if pbar:
                     pbar.update(len(write))
                 write[["peptide_id", "peptide_sequence"]].to_csv(outfile, sep='\t', index=False)
                 cur_chunk = cur_chunk + 1
 
     # delete chunks that were written out already
-    end = math.floor(len(data)/args.max_chunk_size)*args.max_chunk_size
-    if remainder:
-        end = len(data)
-
-    data.drop(data.index[range(0, end)], inplace=True)
+    data.drop(written, inplace=True)
     return data
 
 ####################################################################################################
@@ -149,7 +147,7 @@ try:
             to_predict = peptides\
                     .sort_index()\
                     .join(protein_peptide_occs)\
-                    .reset_index(level='peptide_id')\
+                    .reset_index()\
                     .set_index('protein_id')\
                     .sort_index()\
                     .join(proteins_allele_info)\
@@ -174,8 +172,8 @@ try:
             print("Info: keep", flush=True)
             keep.info(verbose = False, memory_usage=print_mem)
 
-        # Write out remaining peptides
-        keep.groupby("allele_id", group_keys=False).apply(lambda x : write_chunks(x, remainder=True))
+    # Write out remaining peptides
+    keep.groupby("allele_id", group_keys=False).apply(lambda x : write_chunks(x, remainder=True))
 
     # We're happy if we got here
     print(f"All done. Written {requests} peptide prediction requests into {cur_chunk} chunks.")
