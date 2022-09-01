@@ -92,10 +92,10 @@ try:
     # Read input files
     # NOTE try out if datatable package can be used and would be faster or more memory efficient
     # peptides                  = pd.read_csv(args.peptides, sep='\t', index_col="peptide_id").sort_index() -> read in chunk-wise
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count").set_index('peptide_id').sort_index()  # NOTE could this be handled more efficiently somehow (easily)?
+    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t').set_index('peptide_id').sort_index()  # NOTE could this be handled more efficiently somehow (easily)?
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t').drop(columns="entity_weight")
-    conditions                = pd.read_csv(args.conditions, sep='\t').drop(columns="condition_name")
+    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, usecols=['microbiome_id', 'entity_id'], sep='\t')
+    conditions                = pd.read_csv(args.conditions, usecols=['condition_id', 'microbiome_id'], sep='\t')
     condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
 
