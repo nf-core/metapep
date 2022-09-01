@@ -91,13 +91,25 @@ try:
 
     # Read input files
     # NOTE try out if datatable package can be used and would be faster or more memory efficient
-    # peptides                  = pd.read_csv(args.peptides, sep='\t', index_col="peptide_id").sort_index() -> read in chunk-wise
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t').set_index('peptide_id').sort_index()  # NOTE could this be handled more efficiently somehow (easily)?
-    entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, usecols=['microbiome_id', 'entity_id'], sep='\t')
-    conditions                = pd.read_csv(args.conditions, usecols=['condition_id', 'microbiome_id'], sep='\t')
-    condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
-    alleles                   = pd.read_csv(args.alleles, sep='\t')
+    protein_peptide_occs               = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t').set_index('peptide_id').sort_index()  # NOTE could this be handled more efficiently somehow (easily)?
+    protein_peptide_occs.index         = pd.to_numeric(protein_peptide_occs.index, downcast="unsigned")
+    protein_peptide_occs["protein_id"] = pd.to_numeric(protein_peptide_occs["protein_id"], downcast="unsigned")
+
+    entities_proteins_occs                              = pd.read_csv(args.entities_proteins_occ, sep='\t')
+    entities_proteins_occs[["entity_id", "protein_id"]] = entities_proteins_occs[["entity_id", "protein_id"]].apply(pd.to_numeric, downcast="unsigned")
+
+    microbiomes_entities_occs                                 = pd.read_csv(args.microbiomes_entities_occ, usecols=['microbiome_id', 'entity_id'], sep='\t')
+    microbiomes_entities_occs[["microbiome_id", "entity_id"]] = microbiomes_entities_occs[["microbiome_id", "entity_id"]].apply(pd.to_numeric, downcast="unsigned")
+
+    conditions                                    = pd.read_csv(args.conditions, usecols=['condition_id', 'microbiome_id'], sep='\t')
+    conditions[["condition_id", "microbiome_id"]] = conditions[["condition_id", "microbiome_id"]].apply(pd.to_numeric, downcast="unsigned")
+
+    condition_allele_map                                = pd.read_csv(args.condition_allele_map, sep='\t')
+    condition_allele_map[["condition_id", "allele_id"]] = condition_allele_map[["condition_id", "allele_id"]].apply(pd.to_numeric, downcast="unsigned")
+
+    alleles              = pd.read_csv(args.alleles, sep='\t')
+    alleles["allele_id"] = pd.to_numeric(alleles["allele_id"], downcast="unsigned")
+    # allele_name does not need to be converted to categorical type, since it is anyway not used for larger dfs
 
     # Print info including memory usage for input DataFrames
     # (Pandas df ~ 3x the size of input data)
