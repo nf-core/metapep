@@ -54,7 +54,7 @@ def parse_args():
     # NOTE subsampling option currently not working in pipeline!
     return parser.parse_args()
 
-def write_chunks(data, remainder=False, pbar=None):
+def write_chunks(data, alleles, remainder=False, pbar=None):
     """Takes data in form of a table of peptide_id, peptide_sequence and
     identical allele_name values. The data is partitioned into chunks and
     written into individual output files, prepended with a comment line (#)
@@ -65,12 +65,13 @@ def write_chunks(data, remainder=False, pbar=None):
         print("ERROR: Something went wrong!", file = sys.stderr)
         sys.exit(1)
 
+    allele_name = alleles[alleles["allele_id"] == data.iloc[0].allele_id]["allele_name"].iloc[0]
     written = pd.Index([])
     for start in range(0, len(data), args.max_chunk_size):
         # if not handling remainder: only write out full chunks here
         if remainder or len(data) - start >= args.max_chunk_size:
             with open(os.path.join(args.outdir, "peptides_" + str(cur_chunk).rjust(5,"0") + ".txt"), 'w') as outfile:
-                print(f"#{data.iloc[0].allele_name}#{data.iloc[0].allele_id}", file = outfile)
+                print(f"#{allele_name}#{data.iloc[0].allele_id}", file = outfile)
                 write = data.iloc[start:start+args.max_chunk_size]
                 written = written.append(data.index[start:start+args.max_chunk_size])
                 if pbar:
@@ -124,11 +125,10 @@ try:
         .drop(columns="microbiome_id")\
         .merge(condition_allele_map)\
         .drop(columns="condition_id")\
-        .merge(alleles)\
         .drop_duplicates()\
         .set_index('protein_id')\
         .sort_index()
-    # -> protein_id, allele_id, allele_name
+    # -> protein_id, allele_id
 
     print("\nInfo: proteins_allele_info", flush=True)
     proteins_allele_info.info(verbose = False, memory_usage=print_mem)
@@ -153,7 +153,7 @@ try:
                     .join(proteins_allele_info)\
                     .drop_duplicates()\
                     .reset_index(drop=True)
-            # -> index, peptide_id, peptide_sequence, allele_id, allele_name
+            # -> index, peptide_id, peptide_sequence, allele_id
 
             # TODO peptides can be deleted?
 
@@ -166,14 +166,14 @@ try:
             # write the required predictions into chunks of peptide lists
             keep = pd.concat([keep, to_predict], ignore_index=True)\
                 .groupby("allele_id", group_keys=False)\
-                .apply(lambda x : write_chunks(x))
+                .apply(lambda x : write_chunks(x, alleles))
             # use group_keys=False to avoid generation of extra index with "allele_id"
 
             print("Info: keep", flush=True)
             keep.info(verbose = False, memory_usage=print_mem)
 
     # Write out remaining peptides
-    keep.groupby("allele_id", group_keys=False).apply(lambda x : write_chunks(x, remainder=True))
+    keep.groupby("allele_id", group_keys=False).apply(lambda x : write_chunks(x, alleles, remainder=True))
 
     # We're happy if we got here
     print(f"All done. Written {requests} peptide prediction requests into {cur_chunk} chunks.")
