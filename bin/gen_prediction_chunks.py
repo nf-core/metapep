@@ -91,29 +91,32 @@ try:
 
     # Read input files
     # NOTE try out if datatable package can be used and would be faster or more memory efficient
-    protein_peptide_occs               = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t').set_index('peptide_id').sort_index()  # NOTE could this be handled more efficiently somehow (easily)?
-    protein_peptide_occs.index         = pd.to_numeric(protein_peptide_occs.index, downcast="unsigned")
-    protein_peptide_occs["protein_id"] = pd.to_numeric(protein_peptide_occs["protein_id"], downcast="unsigned")
+    # downcast df columns that will not be used as indices to save mem usage
+    # (skip index columns to avoid upcasting with set_index() and increased runtime)
+    protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t').set_index('peptide_id').sort_index()  # NOTE could this be handled more efficiently somehow (easily)?
 
-    entities_proteins_occs                              = pd.read_csv(args.entities_proteins_occ, sep='\t')
-    entities_proteins_occs[["entity_id", "protein_id"]] = entities_proteins_occs[["entity_id", "protein_id"]].apply(pd.to_numeric, downcast="unsigned")
+    entities_proteins_occs              = pd.read_csv(args.entities_proteins_occ, sep='\t')
+    entities_proteins_occs["entity_id"] = pd.to_numeric(entities_proteins_occs["entity_id"], downcast="unsigned")
 
-    microbiomes_entities_occs                                 = pd.read_csv(args.microbiomes_entities_occ, usecols=['microbiome_id', 'entity_id'], sep='\t')
-    microbiomes_entities_occs[["microbiome_id", "entity_id"]] = microbiomes_entities_occs[["microbiome_id", "entity_id"]].apply(pd.to_numeric, downcast="unsigned")
+    microbiomes_entities_occs                  = pd.read_csv(args.microbiomes_entities_occ, usecols=['microbiome_id', 'entity_id'], sep='\t')
+    microbiomes_entities_occs["microbiome_id"] = pd.to_numeric(microbiomes_entities_occs["microbiome_id"], downcast="unsigned")
+    microbiomes_entities_occs["entity_id"]     = pd.to_numeric(microbiomes_entities_occs["entity_id"], downcast="unsigned")
 
-    conditions                                    = pd.read_csv(args.conditions, usecols=['condition_id', 'microbiome_id'], sep='\t')
-    conditions[["condition_id", "microbiome_id"]] = conditions[["condition_id", "microbiome_id"]].apply(pd.to_numeric, downcast="unsigned")
+    conditions                  = pd.read_csv(args.conditions, usecols=['condition_id', 'microbiome_id'], sep='\t')
+    conditions["condition_id"]  = pd.to_numeric(conditions["condition_id"], downcast="unsigned")
+    conditions["microbiome_id"] = pd.to_numeric(conditions["microbiome_id"], downcast="unsigned")
 
-    condition_allele_map                                = pd.read_csv(args.condition_allele_map, sep='\t')
-    condition_allele_map[["condition_id", "allele_id"]] = condition_allele_map[["condition_id", "allele_id"]].apply(pd.to_numeric, downcast="unsigned")
+    condition_allele_map                 = pd.read_csv(args.condition_allele_map, sep='\t')
+    condition_allele_map["condition_id"] = pd.to_numeric(condition_allele_map["condition_id"], downcast="unsigned")
+    condition_allele_map["allele_id"]    = pd.to_numeric(condition_allele_map["allele_id"], downcast="unsigned")
 
     alleles              = pd.read_csv(args.alleles, sep='\t')
     alleles["allele_id"] = pd.to_numeric(alleles["allele_id"], downcast="unsigned")
-    # allele_name does not need to be converted to categorical type, since it is anyway not used for larger dfs
+    # not converting allele_name to categorical type, since it is anyway not used for larger dfs
 
     # Print info including memory usage for input DataFrames
     # (Pandas df ~ 3x the size of input data)
-    print_mem = 'deep'    # 'deep' (extra computational costs) or None
+    print_mem = None    # 'deep' (extra computational costs) or None
     print("\nInfo: protein_peptide_occs", flush=True)
     protein_peptide_occs.info(verbose = False, memory_usage=print_mem)
     print("\nInfo: entities_proteins_occs", flush=True)
