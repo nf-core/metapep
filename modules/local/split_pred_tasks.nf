@@ -3,11 +3,10 @@ process SPLIT_PRED_TASKS {
     label 'process_high_memory'
     label 'cache_lenient'
 
-    // TODO update container
-    conda (params.enable_conda ? "conda-forge::pandas=1.4.2" : null)
+    conda (params.enable_conda ? "conda-forge::pandas=1.4.3" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mulled-v2-629aec3ba267b06a1efc3ec454c0f09e134f6ee2:3b083bb5eae6e491b8579589b070fa29afbea2a1-0' :
-        'quay.io/biocontainers/mulled-v2-629aec3ba267b06a1efc3ec454c0f09e134f6ee2:3b083bb5eae6e491b8579589b070fa29afbea2a1-0' }"
+        'https://depot.galaxyproject.org/singularity/pandas:1.4.3' :
+        'quay.io/biocontainers/pandas:1.4.3' }"
 
     input:
     path(peptides            )
