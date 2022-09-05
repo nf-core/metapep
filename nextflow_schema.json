@@ -251,6 +251,11 @@
                     "default": 75000,
                     "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
                 },
+                "proc_chunk_size": {
+                    "type": "integer",
+                    "default": 7500000,
+                    "description": "Chunk size (#peptides) used to process peptides within process SPLIT_PRED_TASKS to keep memory usage low, i.e. when peptides are joined with Pandas against other datatables to obtain allele_id for epitope prediction task."
+                },
                 "prodigal_mode": {
                     "type": "string",
                     "default": "meta",
