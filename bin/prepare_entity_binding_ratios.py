@@ -113,8 +113,8 @@ def main(args=None):
                         .merge(condition_allele_map[condition_allele_map.allele_id == allele_id]) \
                         .drop(columns="condition_id") \
                         .merge(predictions) \
-                        .drop(columns="allele_id")
-                # -> entity_weight, peptide_id, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
+                        .drop(columns=["allele_id", "peptide_id"])
+                # -> entity_weight, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
                 # merged against condition_allele_map to discard prediction_scores for the current allele that are not requested for the respective condition_id
 
                 data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
