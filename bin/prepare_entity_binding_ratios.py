@@ -68,7 +68,8 @@ def main(args=None):
 
     # Read input files
     predictions               = pd.read_csv(args.predictions, sep='\t')
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
+    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t')
+    # (binding ratio: peptide occurrences within multiple proteins of an entity are counted, while occurrences within the same protein are not considered currently)
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
     conditions                = pd.read_csv(args.conditions, sep='\t')
@@ -128,9 +129,6 @@ def main(args=None):
 
                 print("\nInfo: data 2", flush=True)
                 data.info(verbose = False, memory_usage=print_mem)
-
-                # NOTE
-                # binding ratio: occurences within multiple proteins of an entity are counted, while occurences within the same protein are not counted
 
                 if not data.empty:
                     data[["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, mode='a', header=write_header)
