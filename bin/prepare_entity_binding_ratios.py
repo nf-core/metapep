@@ -53,8 +53,14 @@ def call_binder(score, method):
     else:
         return score <= 500
 
-def get_binding_ratio(no_binder, n):
-    return no_binder/float(n)
+def get_binding_ratio(df):
+    df_new = df \
+            .groupby(["entity_id", "condition_name", "entity_weight"])["binder"] \
+            .sum() \
+            .reset_index(name="binding_rate")
+    df_new["binding_rate"] = df_new["binding_rate"]/float(len(df))
+    # -> index, entity_id, condition_name, entity_weight, binding_rate
+    return df_new
 
 
 def main(args=None):
@@ -93,13 +99,12 @@ def main(args=None):
                 .merge(condition_allele_map) \
                 .drop(columns=["allele_id", "condition_id"])
 
-        n = len(data)
         data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
 
         data = data \
                 .drop(columns="prediction_score") \
-                .groupby(["entity_id", "condition_name", "entity_weight"])["binder"].sum().apply(get_binding_ratio, n=n) \
-                .reset_index(name="binding_rate") \
+                .groupby(["entity_id", "condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
+                .reset_index(drop=True) \
                 .drop(columns=["entity_id"])
         # NOTE
         # binding ratio: occurences within multiple proteins of an entity are counted, while occurences within the same protein are not counted
