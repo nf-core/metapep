@@ -55,11 +55,11 @@ def call_binder(score, method):
 
 def get_binding_ratio(df):
     df_new = df \
-            .groupby(["entity_id", "condition_name", "entity_weight"])["binder"] \
+            .groupby(["condition_name", "entity_weight"])["binder"] \
             .sum() \
             .reset_index(name="binding_rate")
     df_new["binding_rate"] = df_new["binding_rate"]/float(len(df))
-    # -> index, entity_id, condition_name, entity_weight, binding_rate
+    # -> index, condition_name, entity_weight, binding_rate
     return df_new
 
 
@@ -106,13 +106,14 @@ def main(args=None):
                         .merge(protein_peptide_occs) \
                         .drop(columns="protein_id") \
                         .merge(microbiomes_entities_occs) \
+                        .drop(columns="entity_id") \
                         .merge(conditions) \
                         .drop(columns="microbiome_id") \
                         .merge(condition_allele_map[condition_allele_map.allele_id == allele_id]) \
                         .drop(columns="condition_id") \
                         .merge(predictions) \
                         .drop(columns="allele_id")
-                # -> entity_id, entity_weight, peptide_id, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
+                # -> entity_weight, peptide_id, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
                 # merged against condition_allele_map to discard prediction_scores for the current allele that are not requested for the respective condition_id
 
                 data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
@@ -122,9 +123,8 @@ def main(args=None):
 
                 data = data \
                         .drop(columns="prediction_score") \
-                        .groupby(["entity_id", "condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
-                        .reset_index(drop=True) \
-                        .drop(columns=["entity_id"])
+                        .groupby(["condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
+                        .reset_index(drop=True)
 
                 print("\nInfo: data 2", flush=True)
                 data.info(verbose = False, memory_usage=print_mem)
