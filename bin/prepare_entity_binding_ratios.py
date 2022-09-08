@@ -100,16 +100,20 @@ def main(args=None):
             for entity_id in microbiomes_entities_occs["entity_id"].drop_duplicates():
                 print("Entity_id: ", entity_id, flush=True)
 
-                # entity-wise: do not account for entity-weight?
-                data = predictions[predictions.allele_id == allele_id] \
+                # Prepare data for current entity_id
+                # (avoid copying full peptide dfs -> start with entity subsets)
+                data = entities_proteins_occs[entities_proteins_occs.entity_id == entity_id] \
                         .merge(protein_peptide_occs) \
-                        .merge(entities_proteins_occs[entities_proteins_occs.entity_id == entity_id]) \
                         .drop(columns="protein_id") \
                         .merge(microbiomes_entities_occs) \
                         .merge(conditions) \
                         .drop(columns="microbiome_id") \
-                        .merge(condition_allele_map) \
-                        .drop(columns=["allele_id", "condition_id"])
+                        .merge(condition_allele_map[condition_allele_map.allele_id == allele_id]) \
+                        .drop(columns="condition_id") \
+                        .merge(predictions) \
+                        .drop(columns="allele_id")
+                # -> entity_id, entity_weight, peptide_id, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
+                # merged against condition_allele_map to discard prediction_scores for the current allele that are not requested for the respective condition_id
 
                 data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
 
