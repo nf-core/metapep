@@ -67,9 +67,10 @@ def main(args=None):
     args = parse_args(args)
 
     # Read input files
+    # (loading predictions allele-wise with skiprows doesn't seem to work, could still be considered to be filtered afterwards if this becomes bottleneck)
     predictions               = pd.read_csv(args.predictions, sep='\t')
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t')
     # (binding ratio: peptide occurrences within multiple proteins of an entity are counted, while occurrences within the same protein are not considered currently)
+    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t')
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
     conditions                = pd.read_csv(args.conditions, sep='\t')
