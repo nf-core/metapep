@@ -75,6 +75,12 @@ def main(args=None):
     condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
     alleles                   = pd.read_csv(args.alleles, sep='\t')
 
+    print_mem = 'deep'      # 'deep' (extra computational costs) or None
+    print("\nInfo: predictions", flush=True)
+    predictions.info(verbose = False, memory_usage=print_mem)
+    print("\nInfo: protein_peptide_occs", flush=True)
+    protein_peptide_occs.info(verbose = False, memory_usage=print_mem)
+
     # Create output directory if it doesn't exist
     if os.path.exists(args.outdir) and not os.path.isdir(args.outdir):
         print("ERROR - The target path is not a directory", file = sys.stderr)
@@ -101,11 +107,17 @@ def main(args=None):
 
         data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
 
+        print("\nInfo: data 1", flush=True)
+        data.info(verbose = False, memory_usage=print_mem)
+
         data = data \
                 .drop(columns="prediction_score") \
                 .groupby(["entity_id", "condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
                 .reset_index(drop=True) \
                 .drop(columns=["entity_id"])
+
+        print("\nInfo: data 2", flush=True)
+        data.info(verbose = False, memory_usage=print_mem)
         # NOTE
         # binding ratio: occurences within multiple proteins of an entity are counted, while occurences within the same protein are not counted
 
