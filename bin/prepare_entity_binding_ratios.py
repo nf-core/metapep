@@ -66,9 +66,11 @@ def get_binding_ratio(df):
 def main(args=None):
     args = parse_args(args)
 
-    # Read input files
+    # Read input files and downcast (critical) df columns that will not be used as indices to save mem usage
     # (loading predictions allele-wise with skiprows doesn't seem to work, could still be considered to be filtered afterwards if this becomes bottleneck)
-    predictions               = pd.read_csv(args.predictions, index_col=['peptide_id', 'allele_id'], sep='\t').sort_index()
+    predictions                     = pd.read_csv(args.predictions, index_col=['peptide_id', 'allele_id'], sep='\t').sort_index()
+    predictions["prediction_score"] = pd.to_numeric(predictions["prediction_score"], downcast="float")
+
     # (binding ratio: peptide occurrences within multiple proteins of an entity are counted, while occurrences within the same protein are not considered currently)
     protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], index_col="protein_id", sep='\t').sort_index()
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
@@ -131,17 +133,15 @@ def main(args=None):
                 # -> index, entity_weight, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
 
                 data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
-
-                print("\nInfo: data 1", flush=True)
-                data.info(verbose = False, memory_usage=print_mem)
+                # print("\nInfo: data 1", flush=True)
+                # data.info(verbose = False, memory_usage=print_mem)
 
                 data = data \
                         .drop(columns="prediction_score") \
                         .groupby(["condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
                         .reset_index(drop=True)
-
-                print("\nInfo: data 2", flush=True)
-                data.info(verbose = False, memory_usage=print_mem)
+                # print("\nInfo: data 2", flush=True)
+                # data.info(verbose = False, memory_usage=print_mem)
 
                 if not data.empty:
                     data[["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, mode='a', header=write_header)
