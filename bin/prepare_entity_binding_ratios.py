@@ -68,9 +68,9 @@ def main(args=None):
 
     # Read input files
     # (loading predictions allele-wise with skiprows doesn't seem to work, could still be considered to be filtered afterwards if this becomes bottleneck)
-    predictions               = pd.read_csv(args.predictions, sep='\t')
+    predictions               = pd.read_csv(args.predictions, index_col=['peptide_id', 'allele_id'], sep='\t').sort_index()
     # (binding ratio: peptide occurrences within multiple proteins of an entity are counted, while occurrences within the same protein are not considered currently)
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], sep='\t')
+    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], index_col="protein_id", sep='\t').sort_index()
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
     conditions                = pd.read_csv(args.conditions, sep='\t')
@@ -102,21 +102,33 @@ def main(args=None):
             for entity_id in microbiomes_entities_occs["entity_id"].drop_duplicates():
                 print("Entity_id: ", entity_id, flush=True)
 
+                # Prepare df for joining protein information
+                protein_info = microbiomes_entities_occs[microbiomes_entities_occs.entity_id == entity_id] \
+                    .merge(conditions) \
+                    .drop(columns="microbiome_id") \
+                    .merge(condition_allele_map[condition_allele_map.allele_id == allele_id]) \
+                    .drop(columns="condition_id") \
+                    .merge(entities_proteins_occs) \
+                    .drop(columns="entity_id") \
+                    .set_index('protein_id') \
+                    .sort_index()
+                # -> entity_weight, condition_name, allele_id, protein_id
+                # merged against condition_allele_map to keep only entities, and thus proteins, for which a prediction is requested for the current allele
+
+                if (len(protein_info) != len(protein_info.reset_index().drop_duplicates())):
+                    print("ERROR - protein_info dataframe contains duplicates!", file = sys.stderr)
+                    sys.exit(1)
+
                 # Prepare data for current entity_id
                 # (avoid copying full peptide dfs -> start with entity subsets)
-                data = entities_proteins_occs[entities_proteins_occs.entity_id == entity_id] \
-                        .merge(protein_peptide_occs) \
-                        .drop(columns="protein_id") \
-                        .merge(microbiomes_entities_occs) \
-                        .drop(columns="entity_id") \
-                        .merge(conditions) \
-                        .drop(columns="microbiome_id") \
-                        .merge(condition_allele_map[condition_allele_map.allele_id == allele_id]) \
-                        .drop(columns="condition_id") \
-                        .merge(predictions) \
-                        .drop(columns=["allele_id", "peptide_id"])
-                # -> entity_weight, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
-                # merged against condition_allele_map to discard prediction_scores for the current allele that are not requested for the respective condition_id
+                data = protein_info \
+                        .join(protein_peptide_occs) \
+                        .reset_index(drop=True) \
+                        .set_index(['peptide_id', 'allele_id']) \
+                        .sort_index() \
+                        .join(predictions) \
+                        .reset_index(drop=True)
+                # -> index, entity_weight, condition_name, prediction_score (multiple rows for occurrences in multiple proteins within entity_id)
 
                 data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
 
