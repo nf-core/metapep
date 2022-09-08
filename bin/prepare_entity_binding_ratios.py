@@ -94,35 +94,43 @@ def main(args=None):
     for allele_id in alleles.allele_id:
         print("Process allele: ", allele_id, flush=True)
 
-        # entity-wise: do not account for entity-weight?
-        data = predictions[predictions.allele_id == allele_id] \
-                .merge(protein_peptide_occs) \
-                .merge(entities_proteins_occs) \
-                .drop(columns="protein_id") \
-                .merge(microbiomes_entities_occs) \
-                .merge(conditions) \
-                .drop(columns="microbiome_id") \
-                .merge(condition_allele_map) \
-                .drop(columns=["allele_id", "condition_id"])
-
-        data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
-
-        print("\nInfo: data 1", flush=True)
-        data.info(verbose = False, memory_usage=print_mem)
-
-        data = data \
-                .drop(columns="prediction_score") \
-                .groupby(["entity_id", "condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
-                .reset_index(drop=True) \
-                .drop(columns=["entity_id"])
-
-        print("\nInfo: data 2", flush=True)
-        data.info(verbose = False, memory_usage=print_mem)
-        # NOTE
-        # binding ratio: occurences within multiple proteins of an entity are counted, while occurences within the same protein are not counted
-
+        write_header = True
         with open(os.path.join(args.outdir, "entity_binding_ratios.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
-            data[["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, header=True)
+            # Process predictions entity_wise to reduce memory usage
+            for entity_id in microbiomes_entities_occs["entity_id"].drop_duplicates():
+                print("Entity_id: ", entity_id, flush=True)
+
+                # entity-wise: do not account for entity-weight?
+                data = predictions[predictions.allele_id == allele_id] \
+                        .merge(protein_peptide_occs) \
+                        .merge(entities_proteins_occs[entities_proteins_occs.entity_id == entity_id]) \
+                        .drop(columns="protein_id") \
+                        .merge(microbiomes_entities_occs) \
+                        .merge(conditions) \
+                        .drop(columns="microbiome_id") \
+                        .merge(condition_allele_map) \
+                        .drop(columns=["allele_id", "condition_id"])
+
+                data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
+
+                print("\nInfo: data 1", flush=True)
+                data.info(verbose = False, memory_usage=print_mem)
+
+                data = data \
+                        .drop(columns="prediction_score") \
+                        .groupby(["entity_id", "condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
+                        .reset_index(drop=True) \
+                        .drop(columns=["entity_id"])
+
+                print("\nInfo: data 2", flush=True)
+                data.info(verbose = False, memory_usage=print_mem)
+
+                # NOTE
+                # binding ratio: occurences within multiple proteins of an entity are counted, while occurences within the same protein are not counted
+
+                if not data.empty:
+                    data[["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, mode='a', header=write_header)
+                    write_header = False
 
         # Sanity check, remove
         for condition_name in data.condition_name.drop_duplicates():
