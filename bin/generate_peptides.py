@@ -63,8 +63,7 @@ def main(args=None):
     # generate peptides
 
     with gzip.open(args.peptides, 'wt') as pep_handle:
-        print('peptide_id', 'peptide_sequence', sep='\t', file=pep_handle, flush=True)
-        print('protein_id', 'peptide_id', 'count', sep='\t', file=args.proteins_peptides, flush=True)
+        print_header = True
         id_counter = 0
         print_mem = 'deep'    # 'deep' (extra computational costs) or None
         # for each k
@@ -88,22 +87,27 @@ def main(args=None):
             results = results.groupby(['protein_id','peptide_sequence']).size().reset_index(name='count')
             # -> protein_id, peptide_sequence, count
             results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
+            # prepare df for joining
+            results.set_index('peptide_sequence', inplace=True)
+            results.sort_index(inplace=True)
 
-            unique_peptides = results[['peptide_sequence']].drop_duplicates()
+            unique_peptides = pd.DataFrame(index=results.index.drop_duplicates())
             unique_peptides["peptide_id"] = range(id_counter, id_counter+len(unique_peptides))
             id_counter += len(unique_peptides)
             # -> peptide_sequence, peptide_id
-            unique_peptides[['peptide_id', 'peptide_sequence']].to_csv(pep_handle, mode='a', sep="\t", index=False, header=False)
+            unique_peptides.to_csv(pep_handle, mode='a', sep="\t", index=True, header=print_header)
 
-            results = results.merge(unique_peptides)
+            results = results \
+                        .join(unique_peptides)
             # -> protein_id, peptide_sequence, count, peptide_id
 
             print("\nInfo: results (['protein_id','peptide_sequence','peptide_id','count'])", flush=True)
             results.info(verbose = False, memory_usage=print_mem)
 
-            results[['protein_id', 'peptide_id', 'count']].to_csv(args.proteins_peptides, mode='a', sep="\t", index=False, header=False)
+            results[['protein_id', 'peptide_id', 'count']].to_csv(args.proteins_peptides, mode='a', sep="\t", index=False, header=print_header)
 
             print("# peptides of length ", k, ", (non-unique across proteins): ", len(results))
+            print_header=False
 
     print("Done!", flush=True)
 
