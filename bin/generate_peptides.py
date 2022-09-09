@@ -66,6 +66,7 @@ def main(args=None):
         print('peptide_id', 'peptide_sequence', sep='\t', file=pep_handle, flush=True)
         print('protein_id', 'peptide_id', 'count', sep='\t', file=args.proteins_peptides, flush=True)
         id_counter = 0
+        print_mem = 'deep'    # 'deep' (extra computational costs) or None
         # for each k
         for k in range(args.min_len, args.max_len + 1):
             print("Generate peptides of length ", k, " ...", flush=True)
@@ -76,17 +77,27 @@ def main(args=None):
                 columns = ['protein_id','peptide_sequence']
                 )
 
+            print("\nInfo: results (['protein_id','peptide_sequence'])", flush=True)
+            results.info(verbose = False, memory_usage=print_mem)
+
             # TODO handle this more memory efficiently
             print("format results ...", flush=True)
-            # count occurences of one peptide in one protein
+            # count occurrences of one peptide in one protein
             results = results.groupby(['protein_id','peptide_sequence']).size().reset_index(name='count')
+            # -> protein_id, peptide_sequence, count
 
             unique_peptides = results[['peptide_sequence']].drop_duplicates()
             unique_peptides["peptide_id"] = range(id_counter, id_counter+len(unique_peptides))
             id_counter += len(unique_peptides)
+            # -> peptide_sequence, peptide_id
             unique_peptides[['peptide_id', 'peptide_sequence']].to_csv(pep_handle, mode='a', sep="\t", index=False, header=False)
 
             results = results.merge(unique_peptides)
+            # -> protein_id, peptide_sequence, count, peptide_id
+
+            print("\nInfo: results (['protein_id','peptide_sequence','peptide_id','count'])", flush=True)
+            results.info(verbose = False, memory_usage=print_mem)
+
             results[['protein_id', 'peptide_id', 'count']].to_csv(args.proteins_peptides, mode='a', sep="\t", index=False, header=False)
 
             print("# peptides of length ", k, ", (non-unique across proteins): ", len(results))
