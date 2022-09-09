@@ -76,6 +76,8 @@ def main(args=None):
                 [ (str(it.protein_id), pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k) ],
                 columns = ['protein_id','peptide_sequence']
                 )
+            # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
+            results["protein_id"] = pd.to_numeric(results["protein_id"], downcast="unsigned")
 
             print("\nInfo: results (['protein_id','peptide_sequence'])", flush=True)
             results.info(verbose = False, memory_usage=print_mem)
@@ -85,6 +87,7 @@ def main(args=None):
             # count occurrences of one peptide in one protein
             results = results.groupby(['protein_id','peptide_sequence']).size().reset_index(name='count')
             # -> protein_id, peptide_sequence, count
+            results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
 
             unique_peptides = results[['peptide_sequence']].drop_duplicates()
             unique_peptides["peptide_id"] = range(id_counter, id_counter+len(unique_peptides))
