@@ -51,9 +51,14 @@ def gen_peptides(prot_seq, k):
 
 def main(args=None):
     args = parse_args(args)
+    print_mem = 'deep'    # 'deep' (extra computational costs) or None
 
     protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
     protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
+
+    print("\nInfo: protid_protseq_protlen", flush=True)
+    protid_protseq_protlen.info(verbose = False, memory_usage=print_mem)
+
     print("# proteins: ", len(protid_protseq_protlen))
 
     # write out protein lengths
@@ -65,7 +70,6 @@ def main(args=None):
     with gzip.open(args.peptides, 'wt') as pep_handle:
         print_header = True
         id_counter = 0
-        print_mem = 'deep'    # 'deep' (extra computational costs) or None
         # for each k
         for k in range(args.min_len, args.max_len + 1):
             print("Generate peptides of length ", k, " ...", flush=True)
