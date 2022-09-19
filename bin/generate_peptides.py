@@ -45,8 +45,8 @@ def parse_args(args=None):
     parser.add_argument('-l', '--proteins_lengths', required=True, metavar='FILE', type=argparse.FileType('w'), help='Output file containing: protein_id, protein_length.')
     return parser.parse_args(args)
 
-def gen_peptides(prot_seq, k):
-    return [ prot_seq[i:(i+k)] for i in range(len(prot_seq)-k+1) ]
+def gen_peptides(prot_seq, k, prefix):
+    return [ prot_seq[i:(i+k)] for i in range(len(prot_seq)-k+1) if prot_seq[i] == prefix ]
 
 
 def main(args=None):
@@ -73,46 +73,46 @@ def main(args=None):
         # for each k
         for k in range(args.min_len, args.max_len + 1):
             print("Generate peptides of length ", k, " ...", flush=True)
-            # for each protein generate all peptides of length k
 
-            results = pd.DataFrame(
-                [ (str(it.protein_id), pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k) ],
-                columns = ['protein_id','peptide_sequence']
-                )
-            # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
-            results["protein_id"] = pd.to_numeric(results["protein_id"], downcast="unsigned")
+            # TODO check and handle AAs properly, could be done with prefixes instead of single first letters
+            for prefix in ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']:
+                # for each protein generate all peptides of length k with current prefix (to reduce peak mem usage)
+                results = pd.DataFrame(
+                    [ (str(it.protein_id), pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k, prefix) ],
+                    columns = ['protein_id','peptide_sequence']
+                    )
+                # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
+                results["protein_id"] = pd.to_numeric(results["protein_id"], downcast="unsigned")
 
-            print("\nInfo: results (['protein_id','peptide_sequence'])", flush=True)
-            results.info(verbose = False, memory_usage=print_mem)
+                print("\nInfo: results (['protein_id','peptide_sequence'])", flush=True)
+                results.info(verbose = False, memory_usage=print_mem)
 
-            # TODO handle this more memory efficiently
-            print("format results ...", flush=True)
-            # count occurrences of one peptide in one protein
-            results = results.groupby(['protein_id','peptide_sequence']).size().reset_index(name='count')
-            # -> protein_id, peptide_sequence, count
-            results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
-            # prepare df for joining
-            results.set_index('peptide_sequence', inplace=True)
-            results.sort_index(inplace=True)
+                print("format results ...", flush=True)
+                # count occurrences of one peptide in one protein
+                results = results.groupby(['protein_id','peptide_sequence']).size().reset_index(name='count')
+                # -> protein_id, peptide_sequence, count
+                results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
+                # prepare df for joining
+                results.set_index('peptide_sequence', inplace=True)
+                results.sort_index(inplace=True)
 
-            unique_peptides = pd.DataFrame(index=results.index.drop_duplicates())
-            unique_peptides["peptide_id"] = range(id_counter, id_counter+len(unique_peptides))
-            id_counter += len(unique_peptides)
-            # -> peptide_sequence, peptide_id
-            unique_peptides.to_csv(pep_handle, mode='a', sep="\t", index=True, header=print_header)
+                unique_peptides = pd.DataFrame(index=results.index.drop_duplicates())
+                unique_peptides["peptide_id"] = range(id_counter, id_counter+len(unique_peptides))
+                id_counter += len(unique_peptides)
+                # -> peptide_sequence, peptide_id
+                unique_peptides.to_csv(pep_handle, mode='a', sep="\t", index=True, header=print_header)
 
-            results = results \
-                        .join(unique_peptides)
-            # -> protein_id, peptide_sequence, count, peptide_id
+                results = results \
+                            .join(unique_peptides)
+                # -> protein_id, peptide_sequence, count, peptide_id
 
-            print("\nInfo: results (['protein_id','peptide_sequence','peptide_id','count'])", flush=True)
-            results.info(verbose = False, memory_usage=print_mem)
-            print(results.memory_usage(deep=True))
+                print("\nInfo: results (['protein_id','peptide_sequence','peptide_id','count'])", flush=True)
+                results.info(verbose = False, memory_usage=print_mem)
 
-            results[['protein_id', 'peptide_id', 'count']].to_csv(args.proteins_peptides, mode='a', sep="\t", index=False, header=print_header)
+                results[['protein_id', 'peptide_id', 'count']].to_csv(args.proteins_peptides, mode='a', sep="\t", index=False, header=print_header)
 
-            print("# peptides of length ", k, ", (non-unique across proteins): ", len(results))
-            print_header=False
+                print("# peptides of length ", k, ", (non-unique across proteins): ", len(results))
+                print_header=False
 
     print("Done!", flush=True)
 
