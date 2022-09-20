@@ -254,7 +254,7 @@
                 "proc_chunk_size": {
                     "type": "integer",
                     "default": 7500000,
-                    "description": "Chunk size (#peptides) used to process peptides within process SPLIT_PRED_TASKS to keep memory usage low, i.e. when peptides are joined with Pandas against other datatables to obtain allele_id for epitope prediction task."
+                    "description": "Limits the number of peptides processed at once in the SPLIT_PRED_TASKS process and thus the memory footprint of the process. This parameter does not affect the pred_chunk_size parameter."
                 },
                 "prodigal_mode": {
                     "type": "string",
