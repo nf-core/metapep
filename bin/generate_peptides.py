@@ -45,6 +45,12 @@ def parse_args(args=None):
     parser.add_argument('-l', '--proteins_lengths', required=True, metavar='FILE', type=argparse.FileType('w'), help='Output file containing: protein_id, protein_length.')
     return parser.parse_args(args)
 
+def validate_letters(string, alphabet):
+    for letter in string:
+        if letter not in alphabet:
+            print("ERROR: invalid input letter ", letter, ". The supported alphabet is ", alphabet, ".")
+            sys.exit(1)
+
 def gen_peptides(prot_seq, k, prefix):
     return [ prot_seq[i:(i+k)] for i in range(len(prot_seq)-k+1) if prot_seq[i] == prefix ]
 
@@ -53,8 +59,15 @@ def main(args=None):
     args = parse_args(args)
     print_mem = 'deep'    # 'deep' (extra computational costs) or None
 
+    # valid amino acid codes:
+    # 20 standard ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
+    # currently not allowing extended codes ('B', 'J', 'O', 'U', 'X', 'Z')
+    aa_list = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+
     protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
-    protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
+    protid_protseq_protlen["protein_sequence"] = protid_protseq_protlen["protein_sequence"].str.upper()
+    protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list)
+    protid_protseq_protlen["protein_length"]   = protid_protseq_protlen["protein_sequence"].apply(len)
 
     print("\nInfo: protid_protseq_protlen", flush=True)
     protid_protseq_protlen.info(verbose = False, memory_usage=print_mem)
@@ -70,12 +83,14 @@ def main(args=None):
     with gzip.open(args.peptides, 'wt') as pep_handle:
         print_header = True
         id_counter = 0
+
         # for each k
         for k in range(args.min_len, args.max_len + 1):
             print("Generate peptides of length ", k, " ...", flush=True)
 
-            # TODO check and handle AAs properly, could be done with prefixes instead of single first letters
-            for prefix in ['A', 'R', 'N', 'D', 'C', 'E', 'Q', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']:
+            # Note: could be done with prefixes instead of single first letters if this remains bottleneck
+            for prefix in aa_list:
+                print("with prefix ", prefix, flush=True)
                 # for each protein generate all peptides of length k with current prefix (to reduce peak mem usage)
                 results = pd.DataFrame(
                     [ (str(it.protein_id), pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k, prefix) ],
