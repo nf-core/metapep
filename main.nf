@@ -4,7 +4,8 @@
     nf-core/metapep
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Github : https://github.com/nf-core/metapep
-Website: https://nf-co.re/metapep
+
+    Website: https://nf-co.re/metapep
     Slack  : https://nfcore.slack.com/channels/metapep
 ----------------------------------------------------------------------------------------
 */
