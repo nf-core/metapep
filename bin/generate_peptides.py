@@ -45,6 +45,7 @@ def parse_args(args=None):
     parser.add_argument('-l', '--proteins_lengths', required=True, metavar='FILE', type=argparse.FileType('w'), help='Output file containing: protein_id, protein_length.')
     return parser.parse_args(args)
 
+# Validate letters of input protein sequences to avoid unnoticed loss of input k-mers
 def validate_letters(string, alphabet):
     for letter in string:
         if letter not in alphabet:
@@ -57,8 +58,9 @@ def gen_peptides(prot_seq, k, prefix):
 
 def main(args=None):
     args = parse_args(args)
-    print_mem = 'deep'    # 'deep' (extra computational costs) or None
+    print_mem = None    # 'deep' (extra computational costs) or None
 
+    # Generate peptides in chunks based on initial AA to reduce memory usage
     # valid amino acid codes:
     # 20 standard ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
     # currently not allowing extended codes ('B', 'J', 'O', 'U', 'X', 'Z')
@@ -79,7 +81,6 @@ def main(args=None):
 
     ####################
     # generate peptides
-
     with gzip.open(args.peptides, 'wt') as pep_handle:
         print_header = True
         id_counter = 0
@@ -92,6 +93,8 @@ def main(args=None):
             for prefix in aa_list:
                 print("with prefix ", prefix, flush=True)
                 # for each protein generate all peptides of length k with current prefix (to reduce peak mem usage)
+                # (the AA-wise processing causes multiple iterations over the same protein sequences,
+                # but the increase of run time is negligible in this context)
                 results = pd.DataFrame(
                     [ (str(it.protein_id), pep) for it in protid_protseq_protlen.itertuples() for pep in gen_peptides(it.protein_sequence, k, prefix) ],
                     columns = ['protein_id','peptide_sequence']
