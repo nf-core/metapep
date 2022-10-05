@@ -251,6 +251,11 @@
                     "default": 75000,
                     "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
                 },
+                "proc_chunk_size": {
+                    "type": "integer",
+                    "default": 7500000,
+                    "description": "Limits the number of peptides processed at once in the SPLIT_PRED_TASKS process and thus the memory footprint of the process. This parameter does not affect the pred_chunk_size parameter."
+                },
                 "prodigal_mode": {
                     "type": "string",
                     "default": "meta",

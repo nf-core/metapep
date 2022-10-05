@@ -3,10 +3,10 @@ process SPLIT_PRED_TASKS {
     label 'process_high_memory'
     label 'cache_lenient'
 
-    conda (params.enable_conda ? "conda-forge::pandas=1.1.5" : null)
+    conda (params.enable_conda ? "conda-forge::pandas=1.4.3" : null)
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
-        'quay.io/biocontainers/pandas:1.1.5' }"
+        'https://depot.galaxyproject.org/singularity/pandas:1.4.3' :
+        'quay.io/biocontainers/pandas:1.4.3' }"
 
     input:
     path(peptides            )
@@ -25,6 +25,7 @@ process SPLIT_PRED_TASKS {
 
     script:
     def pred_chunk_size       = params.pred_chunk_size
+    def proc_chunk_size       = params.proc_chunk_size
     def subsampling = params.sample_n > 0 ? "--sample_n ${params.sample_n}" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \\
@@ -34,6 +35,7 @@ process SPLIT_PRED_TASKS {
                             --conditions "$conditions" \\
                             --condition-allele-map "$conditions_alleles" \\
                             --max-chunk-size $pred_chunk_size \\
+                            --proc-chunk-size $proc_chunk_size \\
                             $subsampling \\
                             --alleles "$alleles" \\
                             --outdir .
