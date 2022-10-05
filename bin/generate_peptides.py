@@ -63,8 +63,8 @@ def main(args=None):
     # Generate peptides in chunks based on initial AA to reduce memory usage
     # valid amino acid codes:
     # 20 standard ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
-    # currently not allowing extended codes ('B', 'J', 'O', 'U', 'X', 'Z')
-    aa_list = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y']
+    # and extended codes ('B', 'J', 'O', 'U', 'X', 'Z')
+    aa_list = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y', 'B', 'J', 'O', 'U', 'X', 'Z']
 
     protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
     protid_protseq_protlen["protein_sequence"] = protid_protseq_protlen["protein_sequence"].str.upper()
