@@ -72,12 +72,14 @@ def main(args=None):
     predictions["prediction_score"] = pd.to_numeric(predictions["prediction_score"], downcast="float")
 
     # (binding ratio: peptide occurrences within multiple proteins of an entity are counted, while occurrences within the same protein are not considered currently)
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], index_col="protein_id", sep='\t').sort_index()
-    entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
-    conditions                = pd.read_csv(args.conditions, sep='\t')
-    condition_allele_map      = pd.read_csv(args.condition_allele_map, sep='\t')
-    alleles                   = pd.read_csv(args.alleles, sep='\t')
+    protein_peptide_occs         = pd.read_csv(args.protein_peptide_occ, usecols=['protein_id', 'peptide_id'], index_col="protein_id", sep='\t').sort_index()
+    entities_proteins_occs       = pd.read_csv(args.entities_proteins_occ, sep='\t')
+    microbiomes_entities_occs    = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
+    conditions                   = pd.read_csv(args.conditions, sep='\t')
+    # convert condition_name column to categorical datatype to reduce memory usage (condition_id column is anyway not used for bigger dfs)
+    conditions["condition_name"] = conditions["condition_name"].astype("category")
+    condition_allele_map         = pd.read_csv(args.condition_allele_map, sep='\t')
+    alleles                      = pd.read_csv(args.alleles, sep='\t')
 
     print_mem = 'deep'      # 'deep' (extra computational costs) or None
     print("\nInfo: predictions", flush=True)
