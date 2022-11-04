@@ -23,12 +23,13 @@ import os
 import csv
 
 import pandas as pd
+import datetime
 
 ####################################################################################################
 
 def parse_args(args=None):
     """Parses the command line arguments specified by the user."""
-    parser = argparse.ArgumentParser(description="Prepare prediction score distribution for plotting.")
+    parser = argparse.ArgumentParser(description="Prepare entity binding rates for plotting.")
 
     # INPUT FILES
     parser.add_argument("-p"     , "--predictions"              , help="Path to the predictions input file"                     , type=str   , required=True)
@@ -44,6 +45,8 @@ def parse_args(args=None):
     parser.add_argument("-o"     , "--outdir"                   , help="Path to the output directory"                           , type=str   , required=True)
 
     # PARAMETERS
+    parser.add_argument("-pc"    , "--chunk-size"               , help="Chunk size with respect to peptide_ids used for internal processing to limit memory usage. Default: 500000"   , type=int               , default=500000)
+
     return parser.parse_args()
 
 
@@ -53,22 +56,20 @@ def call_binder(score, method):
     else:
         return score <= 500
 
-def get_binding_ratio(df):
-    df_new = df \
-            .groupby(["entity_id", "condition_name", "entity_weight"])["binder"] \
-            .sum() \
-            .reset_index(name="binding_rate")
-    df_new["binding_rate"] = df_new["binding_rate"]/float(len(df))
-    # -> index, entity_id, condition_name, entity_weight, binding_rate
-    return df_new
-
 
 def main(args=None):
     args = parse_args(args)
 
+    now = datetime.datetime.now()
+    print ("Start date and time : ")
+    print (now.strftime("%Y-%m-%d %H:%M:%S"))
+
     # Read input files
-    predictions               = pd.read_csv(args.predictions, sep='\t')
-    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').drop(columns="count")
+    predictions               = pd.read_csv(args.predictions, sep='\t', index_col="peptide_id").sort_index()
+    # NOTE could be read in chunk-wise if this gets bottleneck.
+    # E.g. sort and split before by peptide_ids into chunks, read in as file list, process chunk-wise (protein_peptide_occs accordingly)
+    # (would decrease code readability though)
+    protein_peptide_occs      = pd.read_csv(args.protein_peptide_occ, sep='\t').set_index('peptide_id').sort_index()
     entities_proteins_occs    = pd.read_csv(args.entities_proteins_occ, sep='\t')
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep='\t')
     conditions                = pd.read_csv(args.conditions, sep='\t')
@@ -76,6 +77,7 @@ def main(args=None):
     alleles                   = pd.read_csv(args.alleles, sep='\t')
 
     print_mem = 'deep'      # 'deep' (extra computational costs) or None
+
     print("\nInfo: predictions", flush=True)
     predictions.info(verbose = False, memory_usage=print_mem)
     print("\nInfo: protein_peptide_occs", flush=True)
@@ -88,45 +90,75 @@ def main(args=None):
     elif not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
-    print("Joining input data...", file = sys.stderr, flush=True, end='')
+    print("Prepare df with protein info ...", file = sys.stderr, flush=True, end='')
+    # Prepare df for joining protein information
+    protein_info = microbiomes_entities_occs \
+        .merge(conditions) \
+        .drop(columns="microbiome_id") \
+        .merge(condition_allele_map) \
+        .drop(columns="condition_id") \
+        .merge(entities_proteins_occs)
+    # -> protein_id, entity_id, entity_weight, condition_name, allele_id
+    # merged against condition_allele_map to keep only entities, and thus proteins, for which a prediction is requested for the current allele
+    print("\nInfo: protein_info", flush=True)
+    protein_info.info(verbose = False, memory_usage=print_mem)
 
-    # for each allele separately (to save mem)
-    for allele_id in alleles.allele_id:
-        print("Process allele: ", allele_id, flush=True)
+    # Process predictions chunk-wise based on peptide_ids
+    # (predictions chunk can contain more than chunk_size rows due to multiple alleles)
+    entity_results = pd.DataFrame()
+    max_peptide_id = predictions.index.max()
+    for i in range(0, max_peptide_id, args.chunk_size):
+        print("\nChunk peptide_ids: ", i, " - ", i+args.chunk_size-1)
 
-        # entity-wise: do not account for entity-weight?
-        data = predictions[predictions.allele_id == allele_id] \
-                .merge(protein_peptide_occs) \
-                .merge(entities_proteins_occs) \
-                .drop(columns="protein_id") \
-                .merge(microbiomes_entities_occs) \
-                .merge(conditions) \
-                .drop(columns="microbiome_id") \
-                .merge(condition_allele_map) \
-                .drop(columns=["allele_id", "condition_id"])
+        now = datetime.datetime.now()
+        print ("Time: ...")
+        print (now.strftime("%Y-%m-%d %H:%M:%S"))
 
+        # Join predictions with protein_ids and further protein info
+        # NOTE would be faster to process directly respective chunks (see comment above)
+        data = predictions[(predictions.index >= i) & (predictions.index < i+args.chunk_size)] \
+                .join(protein_peptide_occs[(protein_peptide_occs.index >= i) & (protein_peptide_occs.index < i+args.chunk_size)]) \
+                .merge(protein_info)    # based on protein_id, allele_id
+        # -> index, prediction_score, allele_id, protein_id, count, entity_id, entity_weight, condition_name
+
+        # Call binder based on prediction_score
         data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
+        data.drop(columns="prediction_score", inplace=True)
 
-        print("\nInfo: data 1", flush=True)
-        data.info(verbose = False, memory_usage=print_mem)
-
+        # Count total number of peptides and number of binders for each entity, allele and condition (including multiple counts within proteins)
+        # Create extra column containing only counts for peptides that are classified as 'binder' to allow efficient aggregation
+        data["binder_count"] = 0
+        data.loc[data["binder"], "binder_count"] = data["count"]
         data = data \
-                .drop(columns="prediction_score") \
-                .groupby(["entity_id", "condition_name", "entity_weight"], group_keys=False).apply(lambda x : get_binding_ratio(x)) \
-                .reset_index(drop=True) \
-                .drop(columns=["entity_id"])
+                .groupby(["entity_id", "allele_id", "condition_name", "entity_weight"], group_keys=False) \
+                .agg( \
+                    count_binders=pd.NamedAgg(column="binder_count", aggfunc="sum"), \
+                    count_peptides=pd.NamedAgg(column="count", aggfunc="sum")) \
+                .reset_index()
+        # -> index, entity_id, allele_id, condition_name, entity_weight, count_binders, count_peptides
 
-        print("\nInfo: data 2", flush=True)
-        data.info(verbose = False, memory_usage=print_mem)
-        # NOTE
-        # binding ratio: occurences within multiple proteins of an entity are counted, while occurences within the same protein are not counted
+        # Append to entity results
+        entity_results = pd.concat([entity_results, data], ignore_index=True)
+        print("\nInfo: entity_results", flush=True)
+        entity_results.info(verbose = False, memory_usage=print_mem)
 
+    # Combine entity results from different chunks
+    entity_results = entity_results \
+        .groupby(["entity_id", "allele_id", "condition_name", "entity_weight"], group_keys=False)[["count_binders", "count_peptides"]] \
+        .sum() \
+        .reset_index()
+    entity_results["binding_rate"] = entity_results["count_binders"]/entity_results["count_peptides"]
+    data.drop(columns=["count_binders", "count_peptides"], inplace=True)
+
+    # Write out results for each allele
+    for allele_id in alleles.allele_id:
         with open(os.path.join(args.outdir, "entity_binding_ratios.allele_" + str(allele_id) + ".tsv"), 'w') as outfile:
-            data[["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, header=True)
+            entity_results[entity_results.allele_id == allele_id][["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, header=True)
+    print("Done!", flush=True)
 
-        # Sanity check, remove
-        for condition_name in data.condition_name.drop_duplicates():
-            print("Wrote out ", len(data[data.condition_name == condition_name]), " entity binding rates for condition_name ", condition_name, ".", flush=True)
+    # Sanity check, remove
+    # for condition_name in data.condition_name.drop_duplicates():
+    #     print("Wrote out ", len(data[data.condition_name == condition_name]), " entity binding rates for condition_name ", condition_name, ".", flush=True)
 
 
 if __name__ == "__main__":
