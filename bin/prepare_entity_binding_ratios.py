@@ -139,6 +139,7 @@ def main(args=None):
                 .join(protein_peptide_occs[(protein_peptide_occs.index >= i) & (protein_peptide_occs.index < i+args.chunk_size)]) \
                 .merge(protein_info)    # based on protein_id, allele_id
         # -> index, prediction_score, allele_id, protein_id, count, entity_id, entity_weight, condition_name
+        # (protein_id could be dropped, but no big impact here)
 
         # Call binder based on prediction_score
         data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
