@@ -36,9 +36,11 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
+    # input microbiomes
+    parser.add_argument("-m", "--microbiomes", type=str, help="Input microbiomes tsv containing microbiome_id and microbiome_bare_id")
     # Predicted Proteins
     parser.add_argument("-pp", "--predicted-proteins", type=str, nargs="*", help="Protein TSV files with predicted proteins")
-    parser.add_argument("-ppm", "--predicted-proteins-microbiome-ids", type=int, nargs="*", help="Microbiome ids of the predicted protein TSV files in corresponding order")
+    parser.add_argument("-ppm", "--predicted-proteins-microbiome-ids", type=int, nargs="*", help="Microbiome bare ids of the predicted protein TSV files in corresponding order")
     parser.add_argument("-ppb", "--predicted-proteins-bin-basenames", type=str, nargs="*", help="Bin basenames of the predicted protein TSV files in corresponding order, false for type 'assembly'.")
     # Entrez Proteins
     parser.add_argument("-ep", "--entrez-proteins", type=str, nargs="?", help="Protein TSV file with entrez downloaded proteins")
@@ -83,6 +85,8 @@ def main(args=None):
                 sys.exit("An equal number of arguments has to be passed to --predicted-proteins and --predicted_proteins_microbiome_ids")
             if not args.predicted_proteins_bin_basenames or len(args.predicted_proteins_bin_basenames) != len(args.predicted_proteins):
                 sys.exit("An equal number of arguments has to be passed to --predicted-proteins and --predicted_proteins_bin_basenames")
+            # Read the microbiomes table:
+            microbiomes = pd.read_csv(args.microbiomes, sep='\t')
             # Read all provided files
             for mb_id, bin_basename, inpath in zip(args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins):
                 # Read and annotate proteins
@@ -95,22 +99,38 @@ def main(args=None):
 
                 proteins['protein_id']  = range(next_protein_id, next_protein_id + len(proteins))
                 next_protein_id += len(proteins)
-                proteins.rename(columns={'protein_tmp_id' : 'protein_orig_id'}, inplace=True)
 
-                entities = proteins[['entity_name']].drop_duplicates()
-                entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
-                next_entity_id += len(entities)
-                entities['microbiome_id'] = mb_id
+                # Check if microbiome is coassembly
+                if len(microbiomes.groupby('microbiome_bare_id').get_group(mb_id)) != 1:
+                    all_entities = []
+                    # Iterate over coassemblies multiple weight tsv for one microbiome
+                    for coas_id in microbiomes.groupby('microbiome_bare_id').get_group(mb_id)['microbiome_id']:
+                        entities = pd.DataFrame()
+                        entities = proteins[['entity_name']].drop_duplicates()
+                        entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
+                        next_entity_id += len(entities)
+                        # Instead of microbiome_bare_id append microbiome_id
+                        entities['microbiome_id'] = coas_id
+                        all_entities.append(entities)
+
+                    entities = pd.concat(all_entities)
+
+                else:
+                    entities = proteins[['entity_name']].drop_duplicates()
+                    entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
+                    next_entity_id += len(entities)
+                    # If not coassembled microbiome_id = microbiome_bare_id
+                    entities['microbiome_id'] = mb_id
 
                 # Write proteins
+                proteins.rename(columns={'protein_tmp_id' : 'protein_orig_id'}, inplace=True)
                 proteins[proteins_columns].to_csv(outfile_proteins, sep='\t', header=False, index=False)
                 # Write entities_proteins
-                proteins.merge(entities)[['entity_id', 'protein_id']].to_csv(outfile_entities_proteins, sep='\t', header=False, index=False)
+                proteins.merge(entities)[['entity_id', 'protein_id']].sort_values('entity_id').to_csv(outfile_entities_proteins, sep='\t', header=False, index=False)
                 # Write entities
                 entities[entities_columns].to_csv(outfile_entities, sep='\t', header=False, index=False)
                 # Write microbiomes - entities
                 entities[microbiomes_entities_columns].to_csv(outfile_microbiomes_entities, sep='\t', index=False, header=False)
-
         #
         # ENTREZ PROTEINS
         #
