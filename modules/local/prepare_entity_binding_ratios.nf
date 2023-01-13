@@ -17,11 +17,11 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     path alleles
 
     output:
-    path "entity_binding_ratios.allele_*.tsv"   , emit: ch_prep_entity_binding_ratios
-    path "versions.yml"                         , emit: versions
+    path "entity_binding_ratios.allele_*.tsv", emit: ch_prep_entity_binding_ratios
+    path "versions.yml"                      , emit: versions
 
     script:
-    def proc_chunk_size       = params.proc_chunk_size  // TODO add independent parameter oand/r document
+    def chunk_size = params.ds_prep_chunk_size
     """
     prepare_entity_binding_ratios.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -31,7 +31,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
                             --condition-allele-map "$conditions_alleles" \\
                             --alleles "$alleles" \\
                             --method ${params.pred_method} \\
-                            --chunk-size $proc_chunk_size \\
+                            --chunk-size $chunk_size \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml
