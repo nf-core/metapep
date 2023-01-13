@@ -36,6 +36,8 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
+    # input microbiomes
+    parser.add_argument("-m", "--microbiomes", type=str, help="Input microbiomes tsv containing microbiome_id and microbiome_bare_id")
     # Predicted Proteins
     parser.add_argument(
         "-pp", "--predicted-proteins", type=str, nargs="*", help="Protein TSV files with predicted proteins"
@@ -45,7 +47,7 @@ def parse_args(args=None):
         "--predicted-proteins-microbiome-ids",
         type=int,
         nargs="*",
-        help="Microbiome ids of the predicted protein TSV files in corresponding order",
+        help="Microbiome bare ids of the predicted protein TSV files in corresponding order",
     )
     parser.add_argument(
         "-ppb",
@@ -151,6 +153,8 @@ def main(args=None):
                     "An equal number of arguments has to be passed to --predicted-proteins and"
                     " --predicted_proteins_bin_basenames"
                 )
+            # Read the microbiomes table:
+            microbiomes = pd.read_csv(args.microbiomes, sep='\t')
             # Read all provided files
             for mb_id, bin_basename, inpath in zip(
                 args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins
@@ -165,12 +169,28 @@ def main(args=None):
 
                 proteins["protein_id"] = range(next_protein_id, next_protein_id + len(proteins))
                 next_protein_id += len(proteins)
-                proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
 
-                entities = proteins[["entity_name"]].drop_duplicates()
-                entities["entity_id"] = range(next_entity_id, next_entity_id + len(entities))
-                next_entity_id += len(entities)
-                entities["microbiome_id"] = mb_id
+                # Check if microbiome is coassembly
+                if len(microbiomes.groupby('microbiome_bare_id').get_group(mb_id)) != 1:
+                    all_entities = []
+                    # Iterate over coassemblies multiple weight tsv for one microbiome
+                    for coas_id in microbiomes.groupby('microbiome_bare_id').get_group(mb_id)['microbiome_id']:
+                        entities = pd.DataFrame()
+                        entities = proteins[['entity_name']].drop_duplicates()
+                        entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
+                        next_entity_id += len(entities)
+                        # Instead of microbiome_bare_id append microbiome_id
+                        entities['microbiome_id'] = coas_id
+                        all_entities.append(entities)
+
+                    entities = pd.concat(all_entities)
+
+                else:
+                    entities = proteins[['entity_name']].drop_duplicates()
+                    entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
+                    next_entity_id += len(entities)
+                    # If not coassembled microbiome_id = microbiome_bare_id
+                    entities['microbiome_id'] = mb_id
 
                 # Write proteins
                 proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", header=False, index=False)

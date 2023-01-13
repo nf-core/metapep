@@ -134,10 +134,13 @@ workflow METAPEP {
     ch_proteins_input.dump(tag:"proteins")
 
     // ASSEMBLY
+        // Using the microbiome_bare_id in case of coassembled input
+        // Microbiome_bare_id will be identical to microbiome_id if not coassembled
+        // The change in ID will allow reduction of redundant processes in protein prediction
     ch_microbiomes_branch.assembly
         .map { row ->
                 def meta = [:]
-                meta.id = row.microbiome_id
+                meta.id = row.microbiome_bare_id
                 meta.bin_basename = false
                 return [ meta, row.microbiome_path ]
             }
@@ -231,8 +234,10 @@ workflow METAPEP {
     )
     ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
+    // Usage of the unique input
+    // In case of coassembly the input fasta will only be predicted once
     PRODIGAL(
-        ch_nucl_input,
+        ch_nucl_input.unique(),
         "gff"
     )
     ch_versions = ch_versions.mix(PRODIGAL.out.versions)
@@ -251,7 +256,9 @@ workflow METAPEP {
     /*
      * concat files and assign new, unique ids for all proteins (from different sources)
      */
+
     GENERATE_PROTEIN_AND_ENTITY_IDS (
+        INPUT_CHECK.out.ch_microbiomes,
         CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> file }.ifEmpty([]),
         CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> meta }.ifEmpty([]),
         DOWNLOAD_PROTEINS.out.ch_entrez_proteins.ifEmpty([]),
@@ -265,6 +272,8 @@ workflow METAPEP {
     /*
      * Create microbiome_entities
      */
+
+    // TODO merges the weights to the microbiome ID in microbiomes
     FINALIZE_MICROBIOME_ENTITIES (
         DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
         ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
