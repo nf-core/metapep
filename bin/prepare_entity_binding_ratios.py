@@ -176,10 +176,6 @@ def main(args=None):
             entity_results[entity_results.allele_id == allele_id][["condition_name", "binding_rate", "entity_weight"]].to_csv(outfile, sep="\t", index=False, header=True)
     print("Done!", flush=True)
 
-    # Sanity check, remove
-    # for condition_name in data.condition_name.drop_duplicates():
-    #     print("Wrote out ", len(data[data.condition_name == condition_name]), " entity binding rates for condition_name ", condition_name, ".", flush=True)
-
 
 if __name__ == "__main__":
     sys.exit(main())
