@@ -16,6 +16,11 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 
+// Exit if running this pipeline with -profile conda / -profile mamba
+if (workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1) {
+    exit 1, "This pipeline does not support Conda. Please use a container engine such as Docker or Singularity instead."
+}
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     CONFIG FILES
