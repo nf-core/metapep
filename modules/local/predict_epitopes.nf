@@ -2,8 +2,7 @@ process PREDICT_EPITOPES {
     label 'process_low'
     label 'cache_lenient'
 
-    // TODO: conda
-    conda (params.enable_conda ? { exit 1 "Conda is currently not available for metapep" } : null)
+    conda null
     container 'skrakau/metapep:dev'
 
     input:

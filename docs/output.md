@@ -54,7 +54,6 @@ Entities correspond to taxa, MAGs/bins, assembly contigs or proteins.
 
 </details>
 
-
 ### Download proteins
 
 <details markdown="1">
