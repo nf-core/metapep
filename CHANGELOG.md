@@ -10,6 +10,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 ### `Added`
 
 - [#12](https://github.com/nf-core/metapep/pull/12) - Updated documentation
+- [#29](https://github.com/nf-core/metapep/pull/29) - Added data model figure to `output.md`
 
 ### `Fixed`
 
