@@ -168,7 +168,7 @@ def check_samplesheet(args):
 
     # Create bare id for each microbiome path to reduce redundancy in protein generation
     mcrb_uni = {}
-    x=0
+    x = 0
     for path in microbiomes["microbiome_path"]:
         if path not in mcrb_uni:
             mcrb_uni[path] = x

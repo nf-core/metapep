@@ -37,7 +37,9 @@ import sys
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
     # input microbiomes
-    parser.add_argument("-m", "--microbiomes", type=str, help="Input microbiomes tsv containing microbiome_id and microbiome_bare_id")
+    parser.add_argument(
+        "-m", "--microbiomes", type=str, help="Input microbiomes tsv containing microbiome_id and microbiome_bare_id"
+    )
     # Predicted Proteins
     parser.add_argument(
         "-pp", "--predicted-proteins", type=str, nargs="*", help="Protein TSV files with predicted proteins"
@@ -154,36 +156,38 @@ def main(args=None):
                     " --predicted_proteins_bin_basenames"
                 )
             # Read the microbiomes table:
-            microbiomes = pd.read_csv(args.microbiomes, sep='\t')
+            microbiomes = pd.read_csv(args.microbiomes, sep="\t")
             # Read all provided files while checking in each microbiome_bare_id
             check_in_microbiome_bare_id = set()
             for microbiome_bare_id, bin_basename, inpath in zip(
                 args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins
-                ):
+            ):
                 if microbiome_bare_id not in check_in_microbiome_bare_id:
                     check_in_microbiome_bare_id.add(microbiome_bare_id)
                     # Read and annotate proteins
                     proteins = pd.read_csv(inpath, sep="\t")
                     if bin_basename == "__ISASSEMBLY__":
                         # retrieve 'entity_name' from 'protein_tmp_id' prefix
-                        proteins["entity_name"] = proteins["protein_tmp_id"].map(lambda x : "_".join(x.split("_")[:-1]))
+                        proteins["entity_name"] = proteins["protein_tmp_id"].map(lambda x: "_".join(x.split("_")[:-1]))
                     else:
                         proteins["entity_name"] = bin_basename
 
-                    proteins["protein_id"]  = range(next_protein_id, next_protein_id + len(proteins))
+                    proteins["protein_id"] = range(next_protein_id, next_protein_id + len(proteins))
                     next_protein_id += len(proteins)
 
                     # Check if microbiome is coassembly
                     if len(microbiomes.groupby("microbiome_bare_id").get_group(microbiome_bare_id)) != 1:
                         all_entities = []
                         # Iterate over microbiomes in co-assemblies to assign the corresponding microbiome_id in the entities
-                        for microbiome_id in microbiomes.groupby("microbiome_bare_id").get_group(microbiome_bare_id)['microbiome_id']:
-                                entities = pd.DataFrame()
-                                entities = proteins[["entity_name"]].drop_duplicates()
-                                entities["entity_id"] = range(next_entity_id, next_entity_id + len(entities))
-                                # Instead of microbiome_bare_id append microbiome_id
-                                entities["microbiome_id"] = microbiome_id
-                                all_entities.append(entities)
+                        for microbiome_id in microbiomes.groupby("microbiome_bare_id").get_group(microbiome_bare_id)[
+                            "microbiome_id"
+                        ]:
+                            entities = pd.DataFrame()
+                            entities = proteins[["entity_name"]].drop_duplicates()
+                            entities["entity_id"] = range(next_entity_id, next_entity_id + len(entities))
+                            # Instead of microbiome_bare_id append microbiome_id
+                            entities["microbiome_id"] = microbiome_id
+                            all_entities.append(entities)
 
                         next_entity_id += len(entities)
                         entities = pd.concat(all_entities)
@@ -196,7 +200,7 @@ def main(args=None):
                         entities["microbiome_id"] = microbiome_bare_id
 
                 # Write proteins
-                proteins.rename(columns={"protein_tmp_id" : "protein_orig_id"}, inplace=True)
+                proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
                 proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", header=False, index=False)
                 # Write entities_proteins
                 proteins.merge(entities)[["entity_id", "protein_id"]].to_csv(
