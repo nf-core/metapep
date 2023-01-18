@@ -88,7 +88,7 @@ def main(args=None):
             # Read the microbiomes table:
             microbiomes = pd.read_csv(args.microbiomes, sep='\t')
             # Read all provided files
-            for mb_id, bin_basename, inpath in zip(args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins):
+            for microbiome_bare_id, bin_basename, inpath in zip(args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins):
                 # Read and annotate proteins
                 proteins = pd.read_csv(inpath, sep='\t')
                 if bin_basename == "__ISASSEMBLY__":
@@ -101,16 +101,16 @@ def main(args=None):
                 next_protein_id += len(proteins)
 
                 # Check if microbiome is coassembly
-                if len(microbiomes.groupby('microbiome_bare_id').get_group(mb_id)) != 1:
+                if len(microbiomes.groupby('microbiome_bare_id').get_group(microbiome_bare_id)) != 1:
                     all_entities = []
-                    # Iterate over coassemblies multiple weight tsv for one microbiome
-                    for coas_id in microbiomes.groupby('microbiome_bare_id').get_group(mb_id)['microbiome_id']:
+                    # Iterate over microbiomes in co-assemblies to assign the corresponding microbiome_id in the entities
+                    for microbiome_id in microbiomes.groupby('microbiome_bare_id').get_group(microbiome_bare_id)['microbiome_id']:
                         entities = pd.DataFrame()
                         entities = proteins[['entity_name']].drop_duplicates()
                         entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
                         next_entity_id += len(entities)
                         # Instead of microbiome_bare_id append microbiome_id
-                        entities['microbiome_id'] = coas_id
+                        entities['microbiome_id'] = microbiome_id
                         all_entities.append(entities)
 
                     entities = pd.concat(all_entities)
@@ -120,7 +120,7 @@ def main(args=None):
                     entities['entity_id'] = range(next_entity_id, next_entity_id + len(entities))
                     next_entity_id += len(entities)
                     # If not coassembled microbiome_id = microbiome_bare_id
-                    entities['microbiome_id'] = mb_id
+                    entities['microbiome_id'] = microbiome_bare_id
 
                 # Write proteins
                 proteins.rename(columns={'protein_tmp_id' : 'protein_orig_id'}, inplace=True)
