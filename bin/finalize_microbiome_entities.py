@@ -103,7 +103,8 @@ if not args.entrez_microbiomes_entities and not args.nucl_microbiomes_entities:
 entity_microbiome = pd.read_csv(args.microbiomes_entities_noweights, sep="\t")
 entity = pd.read_csv(args.entities, sep="\t")
 
-entity_microbiome = entity_microbiome.merge(entity)
+# Drop duplicate entries after merging
+entity_microbiome = entity_microbiome.merge(entity).drop_duplicates()
 
 # Read the tables that provide the weights and concatenate them
 input_data = pd.concat(
