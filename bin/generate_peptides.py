@@ -119,9 +119,14 @@ def main(args=None):
     ]
 
     protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
+    # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
+    protid_protseq_protlen["protein_id"] = pd.to_numeric(protid_protseq_protlen["protein_id"], downcast="unsigned")
+    # validate input AAs
     protid_protseq_protlen["protein_sequence"] = protid_protseq_protlen["protein_sequence"].str.upper()
     protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list)
+    # get protein lengths
     protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
+    protid_protseq_protlen["protein_length"] = pd.to_numeric(protid_protseq_protlen["protein_length"], downcast="unsigned")
 
     print("\nInfo: protid_protseq_protlen", flush=True)
     protid_protseq_protlen.info(verbose=False, memory_usage=print_mem)
@@ -149,14 +154,12 @@ def main(args=None):
                 # but the increase of run time is negligible in this context)
                 results = pd.DataFrame(
                     [
-                        (str(it.protein_id), pep)
+                        (it.protein_id, pep)
                         for it in protid_protseq_protlen.itertuples()
                         for pep in gen_peptides(it.protein_sequence, k, prefix)
                     ],
                     columns=["protein_id", "peptide_sequence"],
                 )
-                # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
-                results["protein_id"] = pd.to_numeric(results["protein_id"], downcast="unsigned")
 
                 print("\nInfo: results (['protein_id','peptide_sequence'])", flush=True)
                 results.info(verbose=False, memory_usage=print_mem)
