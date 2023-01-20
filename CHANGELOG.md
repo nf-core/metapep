@@ -12,6 +12,10 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#12](https://github.com/nf-core/metapep/pull/12) - Updated documentation
 - [#29](https://github.com/nf-core/metapep/pull/29) - Added data model figure to `output.md`
 
+### `Changed`
+
+- [#26](https://github.com/nf-core/metapep/pull/26) - Optimized memory usage of `PREPARE_ENTITY_BINDING_RATIOS`: peptide_ids are processed chunk-wise now. Added `ds_prep_chunk_size` parameter.
+
 ### `Fixed`
 
 - [#11](https://github.com/nf-core/metapep/pull/11) - Template update for nf-core/tools version 2.3
