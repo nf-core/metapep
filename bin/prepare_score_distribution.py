@@ -23,6 +23,7 @@ import os
 import csv
 
 import pandas as pd
+import datetime
 
 ####################################################################################################
 
@@ -71,6 +72,10 @@ def main(args=None):
     args = parse_args(args)
     print_mem = "deep"  # 'deep' (extra computational costs) or None
 
+    now = datetime.datetime.now()
+    print("Start date and time : ")
+    print(now.strftime("%Y-%m-%d %H:%M:%S"))
+
     # Read input files
     predictions = pd.read_csv(args.predictions, sep="\t")
     protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t").drop(columns="count")
@@ -97,6 +102,10 @@ def main(args=None):
     # for each allele separately (to save mem)
     for allele_id in alleles.allele_id:
         print("Process allele: ", allele_id, flush=True)
+
+        now = datetime.datetime.now()
+        print("Time: ...")
+        print(now.strftime("%Y-%m-%d %H:%M:%S"))
 
         data = (
             predictions[predictions.allele_id == allele_id]
