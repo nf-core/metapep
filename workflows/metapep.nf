@@ -212,7 +212,7 @@ workflow METAPEP {
     ch_bins_archives_input.dump(tag:"bins_archives")
 
     // Concatenate the channels and remove redundant entries for nucleotide based inputs
-    // In case of co-assembly the input fasta will used for prediction only once
+    // In case of co-assembly the input fasta will be used for prediction only once
     ch_nucl_input           = ch_assembly_input.concat(ch_bins_archives_input, ch_bins_folders_input).unique()
     ch_nucl_input.dump(tag:"nucl")
 
