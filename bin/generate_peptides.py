@@ -126,7 +126,9 @@ def main(args=None):
     protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list)
     # get protein lengths
     protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
-    protid_protseq_protlen["protein_length"] = pd.to_numeric(protid_protseq_protlen["protein_length"], downcast="unsigned")
+    protid_protseq_protlen["protein_length"] = pd.to_numeric(
+        protid_protseq_protlen["protein_length"], downcast="unsigned"
+    )
 
     print("\nInfo: protid_protseq_protlen", flush=True)
     protid_protseq_protlen.info(verbose=False, memory_usage=print_mem)
