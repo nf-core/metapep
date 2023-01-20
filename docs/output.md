@@ -24,6 +24,18 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 ### Data model
 
+Metapep uses a relational data model that consists of tables that can describe relationships between different objects.
+
+<p align="center">
+    <img src="images/metapep_datamodel.png" alt="nf-core/metapep data model" width="90%">
+</p>
+
+- Orange: provided or pre-computed entities
+- Gray: associations
+- Purple: Pipeline output
+
+Entities correspond to taxa, MAGs/bins, assembly contigs or proteins.
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -41,8 +53,6 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
   - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
 
 </details>
-
-Metapep uses a relational data model that consists of tables that can describe relationships between different objects.
 
 ### Download proteins
 

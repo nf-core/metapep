@@ -23,7 +23,8 @@ import sys
 import gzip
 import csv
 import xml.etree.ElementTree as ET
-#import tqdm
+
+# import tqdm
 import io
 import argparse
 import time
@@ -44,14 +45,51 @@ import sys
 
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-t', "--taxid_input", required=True, nargs="+", metavar='FILE', type=argparse.FileType('r'), help="List of microbiome files containing: taxon_id [, abundance].")
-    parser.add_argument('-m', "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs.")
-    parser.add_argument('-e', "--email", required=True, help="Email address to use for NCBI access.")
-    parser.add_argument('-k', "--key", required=True, help="NCBI key to allow faster access.")
-    parser.add_argument('-p', "--proteins", required=True, metavar='FILE', help="Output file (compressed) containing: protein_tmp_id, protein_sequence.")
-    parser.add_argument('-ta', "--taxa_assemblies", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: taxon_id, assembly_id.")
-    parser.add_argument('-ep', "--entities_proteins", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: protein_tmp_id, entity_name (taxon_id).")
-    parser.add_argument('-me', "--microbiomes_entities", required=True, metavar='FILE', type=argparse.FileType('w'), help="Output file containing: entity_name (taxon_id), microbiome_id, entity_weight.")
+    parser.add_argument(
+        "-t",
+        "--taxid_input",
+        required=True,
+        nargs="+",
+        metavar="FILE",
+        type=argparse.FileType("r"),
+        help="List of microbiome files containing: taxon_id [, abundance].",
+    )
+    parser.add_argument(
+        "-m", "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs."
+    )
+    parser.add_argument("-e", "--email", required=True, help="Email address to use for NCBI access.")
+    parser.add_argument("-k", "--key", required=True, help="NCBI key to allow faster access.")
+    parser.add_argument(
+        "-p",
+        "--proteins",
+        required=True,
+        metavar="FILE",
+        help="Output file (compressed) containing: protein_tmp_id, protein_sequence.",
+    )
+    parser.add_argument(
+        "-ta",
+        "--taxa_assemblies",
+        required=True,
+        metavar="FILE",
+        type=argparse.FileType("w"),
+        help="Output file containing: taxon_id, assembly_id.",
+    )
+    parser.add_argument(
+        "-ep",
+        "--entities_proteins",
+        required=True,
+        metavar="FILE",
+        type=argparse.FileType("w"),
+        help="Output file containing: protein_tmp_id, entity_name (taxon_id).",
+    )
+    parser.add_argument(
+        "-me",
+        "--microbiomes_entities",
+        required=True,
+        metavar="FILE",
+        type=argparse.FileType("w"),
+        help="Output file containing: entity_name (taxon_id), microbiome_id, entity_weight.",
+    )
     return parser.parse_args(args)
 
 
@@ -62,7 +100,7 @@ def get_assembly_length(assemblyId):
         try:
             with Entrez.efetch(db="assembly", rettype="docsum", id=assemblyId) as entrez_handle:
                 assembly_stats = Entrez.read(entrez_handle, validate=False)
-            time.sleep(1)   # avoid getting blocked by ncbi
+            time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
         except HTTPError as err:
@@ -75,9 +113,8 @@ def get_assembly_length(assemblyId):
     if not success:
         sys.exit("Entrez efetch download failed!")
 
-    root = ET.fromstring("<root>" + str(assembly_stats['DocumentSummarySet']['DocumentSummary'][0]['Meta']) + "</root>")
+    root = ET.fromstring("<root>" + str(assembly_stats["DocumentSummarySet"]["DocumentSummary"][0]["Meta"]) + "</root>")
     return root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text
-
 
 
 def main(args=None):
@@ -89,16 +126,23 @@ def main(args=None):
 
     # read taxonomic ids for download (together with abundances) and write 'microbiomes_entities' output
     taxIds = []
-    print("entity_name", "microbiome_id", "entity_weight", sep='\t', file=args.microbiomes_entities)
+    print("entity_name", "microbiome_id", "entity_weight", sep="\t", file=args.microbiomes_entities)
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
         reader = csv.DictReader(taxid_input)
         for row in reader:
-            taxIds.append(row['taxon_id'])
+            taxIds.append(row["taxon_id"])
             try:
-                print(row['taxon_id'], microbiomeId, row['abundance'], sep='\t', file=args.microbiomes_entities, flush=True)
+                print(
+                    row["taxon_id"],
+                    microbiomeId,
+                    row["abundance"],
+                    sep="\t",
+                    file=args.microbiomes_entities,
+                    flush=True,
+                )
             except KeyError:
                 try:
-                    print(row['taxon_id'], microbiomeId, 1, sep='\t', file=args.microbiomes_entities, flush=True)
+                    print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
                 except KeyError:
                     sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
 
@@ -114,9 +158,11 @@ def main(args=None):
     success = False
     for attempt in range(3):
         try:
-            with Entrez.elink(dbfrom="taxonomy", db="assembly", LinkName="taxonomy_assembly", id=taxIds) as entrez_handle:
+            with Entrez.elink(
+                dbfrom="taxonomy", db="assembly", LinkName="taxonomy_assembly", id=taxIds
+            ) as entrez_handle:
                 assembly_results = Entrez.read(entrez_handle)
-            time.sleep(1)   # avoid getting blocked by ncbi
+            time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
         except HTTPError as err:
@@ -136,7 +182,7 @@ def main(args=None):
         taxId = tax_record["IdList"][0]
         if len(tax_record["LinkSetDb"]) > 0:
             # get all assembly ids
-            ids = [ assembly_record["Id"] for assembly_record in tax_record["LinkSetDb"][0]["Link"] ]
+            ids = [assembly_record["Id"] for assembly_record in tax_record["LinkSetDb"][0]["Link"]]
             # get corresponding lengths
             lengths = [get_assembly_length(id) for id in ids]
             # get id for largest assembly
@@ -144,9 +190,9 @@ def main(args=None):
             dict_taxId_assemblyId[taxId] = selected_assemblyId
 
     # write taxId - assemblyId out
-    print("taxon_id", "assembly_id", sep='\t', file=args.taxa_assemblies, flush=True)
+    print("taxon_id", "assembly_id", sep="\t", file=args.taxa_assemblies, flush=True)
     for taxId in dict_taxId_assemblyId.keys():
-            print(taxId, dict_taxId_assemblyId[taxId], sep='\t', file=args.taxa_assemblies, flush=True)
+        print(taxId, dict_taxId_assemblyId[taxId], sep="\t", file=args.taxa_assemblies, flush=True)
 
     # 3) (selected) assembly -> nucleotide sequences
     # (maybe split here)
@@ -157,9 +203,11 @@ def main(args=None):
     success = False
     for attempt in range(3):
         try:
-            with Entrez.elink(dbfrom="assembly", db="nuccore", LinkName="assembly_nuccore_refseq", id=assemblyIds) as entrez_handle:
+            with Entrez.elink(
+                dbfrom="assembly", db="nuccore", LinkName="assembly_nuccore_refseq", id=assemblyIds
+            ) as entrez_handle:
                 nucleotide_results = Entrez.read(entrez_handle)
-            time.sleep(1)   # avoid getting blocked by ncbi
+            time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
         except HTTPError as err:
@@ -170,10 +218,10 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez elink download failed!")
+        sys.exit("Entrez elink download failed!")
 
     ### for each assembly get list of sequence ids
-    dict_seqId_assemblyIds = defaultdict(lambda : [])
+    dict_seqId_assemblyIds = defaultdict(lambda: [])
     for assembly_record in nucleotide_results:
         assemblyId = assembly_record["IdList"][0]
         for record in assembly_record["LinkSetDb"][0]["Link"]:
@@ -188,9 +236,11 @@ def main(args=None):
     success = False
     for attempt in range(3):
         try:
-            with Entrez.elink(dbfrom="nuccore", db="protein", LinkName="nuccore_protein", id=list(dict_seqId_assemblyIds.keys())) as entrez_handle:
+            with Entrez.elink(
+                dbfrom="nuccore", db="protein", LinkName="nuccore_protein", id=list(dict_seqId_assemblyIds.keys())
+            ) as entrez_handle:
                 protein_results = Entrez.read(entrez_handle)
-            time.sleep(1)   # avoid getting blocked by ncbi
+            time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
         except HTTPError as err:
@@ -201,10 +251,10 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez elink download failed!")
+        sys.exit("Entrez elink download failed!")
 
     ### for each nucleotide sequence get list of protein ids
-    dict_proteinId_assemblyIds = defaultdict(lambda : set())
+    dict_proteinId_assemblyIds = defaultdict(lambda: set())
     for nucleotide_record in protein_results:
         seqId = nucleotide_record["IdList"][0]
         assemblyIds = dict_seqId_assemblyIds[seqId]
@@ -230,9 +280,11 @@ def main(args=None):
     success = False
     for attempt in range(3):
         try:
-            with Entrez.esummary(db="protein", id=",".join(proteinIds)) as entrez_handle:   # esummary doesn't work on python lists somehow
+            with Entrez.esummary(
+                db="protein", id=",".join(proteinIds)
+            ) as entrez_handle:  # esummary doesn't work on python lists somehow
                 protein_summaries = Entrez.read(entrez_handle)
-            time.sleep(1)   # avoid getting blocked by ncbi
+            time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
         except HTTPError as err:
@@ -243,7 +295,7 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez esummary download failed!")
+        sys.exit("Entrez esummary download failed!")
 
     dict_protein_uid_acc = {}
     for protein_summary in protein_summaries:
@@ -254,11 +306,11 @@ def main(args=None):
     for attempt in range(3):
         try:
             with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
-                with gzip.open(args.proteins, 'wt') as out_handle:
-                    print("protein_tmp_id", "protein_sequence", sep='\t', file=out_handle)
+                with gzip.open(args.proteins, "wt") as out_handle:
+                    print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
                     for record in SeqIO.parse(entrez_handle, "fasta"):
-                        print(record.id, record.seq, sep='\t', file=out_handle, flush=True)
-            time.sleep(1)   # avoid getting blocked by ncbi
+                        print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
+            time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
         except HTTPError as err:
@@ -269,11 +321,11 @@ def main(args=None):
             else:
                 raise
     if not success:
-            sys.exit("Entrez efetch download failed!")
+        sys.exit("Entrez efetch download failed!")
 
     # 6) write out 'entities_proteins.entrez.tsv'
-    print("protein_tmp_id", "entity_name", sep='\t', file=args.entities_proteins)
-    dict_assemblyId_taxId = { v : k for k, v in dict_taxId_assemblyId.items() }
+    print("protein_tmp_id", "entity_name", sep="\t", file=args.entities_proteins)
+    dict_assemblyId_taxId = {v: k for k, v in dict_taxId_assemblyId.items()}
     if len(dict_assemblyId_taxId) != len(dict_taxId_assemblyId):
         sys.exit("Creation of dict_assemblyId_taxId failed!")
     for proteinId in proteinIds:
@@ -281,7 +333,7 @@ def main(args=None):
         # write out protein_tmp_id, entity_name (taxon_id)
         for assemblyId in dict_proteinId_assemblyIds[proteinId]:
             taxId = dict_assemblyId_taxId[assemblyId]
-            print(accVersion, taxId, sep='\t', file=args.entities_proteins, flush=True)
+            print(accVersion, taxId, sep="\t", file=args.entities_proteins, flush=True)
 
     # NOTE for proteins the NCBI accession version ids are written out to enable a mapping to the fasta/tsv output
     # in contrast, for assemblies UIDs are written out

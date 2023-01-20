@@ -27,22 +27,43 @@ import datetime
 
 ####################################################################################################
 
+
 def parse_args(args=None):
     """Parses the command line arguments specified by the user."""
     parser = argparse.ArgumentParser(description="Prepare entity binding rates for plotting.")
 
     # INPUT FILES
-    parser.add_argument("-p"     , "--predictions"              , help="Path to the predictions input file"                     , type=str   , required=True)
-    parser.add_argument("-ppo"   , "--protein-peptide-occ"      , help="Path to the protein peptide occurences input file"      , type=str   , required=True)
-    parser.add_argument("-epo"   , "--entities-proteins-occ"    , help="Path to the entity protein occurences input file"       , type=str   , required=True)
-    parser.add_argument("-meo"   , "--microbiomes-entities-occ" , help="Path to the microbiome entity occurences input file"    , type=str   , required=True)
-    parser.add_argument("-c"     , "--conditions"               , help="Path to the conditions input file"                      , type=str   , required=True)
-    parser.add_argument("-cam"   , "--condition-allele-map"     , help="Path to the condition allele map input file"            , type=str   , required=True)
-    parser.add_argument("-a"     , "--alleles"                  , help="Path to the allele input file"                          , type=str   , required=True)
-    parser.add_argument("-m"     , "--method"                   , help="Used epitope prediction method"                         , type=str   , required=True)
+    parser.add_argument("-p", "--predictions", help="Path to the predictions input file", type=str, required=True)
+    parser.add_argument(
+        "-ppo",
+        "--protein-peptide-occ",
+        help="Path to the protein peptide occurences input file",
+        type=str,
+        required=True,
+    )
+    parser.add_argument(
+        "-epo",
+        "--entities-proteins-occ",
+        help="Path to the entity protein occurences input file",
+        type=str,
+        required=True,
+    )
+    parser.add_argument(
+        "-meo",
+        "--microbiomes-entities-occ",
+        help="Path to the microbiome entity occurences input file",
+        type=str,
+        required=True,
+    )
+    parser.add_argument("-c", "--conditions", help="Path to the conditions input file", type=str, required=True)
+    parser.add_argument(
+        "-cam", "--condition-allele-map", help="Path to the condition allele map input file", type=str, required=True
+    )
+    parser.add_argument("-a", "--alleles", help="Path to the allele input file", type=str, required=True)
+    parser.add_argument("-m", "--method", help="Used epitope prediction method", type=str, required=True)
 
     # OUTPUT FILES
-    parser.add_argument("-o"     , "--outdir"                   , help="Path to the output directory"                           , type=str   , required=True)
+    parser.add_argument("-o", "--outdir", help="Path to the output directory", type=str, required=True)
 
     # PARAMETERS
     parser.add_argument("-pc"    , "--chunk-size"               , help="Chunk size with respect to peptide_ids used for internal processing to limit memory usage. Default: 500000"   , type=int               , default=500000)
@@ -104,7 +125,7 @@ def main(args=None):
 
     # Create output directory if it doesn't exist
     if os.path.exists(args.outdir) and not os.path.isdir(args.outdir):
-        print("ERROR - The target path is not a directory", file = sys.stderr)
+        print("ERROR - The target path is not a directory", file=sys.stderr)
         sys.exit(2)
     elif not os.path.exists(args.outdir):
         os.makedirs(args.outdir)

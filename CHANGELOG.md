@@ -10,6 +10,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 ### `Added`
 
 - [#12](https://github.com/nf-core/metapep/pull/12) - Updated documentation
+- [#29](https://github.com/nf-core/metapep/pull/29) - Added data model figure to `output.md`
 
 ### `Changed`
 
@@ -20,6 +21,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#11](https://github.com/nf-core/metapep/pull/11) - Template update for nf-core/tools version 2.3
 - [#13](https://github.com/nf-core/metapep/pull/13) - Update modules custom/dumpsoftwareversions and prodigal
 - [#21](https://github.com/nf-core/metapep/pull/21) - Optimized peptide processing and Pandas joining in process `SPLIT_PRED_TASK` to reduce memory usage.
+- [#24](https://github.com/nf-core/metapep/pull/24) - Optimized peptide generation in process `GENERATE_PEPTIDES` to reduce memory usage.
 
 ### `Dependencies`
 

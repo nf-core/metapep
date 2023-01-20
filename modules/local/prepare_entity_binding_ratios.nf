@@ -2,7 +2,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     label "process_long"
     label "process_high_memory"
 
-    conda (params.enable_conda ? "conda-forge::pandas=1.4.3" : null)
+    conda "conda-forge::pandas=1.4.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.4.3' :
         'quay.io/biocontainers/pandas:1.4.3' }"
