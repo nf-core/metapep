@@ -203,11 +203,11 @@ def main(args=None):
                 proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
                 proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", header=False, index=False)
                 # Write entities_proteins
-                proteins.merge(entities)[["entity_id", "protein_id"]].to_csv(
+                proteins.merge(entities)[["entity_id", "protein_id"]].drop_duplicates().to_csv(
                     outfile_entities_proteins, sep="\t", header=False, index=False
                 )
                 # Write entities
-                entities[entities_columns].to_csv(outfile_entities, sep="\t", header=False, index=False)
+                entities[entities_columns].drop_duplicates().to_csv(outfile_entities, sep="\t", header=False, index=False)
                 # Write microbiomes - entities
                 entities[microbiomes_entities_columns].to_csv(
                     outfile_microbiomes_entities, sep="\t", index=False, header=False
