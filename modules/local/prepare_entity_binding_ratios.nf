@@ -2,10 +2,10 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     label "process_long"
     label "process_high_memory"
 
-    conda "conda-forge::pandas=1.1.5"
+    conda "conda-forge::pandas=1.4.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
-        'quay.io/biocontainers/pandas:1.1.5' }"
+        'https://depot.galaxyproject.org/singularity/pandas:1.4.3' :
+        'quay.io/biocontainers/pandas:1.4.3' }"
 
     input:
     path predictions
@@ -17,10 +17,11 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     path alleles
 
     output:
-    path "entity_binding_ratios.allele_*.tsv"   , emit: ch_prep_entity_binding_ratios
-    path "versions.yml"                         , emit: versions
+    path "entity_binding_ratios.allele_*.tsv", emit: ch_prep_entity_binding_ratios
+    path "versions.yml"                      , emit: versions
 
     script:
+    def chunk_size = params.ds_prep_chunk_size
     """
     prepare_entity_binding_ratios.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -30,6 +31,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
                             --condition-allele-map "$conditions_alleles" \\
                             --alleles "$alleles" \\
                             --method ${params.pred_method} \\
+                            --chunk-size $chunk_size \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml

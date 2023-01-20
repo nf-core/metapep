@@ -274,6 +274,11 @@
                     "default": 7500000,
                     "description": "Limits the number of peptides processed at once in the SPLIT_PRED_TASKS process and thus the memory footprint of the process. This parameter does not affect the pred_chunk_size parameter."
                 },
+                "ds_prep_chunk_size": {
+                    "type": "integer",
+                    "default": 7500000,
+                    "description": "Limits the number of peptide_ids processed at once in the PREPARE_ENTITY_BINDING_RATIOS process and thus the memory footprint of the process."
+                },
                 "prodigal_mode": {
                     "type": "string",
                     "default": "meta",
