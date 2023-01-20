@@ -166,10 +166,19 @@ def check_samplesheet(args):
     )
     microbiomes["microbiome_id"] = range(len(microbiomes))
 
-    if len(microbiomes) != len(microbiomes["microbiome_path"].drop_duplicates()):
-        sys.exit("Conflicting types or weights were specified for the same microbiome path!")
+    # Create bare id for each microbiome path to reduce redundancy in protein generation
+    mcrb_uni = {}
+    x = 0
+    for path in microbiomes["microbiome_path"]:
+        if path not in mcrb_uni:
+            mcrb_uni[path] = x
+            x += 1
+        else:
+            continue
 
-    microbiomes[["microbiome_id", "microbiome_path", "microbiome_type", "weights_path"]].to_csv(
+    microbiomes["microbiome_bare_id"] = [mcrb_uni[path] for path in microbiomes["microbiome_path"]]
+
+    microbiomes[["microbiome_id", "microbiome_path", "microbiome_type", "weights_path", "microbiome_bare_id"]].to_csv(
         args.microbiomes, sep="\t", index=False
     )
 
