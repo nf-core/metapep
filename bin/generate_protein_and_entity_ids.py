@@ -208,7 +208,9 @@ def main(args=None):
                     outfile_entities_proteins, sep="\t", header=False, index=False
                 )
                 # Write entities
-                entities[entities_columns].drop_duplicates().to_csv(outfile_entities, sep="\t", header=False, index=False)
+                entities[entities_columns].drop_duplicates().to_csv(
+                    outfile_entities, sep="\t", header=False, index=False
+                )
                 # Write microbiomes - entities
                 entities[microbiomes_entities_columns].to_csv(
                     outfile_microbiomes_entities, sep="\t", index=False, header=False
