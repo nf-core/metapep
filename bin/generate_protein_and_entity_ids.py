@@ -178,7 +178,8 @@ def main(args=None):
                     # Check if microbiome is coassembly
                     if len(microbiomes.groupby("microbiome_bare_id").get_group(microbiome_bare_id)) != 1:
                         all_entities = []
-                        # Iterate over microbiomes in co-assemblies to assign the corresponding microbiome_id in the entities
+                        # Iterate over microbiome_ids associated to current co-assembly
+                        # (i.e. microbiome_bare_id) and assign the corresponding microbiome_id to the entities
                         for microbiome_id in microbiomes.groupby("microbiome_bare_id").get_group(microbiome_bare_id)[
                             "microbiome_id"
                         ]:
