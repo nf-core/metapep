@@ -69,6 +69,7 @@ def parse_args(args=None):
 
 def main(args=None):
     args = parse_args(args)
+    print_mem = "deep"  # 'deep' (extra computational costs) or None
 
     # Read input files
     predictions = pd.read_csv(args.predictions, sep="\t")
@@ -78,6 +79,11 @@ def main(args=None):
     conditions = pd.read_csv(args.conditions, sep="\t")
     condition_allele_map = pd.read_csv(args.condition_allele_map, sep="\t")
     alleles = pd.read_csv(args.alleles, sep="\t")
+
+    print("\nInfo: predictions", flush=True)
+    predictions.info(verbose=False, memory_usage=print_mem)
+    print("\nInfo: protein_peptide_occs", flush=True)
+    protein_peptide_occs.info(verbose=False, memory_usage=print_mem)
 
     # Create output directory if it doesn't exist
     if os.path.exists(args.outdir) and not os.path.isdir(args.outdir):
@@ -96,6 +102,13 @@ def main(args=None):
             predictions[predictions.allele_id == allele_id]
             .merge(protein_peptide_occs)
             .merge(entities_proteins_occs)
+        )
+
+        print("\nInfo: data after merging protein_peptide_occs and entities_proteins_occs", flush=True)
+        data.info(verbose=False, memory_usage=print_mem)
+
+        data = (
+            data
             .drop(columns="protein_id")
             .merge(microbiomes_entities_occs)
             .drop(columns="entity_id")
@@ -111,6 +124,9 @@ def main(args=None):
         # for each peptide in a condition the weight is computed as follows:
         # - the sum of all weights of the corresponding entity_weights, each weighted by the number of proteins in which the peptide occurs
         # - multiple occurrences of the peptide within one protein are not counted
+
+        print("\nInfo: final data", flush=True)
+        data.info(verbose=False, memory_usage=print_mem)
 
         with open(os.path.join(args.outdir, "prediction_scores.allele_" + str(allele_id) + ".tsv"), "w") as outfile:
             data[["prediction_score", "condition_name", "weight_sum"]].to_csv(
