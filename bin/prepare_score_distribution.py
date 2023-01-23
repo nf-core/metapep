@@ -77,8 +77,8 @@ def main(args=None):
     print(now.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Read input files
-    predictions = pd.read_csv(args.predictions, sep="\t")
-    protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t").drop(columns="count")
+    predictions = pd.read_csv(args.predictions, sep="\t", index_col="peptide_id").sort_index()
+    protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t", index_col="peptide_id").drop(columns="count").sort_index()
     entities_proteins_occs = pd.read_csv(args.entities_proteins_occ, sep="\t")
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t")
     conditions = pd.read_csv(args.conditions, sep="\t")
@@ -97,60 +97,74 @@ def main(args=None):
     elif not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
-    print("Joining input data...", file=sys.stderr, flush=True, end="")
+    print("Prepare df with protein info ...", flush=True)
+    # Prepare df for joining protein information
+    # (get condition_name, entity_weights and filter for condition entities)
+    protein_info = (
+        microbiomes_entities_occs.merge(conditions)
+        .drop(columns="microbiome_id")
+        .merge(condition_allele_map)
+        .drop(columns="condition_id")
+        .merge(entities_proteins_occs)
+        .drop(columns="entity_id")
+    )
+    # -> protein_id, entity_weight, condition_name, allele_id
+    # merged against condition_allele_map to keep only entities, and thus proteins, for which a prediction is requested for the current allele
+    print("\nInfo: protein_info", flush=True)
+    protein_info.info(verbose=False, memory_usage=print_mem)
 
-    # for each allele separately (to save mem)
+    now = datetime.datetime.now()
+    print("Time: ...")
+    print(now.strftime("%Y-%m-%d %H:%M:%S"))
+
+    data = (
+        predictions
+        .join(protein_peptide_occs)
+    )
+
+    data = (
+        data
+        .reset_index(names="peptide_id")
+        .merge(protein_info)
+        .drop(columns="protein_id")
+    )
+    # (merge() might change index, so reset_index(..) before)
+    # TODO include counts!
+
+    print("\nInfo: data after merging protein_info", flush=True)
+    data.info(verbose=False, memory_usage=print_mem)
+
+    data = (
+        data
+        .groupby(["peptide_id", "prediction_score", "condition_name", "allele_id"])["entity_weight"]
+        .sum()
+        .reset_index(name="weight_sum")
+        .drop(columns="peptide_id")
+    )
+    # NOTE
+    # for each peptide in a condition the weight is computed as follows:
+    # - the sum of all weights of the corresponding entity_weights, each weighted by the number of proteins in which the peptide occurs
+    # - multiple occurrences of the peptide within one protein are not counted
+
+    print("\nInfo: final data", flush=True)
+    data.info(verbose=False, memory_usage=print_mem)
+
+    # Write out results for each allele
     for allele_id in alleles.allele_id:
-        print("Process allele: ", allele_id, flush=True)
-
-        now = datetime.datetime.now()
-        print("Time: ...")
-        print(now.strftime("%Y-%m-%d %H:%M:%S"))
-
-        data = (
-            predictions[predictions.allele_id == allele_id]
-            .merge(protein_peptide_occs)
-            .merge(entities_proteins_occs)
-        )
-
-        print("\nInfo: data after merging protein_peptide_occs and entities_proteins_occs", flush=True)
-        data.info(verbose=False, memory_usage=print_mem)
-
-        data = (
-            data
-            .drop(columns="protein_id")
-            .merge(microbiomes_entities_occs)
-            .drop(columns="entity_id")
-            .merge(conditions)
-            .merge(condition_allele_map)
-            .drop(columns=["allele_id", "microbiome_id", "condition_id"])
-            .groupby(["peptide_id", "prediction_score", "condition_name"])["entity_weight"]
-            .sum()
-            .reset_index(name="weight_sum")
-            .drop(columns="peptide_id")
-        )
-        # NOTE
-        # for each peptide in a condition the weight is computed as follows:
-        # - the sum of all weights of the corresponding entity_weights, each weighted by the number of proteins in which the peptide occurs
-        # - multiple occurrences of the peptide within one protein are not counted
-
-        print("\nInfo: final data", flush=True)
-        data.info(verbose=False, memory_usage=print_mem)
-
         with open(os.path.join(args.outdir, "prediction_scores.allele_" + str(allele_id) + ".tsv"), "w") as outfile:
-            data[["prediction_score", "condition_name", "weight_sum"]].to_csv(
+            data[data.allele_id == allele_id][["prediction_score", "condition_name", "weight_sum"]].to_csv(
                 outfile, sep="\t", index=False, header=True
             )
 
-        for condition_name in data.condition_name.drop_duplicates():
-            print(
-                "Wrote out ",
-                len(data[data.condition_name == condition_name]),
-                " prediction scores for condition_name ",
-                condition_name,
-                ".",
-                flush=True,
-            )
+        # for condition_name in data.condition_name.drop_duplicates():
+        #     print(
+        #         "Wrote out ",
+        #         len(data[data.condition_name == condition_name]),
+        #         " prediction scores for condition_name ",
+        #         condition_name,
+        #         ".",
+        #         flush=True,
+        #     )
 
 
 if __name__ == "__main__":
