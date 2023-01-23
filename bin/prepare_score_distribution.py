@@ -177,6 +177,7 @@ def main(args=None):
                 .drop(columns="protein_id")
             )
             # (merge() might change index, so reset_index(..) before)
+            # -> index, peptide_id, prediction_score, allele_id, count, entity_weight, condition_name
             # TODO include counts!
 
             print("\nInfo: data after merging protein_info", flush=True)
@@ -189,6 +190,7 @@ def main(args=None):
                 .reset_index(name="weight_sum")
                 .drop(columns="peptide_id")
             )
+            # -> index, prediction_score, condition_name, allele_id, weight_sum
 
             # NOTE
             # for each peptide in a condition the weight is computed as follows:
