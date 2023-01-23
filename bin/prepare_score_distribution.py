@@ -187,8 +187,7 @@ def main(args=None):
             data.info(verbose=False, memory_usage=print_mem)
 
             data = (
-                data
-                .groupby(["peptide_id", "prediction_score", "condition_name", "allele_id"])["agg_weight"]
+                data.groupby(["peptide_id", "prediction_score", "condition_name", "allele_id"])["agg_weight"]
                 .sum()
                 .reset_index(name="weight_sum")
                 .drop(columns="peptide_id")
@@ -212,7 +211,6 @@ def main(args=None):
             print_header = False
 
         print("Done!", flush=True)
-
 
     finally:
         for outfile in outfile_dict.values():
