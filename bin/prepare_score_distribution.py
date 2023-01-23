@@ -178,14 +178,17 @@ def main(args=None):
             )
             # (merge() might change index, so reset_index(..) before)
             # -> index, peptide_id, prediction_score, allele_id, count, entity_weight, condition_name
-            # TODO include counts!
+
+            # Add for each prediction, protein and entity aggregated weights containing entity_weights * counts
+            data["agg_weight"] = data["entity_weight"] * data["count"]
+            data.drop(columns=["entity_weight", "count"], inplace=True)
 
             print("\nInfo: data after merging protein_info", flush=True)
             data.info(verbose=False, memory_usage=print_mem)
 
             data = (
                 data
-                .groupby(["peptide_id", "prediction_score", "condition_name", "allele_id"])["entity_weight"]
+                .groupby(["peptide_id", "prediction_score", "condition_name", "allele_id"])["agg_weight"]
                 .sum()
                 .reset_index(name="weight_sum")
                 .drop(columns="peptide_id")
@@ -195,7 +198,8 @@ def main(args=None):
             # NOTE
             # for each peptide in a condition the weight is computed as follows:
             # - the sum of all weights of the corresponding entity_weights, each weighted by the number of proteins in which the peptide occurs
-            # - multiple occurrences of the peptide within one protein are not counted
+            # - multiple occurrences of the peptide within one protein are counted
+            # if the no entity weights are provided, weight_sum corresponds to the number of peptide occurrences within the condition
 
             print("\nInfo: final data", flush=True)
             data.info(verbose=False, memory_usage=print_mem)
