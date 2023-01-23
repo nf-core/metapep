@@ -88,12 +88,36 @@ def main(args=None):
 
     # Read input files
     predictions = pd.read_csv(args.predictions, sep="\t", index_col="peptide_id").sort_index()
+    predictions["allele_id"] = pd.to_numeric(predictions["allele_id"], downcast="unsigned")
+    predictions["prediction_score"] = pd.to_numeric(predictions["prediction_score"], downcast="float")
+
     protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t", index_col="peptide_id").sort_index()
+    protein_peptide_occs["protein_id"] = pd.to_numeric(protein_peptide_occs["protein_id"], downcast="unsigned")
+    protein_peptide_occs["count"] = pd.to_numeric(protein_peptide_occs["count"], downcast="unsigned")
+
     entities_proteins_occs = pd.read_csv(args.entities_proteins_occ, sep="\t")
+    entities_proteins_occs["entity_id"] = pd.to_numeric(entities_proteins_occs["entity_id"], downcast="unsigned")
+    entities_proteins_occs["protein_id"] = pd.to_numeric(entities_proteins_occs["protein_id"], downcast="unsigned")
+
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t")
+    microbiomes_entities_occs["microbiome_id"] = pd.to_numeric(
+        microbiomes_entities_occs["microbiome_id"], downcast="unsigned"
+    )
+    microbiomes_entities_occs["entity_id"] = pd.to_numeric(microbiomes_entities_occs["entity_id"], downcast="unsigned")
+    microbiomes_entities_occs["entity_weight"] = pd.to_numeric(
+        microbiomes_entities_occs["entity_weight"], downcast="float"
+    )
+
     conditions = pd.read_csv(args.conditions, sep="\t")
+    conditions["condition_id"] = pd.to_numeric(conditions["condition_id"], downcast="unsigned")
+    conditions["microbiome_id"] = pd.to_numeric(conditions["microbiome_id"], downcast="unsigned")
+
     condition_allele_map = pd.read_csv(args.condition_allele_map, sep="\t")
+    condition_allele_map["condition_id"] = pd.to_numeric(condition_allele_map["condition_id"], downcast="unsigned")
+    condition_allele_map["allele_id"] = pd.to_numeric(condition_allele_map["allele_id"], downcast="unsigned")
+
     alleles = pd.read_csv(args.alleles, sep="\t")
+    alleles["allele_id"] = pd.to_numeric(alleles["allele_id"], downcast="unsigned")
 
     print("\nInfo: predictions", flush=True)
     predictions.info(verbose=False, memory_usage=print_mem)
