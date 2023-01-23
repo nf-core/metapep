@@ -21,6 +21,7 @@ process PREPARE_SCORE_DISTRIBUTION {
     path "versions.yml"                  , emit: versions
 
     script:
+    def chunk_size = params.ds_prep_chunk_size
     """
     prepare_score_distribution.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -29,6 +30,7 @@ process PREPARE_SCORE_DISTRIBUTION {
                             --conditions "$conditions" \\
                             --condition-allele-map "$conditions_alleles" \\
                             --alleles "$alleles" \\
+                            --chunk-size $chunk_size \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml
