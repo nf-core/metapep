@@ -88,7 +88,7 @@ def main(args=None):
 
     # Read input files
     predictions = pd.read_csv(args.predictions, sep="\t", index_col="peptide_id").sort_index()
-    protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t", index_col="peptide_id").drop(columns="count").sort_index()
+    protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t", index_col="peptide_id").sort_index()
     entities_proteins_occs = pd.read_csv(args.entities_proteins_occ, sep="\t")
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t")
     conditions = pd.read_csv(args.conditions, sep="\t")
