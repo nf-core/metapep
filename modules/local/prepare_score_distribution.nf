@@ -2,10 +2,11 @@ process PREPARE_SCORE_DISTRIBUTION {
     label "process_long"
     label "process_high_memory"
 
-    conda "conda-forge::pandas=1.1.5"
+    // TODO generate extra biocontainer with only specifying pandas version (currently mulled container taken from "bedtools=2.23.0,pandas=1.5.2")
+    conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/pandas:1.1.5' :
-        'quay.io/biocontainers/pandas:1.1.5' }"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-d19e2715c83e4582e3f1fb0a2e473abde8ca636e:fc171b36fc2e2a38a259a1c82a139b59d94c968b-0' :
+        'quay.io/biocontainers/mulled-v2-d19e2715c83e4582e3f1fb0a2e473abde8ca636e:fc171b36fc2e2a38a259a1c82a139b59d94c968b-0' }"
 
     input:
     path predictions
@@ -21,6 +22,7 @@ process PREPARE_SCORE_DISTRIBUTION {
     path "versions.yml"                  , emit: versions
 
     script:
+    def chunk_size = params.ds_prep_chunk_size
     """
     prepare_score_distribution.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -29,6 +31,7 @@ process PREPARE_SCORE_DISTRIBUTION {
                             --conditions "$conditions" \\
                             --condition-allele-map "$conditions_alleles" \\
                             --alleles "$alleles" \\
+                            --chunk-size $chunk_size \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml
