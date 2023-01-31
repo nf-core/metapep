@@ -158,18 +158,19 @@ def main(args=None):
         # Process predictions chunk-wise based on peptide_ids
         # (predictions chunk can contain more than chunk_size rows due to multiple alleles)
         max_peptide_id = predictions.index.max()
-        for i in range(0, max_peptide_id, args.chunk_size):
-            print("\nChunk peptide_ids: ", i, " - ", i + args.chunk_size - 1)
+        for chunk_start in range(0, max_peptide_id, args.chunk_size):
+            chunk_end = min(chunk_start + args.chunk_size - 1, max_peptide_id)
+            print("\nChunk peptide_ids: ", chunk_start, " - ", chunk_end)
 
             now = datetime.datetime.now()
             print("Time: ...")
             print(now.strftime("%Y-%m-%d %H:%M:%S"))
 
             data = (
-                predictions[(predictions.index >= i) & (predictions.index < i + args.chunk_size)]
+                predictions[(predictions.index >= chunk_start) & (predictions.index <= chunk_end)]
                 .join(
                     protein_peptide_occs[
-                        (protein_peptide_occs.index >= i) & (protein_peptide_occs.index < i + args.chunk_size)
+                        (protein_peptide_occs.index >= chunk_start) & (protein_peptide_occs.index <= chunk_end)
                     ]
                 )
                 .reset_index(names="peptide_id")
