@@ -114,6 +114,7 @@ workflow METAPEP {
     .set{ ch_microbiomes_branch }
 
     // TAXA
+    // TODO co-assembly case needs to be solved
     ch_microbiomes_branch.taxa
         .map { row ->
                 def meta = [:]
@@ -124,6 +125,7 @@ workflow METAPEP {
     ch_taxa_input.dump(tag:"taxa")
 
     // PROTEINS
+    // TODO co-assembly case needs to be solved
     ch_microbiomes_branch.proteins
         .map { row ->
                 def meta = [:]
@@ -134,10 +136,13 @@ workflow METAPEP {
     ch_proteins_input.dump(tag:"proteins")
 
     // ASSEMBLY
+        // Using the microbiome_bare_id to handle co-assembled input
+        // microbiome_bare_id will be identical to microbiome_id if not co-assembled
+        // The change in ID prevents redundant processes in protein prediction
     ch_microbiomes_branch.assembly
         .map { row ->
                 def meta = [:]
-                meta.id = row.microbiome_id
+                meta.id = row.microbiome_bare_id
                 meta.bin_basename = false
                 return [ meta, row.microbiome_path ]
             }
@@ -145,6 +150,7 @@ workflow METAPEP {
     ch_assembly_input.dump(tag:"assembly")
 
     // BINS
+    // TODO co-assembly case needs to be solved
     ch_microbiomes_branch.bins
         .branch {
                 row ->
@@ -205,8 +211,9 @@ workflow METAPEP {
         .set{ ch_bins_archives_input }
     ch_bins_archives_input.dump(tag:"bins_archives")
 
-    // Concatenate the channels for nucleotide based inputs
-    ch_nucl_input           = ch_assembly_input.concat(ch_bins_archives_input, ch_bins_folders_input)
+    // Concatenate the channels and remove redundant entries for nucleotide based inputs
+    // In case of co-assembly the input fasta will be used for prediction only once
+    ch_nucl_input           = ch_assembly_input.concat(ch_bins_archives_input, ch_bins_folders_input).unique()
     ch_nucl_input.dump(tag:"nucl")
 
     // ####################################################################################################
@@ -251,7 +258,9 @@ workflow METAPEP {
     /*
      * concat files and assign new, unique ids for all proteins (from different sources)
      */
+
     GENERATE_PROTEIN_AND_ENTITY_IDS (
+        INPUT_CHECK.out.ch_microbiomes,
         CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> file }.ifEmpty([]),
         CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> meta }.ifEmpty([]),
         DOWNLOAD_PROTEINS.out.ch_entrez_proteins.ifEmpty([]),
@@ -265,6 +274,7 @@ workflow METAPEP {
     /*
      * Create microbiome_entities
      */
+
     FINALIZE_MICROBIOME_ENTITIES (
         DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
         ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),

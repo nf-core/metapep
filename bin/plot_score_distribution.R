@@ -37,6 +37,9 @@ allele_name <- alleles[match, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 
+# Keep only rows with weight > 0
+data <- data[data$weight_sum>0, ]
+
 if (method == "syfpeithi"){
     score_threshold <- 0.50
 } else {
@@ -49,11 +52,13 @@ p <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum,
     ylab("Epitope prediction score") +
     xlab("Condition") +
     ggtitle(allele_name) +
-    geom_violin(draw_quantiles = c(0.25, 0.5, 0.75)) +
+    geom_violin(draw_quantiles = c(0.25, 0.5, 0.75), adjust = 0.2) +
     scale_fill_brewer(palette="Dark2") +
     geom_hline(yintercept=score_threshold) +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
+# TODO which bandwidth to use best for smoothing?
+# (somehow also affects printed quantiles)
 
 ggsave(paste0("prediction_score_distribution.", allele_str, ".pdf"), height=5, width=5)
 
