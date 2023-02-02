@@ -18,12 +18,13 @@ process MERGE_PREDICTIONS_BUFFER {
     path "versions.yml",                        emit: versions
 
     script:
+    def chunk_size = params.ds_prep_chunk_size
     """
     [[ ${predictions[0]} =~  peptides_(.*)_predictions.tsv ]];
     uname="\${BASH_REMATCH[1]}"
     echo \$uname
 
-    concat_tsv.py -i $predictions -c 100000 -o predictions.buffer_\$uname.tsv
+    concat_tsv.py -i $predictions -c $chunk_size -o predictions.buffer_\$uname.tsv
     sort -u $prediction_warnings > prediction_warnings.buffer_\$uname.log
 
     cat <<-END_VERSIONS > versions.yml

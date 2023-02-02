@@ -18,8 +18,9 @@ process MERGE_PREDICTIONS {
     path "versions.yml",                emit: versions
 
     script:
+    def chunk_size = params.ds_prep_chunk_size
     """
-    concat_tsv.py -i $predictions -c 100000 -o predictions.tsv.gz
+    concat_tsv.py -i $predictions -c $chunk_size -o predictions.tsv.gz
     sort -u $prediction_warnings > prediction_warnings.log
 
     cat <<-END_VERSIONS > versions.yml
