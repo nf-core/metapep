@@ -23,6 +23,7 @@ import os
 import csv
 
 import pandas as pd
+import numpy as np
 import datetime
 
 ####################################################################################################
@@ -131,6 +132,9 @@ def main(args=None):
     elif not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
+    # Create prediction_score bin intervals to reduce number of data points for plotting
+    bin_results, bin_edges = pd.cut(predictions["prediction_score"], bins=1000, retbins=True)
+
     print("Prepare df with protein info ...", flush=True)
     # Prepare df for joining protein information
     # (get condition_name, entity_weights and filter for condition entities)
@@ -152,7 +156,7 @@ def main(args=None):
     for allele_id in alleles.allele_id:
         outfile = open(os.path.join(args.outdir, "prediction_scores.allele_" + str(allele_id) + ".tsv"), "w")
         outfile_dict[allele_id] = outfile
-    print_header = True
+    print_header = ["prediction_score", "condition_name", "weight_sum"]
 
     try:
         # Process predictions chunk-wise based on peptide_ids
@@ -204,11 +208,26 @@ def main(args=None):
             print("\nInfo: final data", flush=True)
             data.info(verbose=False, memory_usage=print_mem)
 
+            # Assign prediction_scores to precomputed bins, group and sum up weights
+            data["prediction_score_bin"] = pd.cut(data["prediction_score"], bins=bin_edges)
+            data = (
+                data.groupby(["prediction_score_bin", "condition_name", "allele_id"])
+                .agg(
+                    agg_weight=("weight_sum", "sum"),
+                )
+                .reset_index()
+            )
+            # For the sake of simplicity, just use bin center for plotting (anyway smoothed for violin plots)
+            # (todo: think about more elegant way for visualization if necessary)
+            data["prediction_score_bin_center"] = data["prediction_score_bin"].apply(
+                lambda x: np.mean([x.left, x.right])
+            )
+
             # Write out results for each allele
             for allele_id in outfile_dict.keys():
-                data[data.allele_id == allele_id][["prediction_score", "condition_name", "weight_sum"]].to_csv(
-                    outfile_dict[allele_id], mode="a", sep="\t", index=False, header=print_header
-                )
+                data[data.allele_id == allele_id][
+                    ["prediction_score_bin_center", "condition_name", "agg_weight"]
+                ].to_csv(outfile_dict[allele_id], mode="a", sep="\t", index=False, header=print_header)
             print_header = False
 
         print("Done!", flush=True)

@@ -16,6 +16,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 
 - [#26](https://github.com/nf-core/metapep/pull/26) - Optimized memory usage of `PREPARE_ENTITY_BINDING_RATIOS`: peptide_ids are processed chunk-wise now. Added `ds_prep_chunk_size` parameter.
 - [#32](https://github.com/nf-core/metapep/pull/32) - Optimized memory usage of `PREPARE_SCORE_DISTRIBUTION`: peptide_ids are processed chunk-wise now. Peptide `count`s are used for `weight_sum` computation.
+- [#33](https://github.com/nf-core/metapep/pull/33) - Output already binned scores in `PREPARE_SCORE_DISTRIBUTION` to reduce resources needed for `PLOT_SCORE_DISTRIBUTION`.
 - [#36](https://github.com/nf-core/metapep/pull/36) - Replaced the tool `csvtk` by custom script for optimized TSV file concatenation in process `MERGE_PREDICTIONS_BUFFER` and `MERGE_PREDICTIONS`.
 
 ### `Fixed`
@@ -55,6 +56,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 - [#41](https://github.com/skrakau/metapep/pull/41) - Allow `assembly` input without weights
 - [#53](https://github.com/skrakau/metapep/pull/53) - Add buffering of predictions and chunk-wise merging to avoid sbatch error due to too many input files [#52](https://github.com/skrakau/metapep/issues/52)
 - [#3](https://github.com/nf-core/metapep/pull/3) - Fix generation of `entities_proteins.entrez.tsv` for Entrez download
+- [#30](https://github.com/nf-core/metapep/pull/30) - Fix redundant protein prediction for co-assembly inputs (one assembly, multiple weights)
 
 ### `Dependencies`
 
