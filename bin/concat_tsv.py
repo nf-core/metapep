@@ -40,7 +40,7 @@ def parse_args(args=None):
     parser.add_argument(
         "-c",
         "--chunk-size",
-        help="Chunk size used to process TSV files. Default: 10000",
+        help="Chunk size used to process TSV files. Chunk size refers to number of processed lines within tsv file. Default: 10000",
         type=int,
         default=10000,
     )
