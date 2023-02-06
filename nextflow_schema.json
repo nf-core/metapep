@@ -277,7 +277,7 @@
                 "ds_prep_chunk_size": {
                     "type": "integer",
                     "default": 7500000,
-                    "description": "Limits the number of peptide_ids processed at once in the PREPARE_ENTITY_BINDING_RATIOS process and thus the memory footprint of the process."
+                    "description": "Limits the number of peptide_ids or predictions processed at once in the downstream processes and thus the memory footprint of these processes."
                 },
                 "prodigal_mode": {
                     "type": "string",
