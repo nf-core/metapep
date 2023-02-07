@@ -64,7 +64,7 @@ jobs:
 
   all_profiles:
     name: Run all additional profile tests that require ncbi credentials
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
