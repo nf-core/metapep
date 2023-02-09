@@ -163,7 +163,7 @@ def main(args=None):
                 args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins
             ):
                 if microbiome_bare_id not in check_in_microbiome_bare_id:
-                    check_in_microbiome_bare_id.add((microbiome_bare_id, args.predicted_proteins_bin_basenames))
+                    check_in_microbiome_bare_id.add((microbiome_bare_id, bin_basename))
                     # Read and annotate proteins
                     proteins = pd.read_csv(inpath, sep="\t")
                     if bin_basename == "__ISASSEMBLY__":
