@@ -158,6 +158,7 @@ def main(args=None):
             # Read the microbiomes table:
             microbiomes = pd.read_csv(args.microbiomes, sep="\t")
             # Read all provided files while checking in each microbiome_bare_id
+            # Bins contain multiple files within one filepath (gzipped) corresponding to one microbiome_bare_id
             check_in_microbiome_bare_id = set()
             for microbiome_bare_id, bin_basename, inpath in zip(
                 args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins
