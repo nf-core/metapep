@@ -33,21 +33,21 @@ def parse_args(args=None):
     parser.add_argument(
         "-ppo",
         "--protein-peptide-occ",
-        help="Path to the protein peptide occurences input file",
+        help="Path to the protein peptide occurrences input file",
         type=str,
         required=True,
     )
     parser.add_argument(
         "-epo",
         "--entities-proteins-occ",
-        help="Path to the entity protein occurences input file",
+        help="Path to the entity protein occurrences input file",
         type=str,
         required=True,
     )
     parser.add_argument(
         "-meo",
         "--microbiomes-entities-occ",
-        help="Path to the microbiome entity occurences input file",
+        help="Path to the microbiome entity occurrences input file",
         type=str,
         required=True,
     )
