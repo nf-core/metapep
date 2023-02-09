@@ -30,7 +30,6 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser(description="Collect some stats.")
 
     # INPUT FILES
-    parser.add_argument("-p", "--peptides", help="Path to the peptides input file", type=str, required=True)
     parser.add_argument(
         "-ppo",
         "--protein-peptide-occ",
@@ -65,7 +64,6 @@ def main(args=None):
     args = parse_args(args)
 
     # Read input files
-    peptides = pd.read_csv(args.peptides, sep="\t")
     protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t")
     entities_proteins_occs = pd.read_csv(args.entities_proteins_occ, sep="\t")
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t").drop(columns="entity_weight")

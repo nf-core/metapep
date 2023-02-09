@@ -295,7 +295,6 @@ workflow METAPEP {
     * Collect some numbers: proteins, peptides, unique peptides per conditon
     */
     COLLECT_STATS (
-        GENERATE_PEPTIDES.out.ch_peptides,
         GENERATE_PEPTIDES.out.ch_proteins_peptides,
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
         FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
