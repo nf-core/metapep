@@ -141,14 +141,14 @@ def check_samplesheet(args):
 
     # check if weight_path is valid
     for type, weights_path in zip(input_table["type"], input_table["weights_path"]):
-        if not type == "assembly" and not pd.isnull(weights_path):
-            sys.exit(
-                "Input file "
-                + args.input.name
-                + " contains 'weights_path' specified for type '"
-                + type
-                + "'! Currently input weights are only supported for type 'assembly'."
-            )
+        #if not type == "assembly" and not pd.isnull(weights_path):
+        #    sys.exit(
+        #        "Input file "
+        #        + args.input.name
+        #        + " contains 'weights_path' specified for type '"
+        #        + type
+        #        + "'! Currently input weights are only supported for type 'assembly'."
+        #    )
         if not pd.isnull(weights_path) and not weights_path.lower().endswith(".tsv"):
             sys.exit(
                 "In "
