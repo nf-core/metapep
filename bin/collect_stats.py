@@ -101,7 +101,7 @@ def main(args=None):
             conditions_proteins[["condition_name", "protein_id"]]
             .drop_duplicates()
         )
-        print("Unique protein count:", unique_protein_count, file=args.outfile, sep="\t", flush=True)
+        print("Unique proteins:", unique_protein_count, file=args.outfile, sep="\t", flush=True)
 
         # condition_name, peptide_id, condition_peptide_count
         conditions_peptides = (
@@ -114,11 +114,11 @@ def main(args=None):
 
         # condition_name, total_peptide_count
         total_peptide_count = sum(conditions_peptides["condition_peptide_count"])
-        print("Total peptide count:", total_peptide_count, file=args.outfile, sep="\t", flush=True)
+        print("Total peptides:", total_peptide_count, file=args.outfile, sep="\t", flush=True)
 
         # condition_name, unique_peptide_count
         unique_peptide_count = len(conditions_peptides)
-        print("Unique peptide count:", unique_peptide_count, file=args.outfile, sep="\t", flush=True)
+        print("Unique peptides:", unique_peptide_count, file=args.outfile, sep="\t", flush=True)
         print(file=args.outfile)
 
 
