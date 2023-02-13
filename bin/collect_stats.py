@@ -73,7 +73,9 @@ def main(args=None):
     entities_proteins_occs["entity_id"] = pd.to_numeric(entities_proteins_occs["entity_id"], downcast="unsigned")
     entities_proteins_occs["protein_id"] = pd.to_numeric(entities_proteins_occs["protein_id"], downcast="unsigned")
 
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, usecols=["microbiome_id", "entity_id"], sep="\t")
+    microbiomes_entities_occs = pd.read_csv(
+        args.microbiomes_entities_occ, usecols=["microbiome_id", "entity_id"], sep="\t"
+    )
     microbiomes_entities_occs["microbiome_id"] = pd.to_numeric(
         microbiomes_entities_occs["microbiome_id"], downcast="unsigned"
     )
@@ -90,17 +92,15 @@ def main(args=None):
         print("Condition name:", condition_name, file=args.outfile, sep="\t", flush=True)
 
         conditions_proteins = (
-            conditions[conditions.condition_name == condition_name].merge(microbiomes_entities_occs)
+            conditions[conditions.condition_name == condition_name]
+            .merge(microbiomes_entities_occs)
             .drop(columns="microbiome_id")
             .merge(entities_proteins_occs)
             .drop(columns="entity_id")
         )
 
         # condition_name, unique_proteins
-        unique_protein_count = len(
-            conditions_proteins[["condition_name", "protein_id"]]
-            .drop_duplicates()
-        )
+        unique_protein_count = len(conditions_proteins[["condition_name", "protein_id"]].drop_duplicates())
         print("Unique proteins:", unique_protein_count, file=args.outfile, sep="\t", flush=True)
 
         # condition_name, peptide_id, condition_peptide_count
@@ -120,7 +120,6 @@ def main(args=None):
         unique_peptide_count = len(conditions_peptides)
         print("Unique peptides:", unique_peptide_count, file=args.outfile, sep="\t", flush=True)
         print(file=args.outfile)
-
 
     # unique peptides across all conditions
     all_conditions_unqiue_peptide_counts = len(protein_peptide_occs["peptide_id"].drop_duplicates())
