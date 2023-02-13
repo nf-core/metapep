@@ -73,13 +73,13 @@ def main(args=None):
     entities_proteins_occs["entity_id"] = pd.to_numeric(entities_proteins_occs["entity_id"], downcast="unsigned")
     entities_proteins_occs["protein_id"] = pd.to_numeric(entities_proteins_occs["protein_id"], downcast="unsigned")
 
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t").drop(columns="entity_weight")
+    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, usecols=["microbiome_id", "entity_id"], sep="\t")
     microbiomes_entities_occs["microbiome_id"] = pd.to_numeric(
         microbiomes_entities_occs["microbiome_id"], downcast="unsigned"
     )
     microbiomes_entities_occs["entity_id"] = pd.to_numeric(microbiomes_entities_occs["entity_id"], downcast="unsigned")
 
-    conditions = pd.read_csv(args.conditions, sep="\t").drop(columns="condition_id")
+    conditions = pd.read_csv(args.conditions, usecols=["condition_name", "microbiome_id"], sep="\t")
     # TODO "condition_name" as " "category"?
     # (first try: memory went up, check how to use properly)
     conditions["microbiome_id"] = pd.to_numeric(conditions["microbiome_id"], downcast="unsigned")
