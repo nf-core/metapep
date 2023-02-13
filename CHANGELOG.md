@@ -18,6 +18,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#32](https://github.com/nf-core/metapep/pull/32) - Optimized memory usage of `PREPARE_SCORE_DISTRIBUTION`: peptide_ids are processed chunk-wise now. Peptide `count`s are used for `weight_sum` computation.
 - [#33](https://github.com/nf-core/metapep/pull/33) - Output already binned scores in `PREPARE_SCORE_DISTRIBUTION` to reduce resources needed for `PLOT_SCORE_DISTRIBUTION`.
 - [#36](https://github.com/nf-core/metapep/pull/36) - Replaced the tool `csvtk` by custom script for optimized TSV file concatenation in process `MERGE_PREDICTIONS_BUFFER` and `MERGE_PREDICTIONS`.
+- [#44](https://github.com/nf-core/metapep/pull/44) - Optimized memory usage of `COLLECT_STATS` process
 
 ### `Fixed`
 
