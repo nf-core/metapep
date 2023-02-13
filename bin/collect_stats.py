@@ -65,9 +65,24 @@ def main(args=None):
 
     # Read input files
     protein_peptide_occs = pd.read_csv(args.protein_peptide_occ, sep="\t")
+    protein_peptide_occs["protein_id"] = pd.to_numeric(protein_peptide_occs["protein_id"], downcast="unsigned")
+    protein_peptide_occs["peptide_id"] = pd.to_numeric(protein_peptide_occs["peptide_id"], downcast="unsigned")
+    protein_peptide_occs["count"] = pd.to_numeric(protein_peptide_occs["count"], downcast="unsigned")
+
     entities_proteins_occs = pd.read_csv(args.entities_proteins_occ, sep="\t")
+    entities_proteins_occs["entity_id"] = pd.to_numeric(entities_proteins_occs["entity_id"], downcast="unsigned")
+    entities_proteins_occs["protein_id"] = pd.to_numeric(entities_proteins_occs["protein_id"], downcast="unsigned")
+
     microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t").drop(columns="entity_weight")
+    microbiomes_entities_occs["microbiome_id"] = pd.to_numeric(
+        microbiomes_entities_occs["microbiome_id"], downcast="unsigned"
+    )
+    microbiomes_entities_occs["entity_id"] = pd.to_numeric(microbiomes_entities_occs["entity_id"], downcast="unsigned")
+
     conditions = pd.read_csv(args.conditions, sep="\t").drop(columns="condition_id")
+    # TODO "condition_name" as " "category"?
+    # (first try: memory went up, check how to use properly)
+    conditions["microbiome_id"] = pd.to_numeric(conditions["microbiome_id"], downcast="unsigned")
 
     print("Joining input data...", flush=True)
 
