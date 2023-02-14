@@ -9,7 +9,6 @@ process COLLECT_STATS {
         'quay.io/biocontainers/pandas:1.1.5' }"
 
     input:
-    path(peptides            )
     path(proteins_peptides   )
     path(entities_proteins   )
     path(microbiomes_entities)
@@ -21,8 +20,7 @@ process COLLECT_STATS {
 
     script:
     """
-    collect_stats.py --peptides "$peptides" \\
-                    --protein-peptide-occ "$proteins_peptides" \\
+    collect_stats.py --protein-peptide-occ "$proteins_peptides" \\
                     --entities-proteins-occ "$entities_proteins" \\
                     --microbiomes-entities-occ "$microbiomes_entities" \\
                     --conditions "$conditions" \\
