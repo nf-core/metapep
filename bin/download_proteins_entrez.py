@@ -52,7 +52,7 @@ def parse_args(args=None):
         nargs="+",
         metavar="FILE",
         type=argparse.FileType("r"),
-        help="List of microbiome files containing: taxon_id [, abundance].",
+        help="List of microbiome files containing: taxon_id [,abundance].",
     )
     parser.add_argument(
         "-m", "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs."
@@ -130,8 +130,9 @@ def main(args=None):
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
         reader = csv.DictReader(taxid_input)
         for row in reader:
-            taxIds.append(row["taxon_id"])
-            try:
+            # If the abundance is not defined in the taxid_input it is assigned as 1.
+            if "taxon_id" in row.keys() and "abundance" in row.keys():
+                taxIds.append(row["taxon_id"])
                 print(
                     row["taxon_id"],
                     microbiomeId,
@@ -139,12 +140,12 @@ def main(args=None):
                     sep="\t",
                     file=args.microbiomes_entities,
                     flush=True,
-                )
-            except KeyError:
-                try:
-                    print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
-                except KeyError:
-                    sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
+                    )
+            elif "taxon_id" in row.keys() and not "abundance" in row.keys():
+                print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
+            elif not "taxon_id" in row.keys() or len(row.keys())>=2:
+                sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!" +
+                         "It needs to be a csv file containing taxon_id,abundance or just taxon_id")
 
     taxIds = list(set(taxIds))
     print("Processing the following taxonmy IDs:")

@@ -114,7 +114,6 @@ workflow METAPEP {
     .set{ ch_microbiomes_branch }
 
     // TAXA
-    // TODO co-assembly case needs to be solved
     ch_microbiomes_branch.taxa
         .map { row ->
                 def meta = [:]
