@@ -141,12 +141,12 @@ def main(args=None):
                     file=args.microbiomes_entities,
                     flush=True,
                     )
-            elif "taxon_id" in row.keys() and not "abundance" in row.keys():
-                taxIds.append(row["taxon_id"])
-                print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
             elif not "taxon_id" in row.keys() or len(row.keys())>=2:
                 sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!" +
-                         "It needs to be a csv file containing taxon_id,abundance or just taxon_id")
+                         "It needs to be a csv file containing taxon_id,abundance or just taxon_id.")
+            elif "taxon_id" in row.keys():
+                taxIds.append(row["taxon_id"])
+                print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
 
     taxIds = list(set(taxIds))
     print("Processing the following taxonmy IDs:")
