@@ -131,7 +131,7 @@ def main(args=None):
         reader = csv.DictReader(taxid_input)
         for row in reader:
             # If the abundance is not defined in the taxid_input it is assigned as 1.
-            if "taxon_id" in row.keys() and "abundance" in row.keys():
+            if  row.keys()==set(["taxon_id", "abundance"]):
                 taxIds.append(row["taxon_id"])
                 print(
                     row["taxon_id"],
@@ -141,12 +141,12 @@ def main(args=None):
                     file=args.microbiomes_entities,
                     flush=True,
                     )
-            elif not "taxon_id" in row.keys() or len(row.keys())>=2:
-                sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!" +
-                         "It needs to be a csv file containing taxon_id,abundance or just taxon_id.")
-            elif "taxon_id" in row.keys():
+            elif row.keys()==set(["taxon_id"]):
                 taxIds.append(row["taxon_id"])
                 print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
+            else:
+                sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!" +
+                         "It needs to be a csv file containing taxon_id,abundance or just taxon_id.")
 
     taxIds = list(set(taxIds))
     print("Processing the following taxonmy IDs:")
