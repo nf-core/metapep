@@ -150,7 +150,7 @@ workflow METAPEP {
     ch_assembly_input.dump(tag:"assembly")
 
     // BINS
-    // TODO co-assembly case needs to be solved
+    // Using the microbiome_bare_id as meta.id to prevent redundant processing
     ch_microbiomes_branch.bins
         .branch {
                 row ->
@@ -169,7 +169,7 @@ workflow METAPEP {
                 def bin_files = row.microbiome_path.listFiles().findAll{ it.name =~ fasta_suffix }
                 return bin_files.collect {
                     def meta = [:]
-                    meta.id = row.microbiome_id
+                    meta.id = row.microbiome_bare_id
                     meta.bin_basename = it.name - fasta_suffix
                     return [ meta, it ]
                 }
@@ -181,7 +181,7 @@ workflow METAPEP {
     ch_microbiomes_bins.archives
         .map { row ->
                 def meta = [:]
-                meta.id = row.microbiome_id
+                meta.id = row.microbiome_bare_id
                 return [ meta, row.microbiome_path ]
             }
         .set{ ch_microbiomes_bins_archives_packed }
@@ -191,7 +191,7 @@ workflow METAPEP {
     * Unpack archived assembly bins
     */
     UNPACK_BIN_ARCHIVES(
-        ch_microbiomes_bins_archives_packed
+        ch_microbiomes_bins_archives_packed.unique()
     )
     ch_versions = ch_versions.mix(UNPACK_BIN_ARCHIVES.out.versions)
     UNPACK_BIN_ARCHIVES.out.ch_microbiomes_bins_archives_unpacked.dump(tag:"bins_archives")
