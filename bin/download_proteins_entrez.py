@@ -52,7 +52,7 @@ def parse_args(args=None):
         nargs="+",
         metavar="FILE",
         type=argparse.FileType("r"),
-        help="List of microbiome files containing: taxon_id [,abundance].",
+        help="List of microbiome files containing: taxon_id [, abundance].",
     )
     parser.add_argument(
         "-m", "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs."
