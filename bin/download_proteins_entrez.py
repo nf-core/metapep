@@ -128,7 +128,7 @@ def main(args=None):
     taxIds = []
     print("entity_name", "microbiome_id", "entity_weight", sep="\t", file=args.microbiomes_entities)
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
-        reader = csv.DictReader(taxid_input)
+        reader = csv.DictReader(taxid_input, delimiter="\t")
         for row in reader:
             # If the abundance is not defined in the taxid_input it is assigned as 1.
             if row.keys() == set(["taxon_id", "abundance"]):
