@@ -56,7 +56,7 @@ def main(args=None):
         print("Processing file: ", filename, flush=True)
 
         # Read input file chunk-wise
-        with pd.read_csv(filename, sep="\t", chunksize=args.chunk_size) as reader:
+        with pd.read_csv(filename, sep="\t", chunksize=args.chunk_size, engine="c", float_precision="round_trip") as reader:
             for j, tsv_chunk in enumerate(reader):
                 print(" Chunk: ", j, flush=True)
                 if i == 0 and j == 0:

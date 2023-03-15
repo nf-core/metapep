@@ -94,7 +94,7 @@ def main(args=None):
     print(now.strftime("%Y-%m-%d %H:%M:%S"))
 
     # Read input files
-    predictions = pd.read_csv(args.predictions, sep="\t", index_col="peptide_id").sort_index()
+    predictions = pd.read_csv(args.predictions, sep="\t", index_col="peptide_id", engine="c", float_precision="round_trip").sort_index()
     predictions["allele_id"] = pd.to_numeric(predictions["allele_id"], downcast="unsigned")
     predictions["prediction_score"] = pd.to_numeric(predictions["prediction_score"], downcast="float")
     # NOTE could be read in chunk-wise if this gets bottleneck.
@@ -108,7 +108,7 @@ def main(args=None):
     entities_proteins_occs["entity_id"] = pd.to_numeric(entities_proteins_occs["entity_id"], downcast="unsigned")
     entities_proteins_occs["protein_id"] = pd.to_numeric(entities_proteins_occs["protein_id"], downcast="unsigned")
 
-    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t")
+    microbiomes_entities_occs = pd.read_csv(args.microbiomes_entities_occ, sep="\t", engine="c", float_precision="round_trip")
     microbiomes_entities_occs["microbiome_id"] = pd.to_numeric(
         microbiomes_entities_occs["microbiome_id"], downcast="unsigned"
     )

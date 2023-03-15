@@ -107,7 +107,7 @@ entity_microbiome = entity_microbiome.merge(entity)
 
 # Read the tables that provide the weights and concatenate them
 input_data = pd.concat(
-    [pd.read_csv(e, sep="\t") for e in [args.entrez_microbiomes_entities, args.nucl_microbiomes_entities] if e]
+    [pd.read_csv(e, sep="\t", engine="c", float_precision="round_trip") for e in [args.entrez_microbiomes_entities, args.nucl_microbiomes_entities] if e]
 )
 
 # Join the weights against the entity ids table, which contains all entities

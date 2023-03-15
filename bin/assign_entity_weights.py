@@ -54,7 +54,8 @@ if len(args.microbiome_ids) != len(args.weights_files):
 # Read all input files, rename columns accoring to data model and add microbiome_id
 dfs = []
 for mb_id, w_path in zip(args.microbiome_ids, args.weights_files):
-    data = pd.read_csv(w_path, sep="\t").rename(
+    # Use float_precision="round_trip" to ensure floats stay the same
+    data = pd.read_csv(w_path, sep="\t", engine="c", float_precision="round_trip").rename(
         columns={"contig_name": "entity_name", "bin_basename": "entity_name", "weight": "entity_weight"}
     )
     data["microbiome_id"] = mb_id

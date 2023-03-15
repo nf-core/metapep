@@ -230,7 +230,7 @@ def main(args=None):
                 args.entrez_entities_proteins, "\t"
             )  # protein_tmp_id (accessionVersion), entity_name (taxon_id)
             microbiomes_entities = pd.read_csv(
-                args.entrez_microbiomes_entities, "\t"
+                args.entrez_microbiomes_entities, "\t", engine="c", float_precision="round_trip"
             )  # entity_name, microbiome_id, entity_weight
 
             # Assign protein_id
