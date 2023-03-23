@@ -2,10 +2,10 @@ process PREDICT_EPITOPES {
     label 'process_low'
     label 'cache_lenient'
 
-    conda "bioconda::epytope=3.1.0"
+    conda "bioconda::epytope=3.3.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/epytope:3.1.0--pyh5e36f6f_0' :
-        'quay.io/biocontainers/epytope:3.1.0--pyh5e36f6f_0' }"
+        'https://depot.galaxyproject.org/singularity/epytope:3.3.0--pyh7cba7a3_0' :
+        'quay.io/biocontainers/epytope:3.3.0--pyh7cba7a3_0' }"
 
     input:
     path(peptides)
