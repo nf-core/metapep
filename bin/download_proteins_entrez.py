@@ -128,10 +128,11 @@ def main(args=None):
     taxIds = []
     print("entity_name", "microbiome_id", "entity_weight", sep="\t", file=args.microbiomes_entities)
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
-        reader = csv.DictReader(taxid_input)
+        reader = csv.DictReader(taxid_input, delimiter="\t")
         for row in reader:
-            taxIds.append(row["taxon_id"])
-            try:
+            # If the abundance is not defined in the taxid_input it is assigned as 1.
+            if row.keys() == set(["taxon_id", "abundance"]):
+                taxIds.append(row["taxon_id"])
                 print(
                     row["taxon_id"],
                     microbiomeId,
@@ -140,11 +141,14 @@ def main(args=None):
                     file=args.microbiomes_entities,
                     flush=True,
                 )
-            except KeyError:
-                try:
-                    print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
-                except KeyError:
-                    sys.exit(f"The format of the input file '{taxid_input.name}' is invalid!")
+            elif row.keys() == set(["taxon_id"]):
+                taxIds.append(row["taxon_id"])
+                print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
+            else:
+                sys.exit(
+                    f"The format of the input file '{taxid_input.name}' is invalid!"
+                    + "It needs to be a csv file containing taxon_id,abundance or just taxon_id."
+                )
 
     taxIds = list(set(taxIds))
     print("Processing the following taxonmy IDs:")

@@ -102,13 +102,13 @@ def check_samplesheet(args):
                 + args.input.name
                 + ". Valid types are 'taxa', 'bins' and 'assembly'."
             )
-        if type == "taxa" and not fname.lower().endswith((".txt", ".tsv")):
+        if type == "taxa" and not fname.lower().endswith((".tsv")):
             print_error(
                 "In "
                 + args.input.name
                 + " specified file "
                 + fname
-                + " of type 'taxa' has invalid file extension. Valid extensions are '.txt' and '.tsv'."
+                + " of type 'taxa' has invalid file extension. Valid extensions is '.tsv'."
             )
         if type == "proteins" and not fname.lower().endswith((".fa", ".fa.gz", ".fasta", ".fasta.gz")):
             print_error(
