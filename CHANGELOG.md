@@ -20,6 +20,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#33](https://github.com/nf-core/metapep/pull/33) - Output already binned scores in `PREPARE_SCORE_DISTRIBUTION` to reduce resources needed for `PLOT_SCORE_DISTRIBUTION`.
 - [#36](https://github.com/nf-core/metapep/pull/36) - Replaced the tool `csvtk` by custom script for optimized TSV file concatenation in process `MERGE_PREDICTIONS_BUFFER` and `MERGE_PREDICTIONS`.
 - [#44](https://github.com/nf-core/metapep/pull/44) - Optimized memory usage of `COLLECT_STATS` process
+- [#46](https://github.com/nf-core/metapep/pull/46) - Input type `taxa` changed from TXT or TSV format to TSV only and increase format checks to ensure passing of optional `abundance` column
 
 ### `Fixed`
 
