@@ -22,19 +22,25 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-### Data model
+## Internal data model
 
-The main bottleneck of the metapep pipeline are the large amounts of data, which result from predicting peptides from whole microbiomes. Therefore, Metapep uses a relational data model that consists of tables that can describe relationships between different objects. These tables can be used for further downstream analysis and the relations can be followed from predicted epitope to microbiome using the data model.
+The prediction and downstream analysis of epitopes originating from different microbiomes causes large amounts of data that has to be processed.
+Importantly, the redundancy of peptides across different proteins, entities (i.e. taxa, MAGs/bins or contigs), microbiomes and conditions has to be handled to avoid redundant epitope predictions.
+Moreover, the relations between those objects, e.g. which peptides occur in which microbiomes, need to be stored.
+For this, metapep uses a relational data model that consists of tables that contain the provided or pre-computed data, such as the protein or peptide sequences, as well as of association tables that describe the relations between those those objects.
+These tables can be used for further downstream analysis and the relations can be followed from predicted epitopes to microbiomes and conditions and vice versa using the data model.
 
 <p align="center">
     <img src="images/metapep_datamodel.png" alt="nf-core/metapep data model" width="90%">
 </p>
 
 - Orange: provided or pre-computed entities
-- Gray: associations
+- Gray: associations (n to m relations)
 - Purple: Pipeline output
 
 Entities correspond to taxa, MAGs/bins, assembly contigs or proteins.
+
+## Pipeline output
 
 <details markdown="1">
 <summary>Output files</summary>
