@@ -24,7 +24,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 ### Data model
 
-The main bottleneck of the Metapep pipeline are the large amounts of data, which result from predicting peptides from whole microbiomes. Therefore, Metapep uses a relational data model that consists of tables that can describe relationships between different objects. These tables can be used for further downstream analysis and the relations can be followed from predicted epitope to microbiome using the data model.
+The main bottleneck of the metapep pipeline are the large amounts of data, which result from predicting peptides from whole microbiomes. Therefore, Metapep uses a relational data model that consists of tables that can describe relationships between different objects. These tables can be used for further downstream analysis and the relations can be followed from predicted epitope to microbiome using the data model.
 
 <p align="center">
     <img src="images/metapep_datamodel.png" alt="nf-core/metapep data model" width="90%">
