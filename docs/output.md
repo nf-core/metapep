@@ -44,7 +44,7 @@ Entities correspond to taxa, MAGs/bins, assembly contigs or proteins.
   - `conditions.tsv`: contains condition_id, condition_name and microbiome_id for all unique conditions.
   - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
   - `microbiomes_entities.nucl.tsv`: matches entities to microbiomes. Contains entity_name, microbiome_id and entity_weight for all entities of input types assembly and bins.
-  - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type and weights_path for all unique microbiomes (combination of path, type and weights).
+  - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type, weights_path and microbiome_bare_id for all unique microbiomes (combination of path, type and weights).
   - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
   - `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
   - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
