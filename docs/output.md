@@ -136,7 +136,7 @@ Epitopes are predicted for unique peptide - allele combinations.
 
 </details>
 
-Results are summarized by plots.
+Results are summarised by plots.
 
 ### MultiQC
 
