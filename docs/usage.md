@@ -57,6 +57,10 @@ work                # Directory containing the nextflow working files
 # Other nextflow hidden files, eg. history of pipeline runs and old logs.
 ```
 
+### Memory considerations
+
+The pipeline needs to handle large amounts of data, depending on the size and number of microbiomes the user has defined in the input. To handle these data the pipeline mainly uses python scripts and the python module pandas. As the data needs to be compared memory consumption is currently peaking at around 150 GB for the full-size test, but can easily be higher depending on the input. If the memory is still an issue one can try to reduce the chunk sizes for high memory consuming processes. The parameters are: `--proc_chunk_size` for the preprocessing of the peptides prior to the epitope prediction in `SPLIT_PRED_TASKS`, `--pred_chunk_size` for the epitope prediction process `PREDICT_EPITOPES` and `--ds_prep_chunk_size` for the downstream analysis processes `PREPARE_ENTITY_BINDING_RATIOS` and `PREPARE_SCORE_DISTRIBUTION`.
+
 ### Updating the pipeline
 
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
