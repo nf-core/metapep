@@ -18,7 +18,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Generate peptides](#main-pipeline-output) - Generate peptides from proteins.
 - [Report stats](#main-pipeline-output) - Report some statistics on proteins and peptides.
 - [Epitope prediction](#main-pipeline-output) - Predict epitopes for given alleles and peptides.
-- [Downstream visualizations](#downstream-visualizations) - Produce plots that summarize results.
+- [Downstream visualizations](#downstream-visualizations) - Produce plots that summarise results.
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
 
@@ -28,7 +28,7 @@ The prediction and downstream analysis of epitopes originating from different mi
 Importantly, the redundancy of peptides across different proteins, entities (i.e. taxa, MAGs/bins or contigs), microbiomes and conditions has to be handled to avoid redundant epitope predictions.
 Moreover, the relations between those objects, e.g. which peptides occur in which microbiomes, need to be stored.
 For this, metapep uses a relational data model that consists of tables that contain the provided or pre-computed data, such as the protein or peptide sequences, as well as of association tables that describe the relations between those objects.
-These data tables are used in the downstream visualization processes, which - as most of the preprocessing processes - make use of [pandas](https://pandas.pydata.org) for data processing.
+These data tables are used in the downstream visualisation processes, which - as most of the preprocessing processes - make use of [pandas](https://pandas.pydata.org) for data processing.
 With this we aim for flexible and easy-to-use pipeline code to facilitate maintenance.
 Based on the association tables the relations can be followed from predicted epitopes to microbiomes and conditions and vice versa using the data model.
 
@@ -129,9 +129,9 @@ Proteins are predicted for input type assembly and bins.
 
 </details>
 
-## Downstream visualizations
+## Downstream visualisations
 
-The pipeline generates some basic visualizations comparing the results for the different conditions.
+The pipeline generates some basic visualisations comparing the results for the different conditions.
 
 <details markdown="1">
 <summary>Output files</summary>
