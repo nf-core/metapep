@@ -12,15 +12,15 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [Create data model](#data-model) - Create tables according to the relational data model.
+- [Create data model](#metapep-data-model) - Create tables according to the relational data model.
 - [Download proteins](#download-proteins) - Download proteins for input type taxa from Entrez.
 - [Prodigal](#prodigal) - Predict proteins for input type assembly or bins.
-- [Generate peptides](#generate-peptides) - Generate peptides from proteins.
-- [Report stats](#report-stats) - Report some statistics on proteins and peptides.
-- [Epitope prediction](#epitope-prediction) - Predict epitopes for given alleles and peptides.
-- [Plot results](#plot-results) - Produce plots that summarize results.
-- [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
+- [Generate peptides](#main-pipeline-output) - Generate peptides from proteins.
+- [Report stats](#main-pipeline-output) - Report some statistics on proteins and peptides.
+- [Epitope prediction](#main-pipeline-output) - Predict epitopes for given alleles and peptides.
+- [Downstream visualizations](#downstream-visualizations) - Produce plots that summarize results.
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
+
 
 ## Metapep data model
 
@@ -54,18 +54,16 @@ These contain the generated peptides, the corresponding epitope prediction score
 <summary>Output files</summary>
 
 - `db_tables/`
-  - `alleles.tsv`: contains allele_id and allele_name for all unique alleles used for epitope prediction.
   - `conditions.tsv`: contains condition_id, condition_name and microbiome_id for all unique conditions.
-  - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
-  - `microbiomes_entities.nucl.tsv`: matches entities to microbiomes. Contains entity_name, microbiome_id and entity_weight for all entities of input types assembly and bins.
-  - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type, weights_path and microbiome_bare_id for all unique microbiomes (combination of path, type and weights).
-  - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
+  - `alleles.tsv`: contains allele_id and allele_name for all unique alleles used for epitope prediction.
   - `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
-  - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
-  - `microbiomes_entities.no_weights.tsv`: matches entities to microbiomes. Contains microbiome_id and entity_id for all unique microbiome - entity combinations.
+  - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type, weights_path and microbiome_bare_id for all unique microbiomes (combination of path, type and weights).
+  - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
   - `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
-  - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
+  - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
+  - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
   - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins.
+  - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
   - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
 
 </details>
@@ -81,6 +79,18 @@ Additionally the pipeline reports some statistics on protein and peptide numbers
 </details>
 
 ## Intermediate results
+
+The following intermediate results are generated and written to the output directory as well.
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `db_tables/`
+  - `microbiomes_entities.nucl.tsv`: matches entities to microbiomes. Contains entity_name, microbiome_id and entity_weight for all entities of input types assembly and bins.
+  - `microbiomes_entities.no_weights.tsv`: matches entities to microbiomes. Contains microbiome_id and entity_id for all unique microbiome - entity combinations.
+
+</details>
+
 ### Download proteins
 
 <details markdown="1">
