@@ -257,11 +257,13 @@ workflow METAPEP {
     /*
      * concat files and assign new, unique ids for all proteins (from different sources)
      */
+    // Sort predicted protein input for GENERATE_PROTEIN_AND_ENTITY_IDS to ensure deterministic id assignments
+    ch_pred_proteins_sorted = CREATE_PROTEIN_TSV.out.ch_pred_proteins.toSortedList( { a, b -> a[0].id <=> b[0].id } ).flatMap()
 
     GENERATE_PROTEIN_AND_ENTITY_IDS (
         INPUT_CHECK.out.ch_microbiomes,
-        CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> file }.ifEmpty([]),
-        CREATE_PROTEIN_TSV.out.ch_pred_proteins.collect { meta, file -> meta }.ifEmpty([]),
+        ch_pred_proteins_sorted.collect { meta, file -> file }.ifEmpty([]),
+        ch_pred_proteins_sorted.collect { meta, file -> meta }.ifEmpty([]),
         DOWNLOAD_PROTEINS.out.ch_entrez_proteins.ifEmpty([]),
         DOWNLOAD_PROTEINS.out.ch_entrez_entities_proteins.ifEmpty([]),
         DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
