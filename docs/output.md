@@ -24,7 +24,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 ### Data model
 
-Metapep uses a relational data model that consists of tables that can describe relationships between different objects.
+The main bottleneck of the metapep pipeline are the large amounts of data, which result from predicting peptides from whole microbiomes. Therefore, Metapep uses a relational data model that consists of tables that can describe relationships between different objects. These tables can be used for further downstream analysis and the relations can be followed from predicted epitope to microbiome using the data model.
 
 <p align="center">
     <img src="images/metapep_datamodel.png" alt="nf-core/metapep data model" width="90%">
@@ -44,7 +44,7 @@ Entities correspond to taxa, MAGs/bins, assembly contigs or proteins.
   - `conditions.tsv`: contains condition_id, condition_name and microbiome_id for all unique conditions.
   - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
   - `microbiomes_entities.nucl.tsv`: matches entities to microbiomes. Contains entity_name, microbiome_id and entity_weight for all entities of input types assembly and bins.
-  - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type and weights_path for all unique microbiomes (combination of path, type and weights).
+  - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type, weights_path and microbiome_bare_id for all unique microbiomes (combination of path, type and weights).
   - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
   - `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
   - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
@@ -136,7 +136,7 @@ Epitopes are predicted for unique peptide - allele combinations.
 
 </details>
 
-Results are summarized by plots.
+Results are summarised by plots.
 
 ### MultiQC
 
