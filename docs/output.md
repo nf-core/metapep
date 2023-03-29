@@ -22,13 +22,17 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-## Internal data model
+## Metapep data model
 
-The prediction and downstream analysis of epitopes originating from different microbiomes causes large amounts of data that has to be processed.
+The prediction and downstream analysis of epitopes originating from different microbiomes causes large amounts of data that have to be processed.
 Importantly, the redundancy of peptides across different proteins, entities (i.e. taxa, MAGs/bins or contigs), microbiomes and conditions has to be handled to avoid redundant epitope predictions.
 Moreover, the relations between those objects, e.g. which peptides occur in which microbiomes, need to be stored.
-For this, metapep uses a relational data model that consists of tables that contain the provided or pre-computed data, such as the protein or peptide sequences, as well as of association tables that describe the relations between those those objects.
-These tables can be used for further downstream analysis and the relations can be followed from predicted epitopes to microbiomes and conditions and vice versa using the data model.
+For this, metapep uses a relational data model that consists of tables that contain the provided or pre-computed data, such as the protein or peptide sequences, as well as of association tables that describe the relations between those objects.
+These data tables are used in the downstream visualization processes, which - as most of the preprocessing processes - make use of [pandas](https://pandas.pydata.org) for data processing.
+With this we aim for flexible and easy-to-use pipeline code to facilitate maintenance.
+Based on the association tables the relations can be followed from predicted epitopes to microbiomes and conditions and vice versa using the data model.
+
+The output data tables can additionally be used by the user for further custom and more project tailored analysis tasks.
 
 <p align="center">
     <img src="images/metapep_datamodel.png" alt="nf-core/metapep data model" width="90%">
@@ -36,11 +40,15 @@ These tables can be used for further downstream analysis and the relations can b
 
 - Orange: provided or pre-computed entities
 - Gray: associations (n to m relations)
-- Purple: Pipeline output
+- Purple: Epitope prediction output
 
-Entities correspond to taxa, MAGs/bins, assembly contigs or proteins.
+Entities correspond to taxa, MAGs/bins, assembly contigs or proteins (if provided as input).
 
-## Pipeline output
+## Main pipeline output
+
+The main output of the nf-core/metapep pipeline are the data tables as described in the section above.
+These contain the generated peptides, the corresponding epitope prediction scores and, among others, all associations to the provided input data, e.g. the alleles, microbiomes and conditions.
+
 
 <details markdown="1">
 <summary>Output files</summary>
@@ -57,9 +65,22 @@ Entities correspond to taxa, MAGs/bins, assembly contigs or proteins.
   - `microbiomes_entities.no_weights.tsv`: matches entities to microbiomes. Contains microbiome_id and entity_id for all unique microbiome - entity combinations.
   - `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
   - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
+  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins.
+  - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
 
 </details>
 
+Additionally the pipeline reports some statistics on protein and peptide numbers.
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `db_tables/`
+  - `stats.txt`: contains statistics: unique protein counts, total peptide counts, unique peptide counts, unique peptides across all conditions.
+
+</details>
+
+## Intermediate results
 ### Download proteins
 
 <details markdown="1">
@@ -88,61 +109,33 @@ Proteins are downloaded for input type `taxa` from Entrez.
 
 Proteins are predicted for input type assembly and bins.
 
-### Generate peptides
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `db_tables/`
-  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides.
-
-</details>
-
-Peptides are generated for downloaded or predicted proteins.
-
-### Report stats
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `db_tables/`
-  - `stats.txt`: contains statistics: unique protein counts, total peptide counts, unique peptide counts, unique peptides across all conditions.
-
-</details>
-
-Some statistics on protein and peptide number are calculated.
-
 ### Epitope prediction
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `db_tables/`
-  - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
 - `logs/`
   - `prediction_warnings.log`: contains warnings that occured during epitope prediction.
 
 </details>
 
-Epitopes are predicted for unique peptide - allele combinations.
+## Downstream visualizations
 
-### Plot results
+The pipeline generates some basic visualizations comparing the results for the different conditions.
 
 <details markdown="1">
 <summary>Output files</summary>
 
 - `figures/`
+  - `entity_binding_ratios.*.pdf`: plots the entity binding ratio per allele. Contains box plots showing the binding ratios per condition and entity. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurrences of peptides within one protein are not counted.
+  - `entity_binding_ratios.with_points.*.pdf`: plots the entity binding ratio per allele. Contains box plots showing the binding ratios per condition and entity. Each point corresponds to one entity (contig, MAG or taxon, depending on input type).
   - `entity_binding_ratios/`
-    - `entity_binding_ratios.allele_*.tsv`: data tables for plotting the entity binding ratios per allele. Contain condition_name, binding_rate and entity_weight. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurences of peptides within one protein are not counted.
-  - `entity_binding_ratios.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity.
-  - `entity_binding_ratios.with_points.*.pdf`: plots the entity binding ratio per allele. Contains box plot showing the binding ratios per condition and entity. Each point corresponds to one entity (contig or taxon, depending on input type).
+    - `entity_binding_ratios.allele_*.tsv`: data tables for plotting the entity binding ratios per allele. Contain condition_name, binding_rate and entity_weight.
+  - `prediction_score_distribution.*.pdf`: plots the score distribution per allele. Contains weighted violin plots showing the distribution of prediction scores per condition.
   - `prediction_scores/`
     - `prediction_scores.allele_*.tsv`: data tables for plotting the prediction scores per allele. Contain prediction_score, condition_name and weight_sum. The weight_sum is calculated as the sum of all weights that belong to the entites the peptide is contained in.
-  - `prediction_score_distribution.*.pdf`: plots the score distribution per allele. Contains weighted violin plot showing the distribution of prediction scores per condition.
 
 </details>
-
-Results are summarised by plots.
 
 <!-- ### MultiQC
 
@@ -160,7 +153,7 @@ Results are summarised by plots.
 
 Results generated by MultiQC collate pipeline QC from supported tools e.g. FastQC. The pipeline has special steps which also allow the software versions to be reported in the MultiQC output for future traceability. For more information about how to use MultiQC reports, see <http://multiqc.info>. -->
 
-### Pipeline information
+## Pipeline information
 
 <details markdown="1">
 <summary>Output files</summary>
