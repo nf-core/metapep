@@ -39,8 +39,8 @@ logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.WARNING)
 
 import pandas as pd
 import numpy as np
-from Fred2.Core import Allele, Peptide
-from Fred2.EpitopePrediction import EpitopePredictorFactory
+from epytope.Core import Allele, Peptide
+from epytope.EpitopePrediction import EpitopePredictorFactory
 
 ####################################################################################################
 
@@ -224,7 +224,8 @@ def get_allele_model_max_value(allele, length):  # SYFPEITHI NORMALIZATION
     try:
         return matrix_max(
             getattr(
-                __import__("Fred2.Data.pssms.syfpeithi" + ".mat." + allele_model, fromlist=[allele_model]), allele_model
+                __import__("epytope.Data.pssms.syfpeithi" + ".mat." + allele_model, fromlist=[allele_model]),
+                allele_model,
             )
         )
     except ImportError:
@@ -283,11 +284,14 @@ try:
             # exclusively for the results table if writing to stdout was
             # specified by the user.
             with capture_stdout(sys.stderr):
-                predictions = (
-                    predictor.predict(peptides, alleles=alleles)
-                    .reset_index(1)
-                    .reindex(query_peptides_index)
-                    .reset_index()
+                predictions = pd.concat(
+                    [
+                        pred[["Peptides", "Method", 0]].rename(columns={"Peptides": "Seq", 0: allel})
+                        for allel, pred in predictor.predict(peptides, alleles=alleles)
+                        .unstack()
+                        .reset_index()
+                        .groupby("Allele")[["Peptides", "Method", 0]]
+                    ]
                 )
             predictions["Method"].fillna(args.method, inplace=True)
         except ValueError as e:
