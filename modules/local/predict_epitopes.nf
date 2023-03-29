@@ -2,8 +2,10 @@ process PREDICT_EPITOPES {
     label 'process_low'
     label 'cache_lenient'
 
-    conda null
-    container 'skrakau/metapep:dev'
+    conda "bioconda::epytope=3.3.0"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/epytope:3.3.0--pyh7cba7a3_0' :
+        'quay.io/biocontainers/epytope:3.3.0--pyh7cba7a3_0' }"
 
     input:
     path(peptides)
@@ -65,7 +67,7 @@ process PREDICT_EPITOPES {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version 2>&1 | sed 's/Python //g')
-        fred2: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('Fred2').version)")
+        epytope: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('epytope').version)")
         pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
         pyvcf: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pyvcf').version)")
         mhcflurry: \$(mhcflurry-predict --version 2>&1 | sed 's/^mhcflurry //; s/ .*\$//')
