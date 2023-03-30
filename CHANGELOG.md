@@ -32,6 +32,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#24](https://github.com/nf-core/metapep/pull/24) - Optimized peptide generation in process `GENERATE_PEPTIDES` to reduce memory usage.
 - [#40](https://github.com/nf-core/metapep/pull/40) - Fix the bins processing workflow, after the co-assembly feature excluded parts of the bins in `GENERATE_PROTEIN_AND_ENTITY_IDS`
 - [#58](https://github.com/nf-core/metapep/pull/58) - Ensured deterministic microbiome_id and entity_id assignments.
+- [#62](https://github.com/nf-core/metapep/pull/62) - nf-core module prodigal is updated
 
 ### `Dependencies`
 
