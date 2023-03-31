@@ -21,7 +21,6 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Downstream visualizations](#downstream-visualizations) - Produce plots that summarise results.
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-
 ## Metapep data model
 
 The prediction and downstream analysis of epitopes originating from different microbiomes causes large amounts of data that have to be processed.
@@ -48,7 +47,6 @@ Entities correspond to taxa, MAGs/bins, assembly contigs or proteins (if provide
 
 The main output of the nf-core/metapep pipeline are the data tables as described in the section above.
 These contain the generated peptides, the corresponding epitope prediction scores and, among others, all associations to the provided input data, e.g. the alleles, microbiomes and conditions.
-
 
 <details markdown="1">
 <summary>Output files</summary>
