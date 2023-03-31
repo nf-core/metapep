@@ -38,10 +38,11 @@ The output data tables can additionally be used by the user for further custom a
   <img alt="nf-core/metapep data model" src="images/datamodel/metapep_datamodel_light.png">
 </picture>
 
+<!--
 <p align="center">
     <img src="images/metapep_datamodel.png" alt="nf-core/metapep data model" width="90%">
 </p>
-
+-->
 - Orange: provided or pre-computed entities
 - Gray: associations (n to m relations)
 - Purple: Epitope prediction output
