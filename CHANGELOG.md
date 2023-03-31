@@ -12,7 +12,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#12](https://github.com/nf-core/metapep/pull/12) - Updated documentation
 - [#29](https://github.com/nf-core/metapep/pull/29) - Added data model figure to `output.md`
 - [#45](https://github.com/nf-core/metapep/pull/45) - Added support for multiple weights tables for one bin (i.e. co-assembly input)
-- [#56](https://github.com/nf-core/metapep/pull/56) - Updated documentation
+- [#56](https://github.com/nf-core/metapep/pull/56),[#61](https://github.com/nf-core/metapep/pull/61) - Updated documentation
 
 ### `Changed`
 
