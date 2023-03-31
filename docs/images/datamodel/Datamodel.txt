@@ -1,0 +1,77 @@
+// This can be pasted in dbdiagram.io to generate the datamodel graph
+// Tables
+Table microbiomes as m {
+  microbiome_id int [pk]
+  microbiome_path str
+  microbiome_type enum
+  microbiome_bare_id int
+  }
+
+Table microbiome_entities as me {
+  entity_id int [pk]
+  microbiome_id int [pk]
+  entity_weight float
+}
+
+Table entities as e{
+  entity_id int [pk]
+  entity_name str
+}
+
+Table entities_proteins as ep {
+  entity_id int [pk]
+  protein_id int [pk]
+}
+
+Table proteins as p {
+  protein_id int [pk]
+  protein_sequence str [pk]
+}
+
+Table proteins_peptides as pp {
+  protein_id int [pk]
+  peptide_id [pk]
+  count int
+}
+
+Table peptides as pep {
+  peptide_id int [pk]
+  peptide_sequence str
+}
+
+Table predictions as pred {
+  peptide_id int [pk]
+  allele_id int [pk]
+  prediction_score float
+}
+
+Table alleles as a {
+  allele_id int [pk]
+  allele_name str
+}
+
+Table conditions_alleles as ca {
+  condition_id int [pk]
+  allele_id int [pk]
+}
+
+Table conditions as c {
+  microbiome_id int [pk]
+  condition_id int [pk]
+  condition_name str
+}
+
+
+// References
+// > many-to-one; < one-to-many; - one-to-one; <> many-to-many
+Ref: m.microbiome_id - me.microbiome_id
+Ref: me.entity_id - e.entity_id
+Ref: e.entity_id - ep.entity_id
+Ref: ep.protein_id - p.protein_id
+Ref: p.protein_id - pp.protein_id
+Ref: pp.peptide_id - pep.peptide_id
+Ref: pep.peptide_id - pred.peptide_id
+Ref: pred.allele_id - a.allele_id
+Ref: a.allele_id - ca.allele_id
+Ref: ca.condition_id - c.condition_id
+Ref: c.microbiome_id - m.microbiome_id
