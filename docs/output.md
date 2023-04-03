@@ -33,7 +33,7 @@ Based on the association tables the relations can be followed from predicted epi
 
 The output data tables can additionally be used by the user for further custom and more project tailored analysis tasks.
 
-<picture align="center">
+<picture>
   <source media="(prefers-color-scheme: dark)" srcset="images/datamodel/metapep_datamodel_dark.png">
   <img src="images/datamodel/metapep_datamodel_light.png">
 </picture>
