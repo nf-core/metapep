@@ -35,7 +35,7 @@ The output data tables can additionally be used by the user for further custom a
 
 <picture align="center">
   <source media="(prefers-color-scheme: dark)" srcset="images/datamodel/metapep_datamodel_dark.png">
-  <img alt="nf-core/metapep data model" src="images/datamodel/metapep_datamodel_light.png">
+  <img src="images/datamodel/metapep_datamodel_light.png">
 </picture>
 
 <!--
