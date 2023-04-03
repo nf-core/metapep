@@ -1,64 +1,64 @@
 // This can be pasted in dbdiagram.io to generate the datamodel graph
 // Tables
 Table microbiomes as m {
-  microbiome_id int [pk]
-  microbiome_path str
-  microbiome_type enum
-  microbiome_bare_id int
-  }
+    microbiome_id int [pk]
+    microbiome_path str
+    microbiome_type enum
+    microbiome_bare_id int
+    }
 
 Table microbiome_entities as me {
-  entity_id int [pk]
-  microbiome_id int [pk]
-  entity_weight float
+    entity_id int [pk]
+    microbiome_id int [pk]
+    entity_weight float
 }
 
 Table entities as e{
-  entity_id int [pk]
-  entity_name str
+    entity_id int [pk]
+    entity_name str
 }
 
 Table entities_proteins as ep {
-  entity_id int [pk]
-  protein_id int [pk]
+    entity_id int [pk]
+    protein_id int [pk]
 }
 
 Table proteins as p {
-  protein_id int [pk]
-  protein_sequence str [pk]
+    protein_id int [pk]
+    protein_sequence str [pk]
 }
 
 Table proteins_peptides as pp {
-  protein_id int [pk]
-  peptide_id [pk]
-  count int
+    protein_id int [pk]
+    peptide_id [pk]
+    count int
 }
 
 Table peptides as pep {
-  peptide_id int [pk]
-  peptide_sequence str
+    peptide_id int [pk]
+    peptide_sequence str
 }
 
 Table predictions as pred {
-  peptide_id int [pk]
-  allele_id int [pk]
-  prediction_score float
+    peptide_id int [pk]
+    allele_id int [pk]
+    prediction_score float
 }
 
 Table alleles as a {
-  allele_id int [pk]
-  allele_name str
+    allele_id int [pk]
+    allele_name str
 }
 
 Table conditions_alleles as ca {
-  condition_id int [pk]
-  allele_id int [pk]
+    condition_id int [pk]
+    allele_id int [pk]
 }
 
 Table conditions as c {
-  microbiome_id int [pk]
-  condition_id int [pk]
-  condition_name str
+    microbiome_id int [pk]
+    condition_id int [pk]
+    condition_name str
 }
 
 
