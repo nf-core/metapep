@@ -33,10 +33,9 @@ Based on the association tables the relations can be followed from predicted epi
 
 The output data tables can additionally be used by the user for further custom and more project tailored analysis tasks.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="images/datamodel/metapep_datamodel_dark.png">
-  <img src="images/datamodel/metapep_datamodel_light.png">
-</picture>
+<p align="center">
+    <img src="images/datamodel/metapep_datamodel.png" alt="nf-core/metapep data model" width="90%">
+</p>
 
 - Orange: provided or pre-computed entities
 - Gray: associations (n to m relations)

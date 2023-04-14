@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="487.70251mm"
-   height="340.25391mm"
-   viewBox="0 0 487.70251 340.25391"
+   width="495.65558mm"
+   height="348.10654mm"
+   viewBox="0 0 495.65557 348.10654"
    version="1.1"
    id="svg5"
    xml:space="preserve"
@@ -218,9 +218,15 @@
        clipPathUnits="userSpaceOnUse"
        id="clipPath1597"><path
          d="M 50.887739,536.24477 H 1439.3001 V 1516.2448 H 50.887739 Z"
-         id="path1595" /></clipPath></defs><g
+         id="path1595" /></clipPath></defs><rect
+     style="fill:#ffffff;stroke-width:0.264583"
+     id="rect1820"
+     width="495.65558"
+     height="348.10654"
+     x="-7.6463678e-08"
+     y="-1.6531425e-08" /><g
      id="layer1"
-     transform="translate(131.63781,26.137466)"><g
+     transform="translate(134.91668,29.416334)"><g
        id="g31"
        transform="matrix(0.35277777,0,0,-0.35277777,-225.40395,336.48304)"><g
          id="g35"
