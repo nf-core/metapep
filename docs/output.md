@@ -76,6 +76,9 @@ Additionally the pipeline reports some statistics on protein and peptide numbers
 
 </details>
 
+The epitope prediction scoring system and resulting prediction scores will depend on the chosen tool for epitope prediction.
+- [SYFPEITHI](http://www.syfpeithi.de/index.html): The score represents how well a ligand is able to bind in comparison to all annotated binders of a specific allele. Therefore, the scores are normalized to the highest scoring ligand within each allele, resulting in scores between 0 and 1. For the downstream process `prepare_entity_binding_ratios` predicted binders are called within a score of >0.5.
+- [MHCflurry](https://pubmed.ncbi.nlm.nih.gov/29960884/) and [MCHnuggets](https://pubmed.ncbi.nlm.nih.gov/31871119/): The score is based on a affinity scoring giving raise to scores with the unit `nmol/L` and representing an IC_{50}. The downstream process `prepare_entity_binding_ratios` predicts binders using a threshold of <500 nmol/L.
 ## Intermediate results
 
 The following intermediate results are generated and written to the output directory as well.
