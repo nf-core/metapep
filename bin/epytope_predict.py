@@ -234,7 +234,9 @@ def get_allele_model_max_value(allele, length):  # SYFPEITHI NORMALIZATION
 
 def syfpeithi_normalize(predictions):  # SYFPEITHI NORMALIZATION
     """Normalizes syfpeithi prediction scores by dividing by the maximum
-    attainable score for a particular model"""
+    attainable score for a particular allele model. This is needed as the
+    score is dependent on the underlying model data and otherwise not
+    comparable between alleles."""
     predictor = EpitopePredictorFactory("syfpeithi")
     alleles = [cname for cname in predictions.columns if cname not in ["Seq", "Method"]]
     conv_alleles = predictor.convert_alleles(alleles)
