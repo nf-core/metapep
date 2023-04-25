@@ -286,8 +286,8 @@ try:
             with capture_stdout(sys.stderr):
                 predictions = pd.concat(
                     [
-                        pred[["Peptides", "Method", 0]].rename(columns={"Peptides": "Seq", 0: allel})
-                        for allel, pred in predictor.predict(peptides, alleles=alleles)
+                        pred[["Peptides", "Method", 0]].rename(columns={"Peptides": "Seq", 0: allele})
+                        for allele, pred in predictor.predict(peptides, alleles=alleles)
                         .unstack()
                         .reset_index()
                         .groupby("Allele")[["Peptides", "Method", 0]]
