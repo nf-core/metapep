@@ -27,7 +27,10 @@ process PLOT_SCORE_DISTRIBUTION {
         $alleles \\
         $conditions \\
         \$allele_id \\
-        ${params.pred_method}
+        ${params.pred_method} \\
+        ${params.syfpeithi_score_threshold} \\
+        ${params.mhcflurry_mhcnuggets_score_threshold}
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
