@@ -75,11 +75,27 @@ def parse_args(args=None):
         type=int,
         default=500000,
     )
+    parser.add_argument(
+        "-sst",
+        "--syfpeithi_score_threshold",
+        help=("Threshold for binder/non-binder calling when using SYFPEITHI epitope prediction method. Default: 0.5"),
+        type=float,
+        default=0.5,
+    )
+    parser.add_argument(
+        "-mst",
+        "--mhcf_mhcn_score_threshold",
+        help=(
+            "Threshold for binder/non-binder calling when using MHCflurry or MHCnuggets epitope prediction methods. Default: 0.426"
+        ),
+        type=float,
+        default=0.426,
+    )
 
     return parser.parse_args()
 
 
-def call_binder(score, method):
+def call_binder(score, method, syfpeithi_score_threshold, mhcfn_score_threshold):
     """
     Scoring threshold is based on the nf-core/epitopeprediction pipeline.
     For SYFPEITHI the scoring threshold is a "half of maximum score". After
@@ -89,9 +105,9 @@ def call_binder(score, method):
     in this scale the old threshold of 500 is: 0.426 and the higher the better.
     """
     if method == "syfpeithi":
-        return score >= 0.50
+        return score >= syfpeithi_score_threshold
     else:
-        return score >= 0.426
+        return score >= mhcfn_score_threshold
 
 
 def main(args=None):
@@ -190,7 +206,12 @@ def main(args=None):
         # (protein_id could be dropped, but no big impact here)
 
         # Call binder based on prediction_score
-        data["binder"] = data["prediction_score"].apply(call_binder, method=args.method)
+        data["binder"] = data["prediction_score"].apply(
+            call_binder,
+            method=args.method,
+            syfpeithi_score_threshold=args.syfpeithi_score_threshold,
+            mhcfn_score_threshold=args.mhcf_mhcn_score_threshold,
+        )
         data.drop(columns="prediction_score", inplace=True)
 
         # Count total number of peptides and number of binders for each entity, allele and condition (including multiple counts within proteins)
