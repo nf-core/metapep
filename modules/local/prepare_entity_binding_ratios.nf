@@ -22,6 +22,8 @@ process PREPARE_ENTITY_BINDING_RATIOS {
 
     script:
     def chunk_size = params.ds_prep_chunk_size
+    def syfpeithi_score_threshold = params.syfpeithi_score_threshold
+    def mhcf_mhcn_score_threshold = params.mhcflurry_mhcnuggets_score_threshold
     """
     prepare_entity_binding_ratios.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -32,6 +34,8 @@ process PREPARE_ENTITY_BINDING_RATIOS {
                             --alleles "$alleles" \\
                             --method ${params.pred_method} \\
                             --chunk-size $chunk_size \\
+                            --syfpeithi_score_threshold $syfpeithi_score_threshold \\
+                            --mhcf_mhcn_score_threshold $mhcf_mhcn_score_threshold \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml
