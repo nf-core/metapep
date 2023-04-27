@@ -84,13 +84,14 @@ def call_binder(score, method):
     Scoring threshold is based on the nf-core/epitopeprediction pipeline.
     For SYFPEITHI the scoring threshold is a "half of maximum score". After
     normalization the highest achievable score is 1. For MHCflurry and
-    MHCnuggets the score is an affinity score and represents the IC_50
-    with the unit: nmol/L.
+    MHCnuggets the score is an 0 to 1 scoring base on the
+    affinity score (IC50) and is calculated by: 1-log_50000(affinity_score)
+    in this scale the old threshold of 500 is: 0.426 and the higher the better.
     """
     if method == "syfpeithi":
         return score >= 0.50
     else:
-        return score <= 500
+        return score >= 0.426
 
 
 def main(args=None):
