@@ -30,7 +30,7 @@ conditions <- args[3]                           # Input file containing: microbi
 allele_id <- args[4]                            # allele_id
 method <- args[5]                               # Epitope prediction method used
 syfpeithi_score_threshold <- args[6]            # Syfpeithi score threshold
-mhcflurry_mhcnuggets_score_threshold <- args[6] # MHCflurry and MHCnuggets score thresholds
+mhcflurry_mhcnuggets_score_threshold <- args[7] # MHCflurry and MHCnuggets score thresholds
 
 data <- fread(scores)
 alleles <- fread(args_alleles)
