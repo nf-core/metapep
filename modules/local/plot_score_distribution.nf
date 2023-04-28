@@ -17,6 +17,8 @@ process PLOT_SCORE_DISTRIBUTION {
     path "versions.yml",                            emit:   versions
 
     script:
+    def syfpeithi_threshold = params.syfpeithi_score_threshold
+    def mhcfn_threshold = params.mhcflurry_mhcnuggets_score_threshold
     """
     [[ ${prep_scores} =~ prediction_scores.allele_(.*).tsv ]];
     allele_id="\${BASH_REMATCH[1]}"
@@ -28,8 +30,8 @@ process PLOT_SCORE_DISTRIBUTION {
         $conditions \\
         \$allele_id \\
         ${params.pred_method} \\
-        ${params.syfpeithi_score_threshold} \\
-        ${params.mhcflurry_mhcnuggets_score_threshold}
+        $syfpeithi_threshold \\
+        $mhcfn_threshold
 
 
     cat <<-END_VERSIONS > versions.yml

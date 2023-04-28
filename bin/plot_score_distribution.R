@@ -43,9 +43,9 @@ allele_str <- str_replace_all(allele_str, '\\:', '_')
 data <- data[data$weight_sum>0, ]
 
 if (method == "syfpeithi"){
-    score_threshold <- syfpeithi_score_threshold
+    score_threshold <- as.numeric(syfpeithi_score_threshold)
 } else {
-    score_threshold <- mhcflurry_mhcnuggets_score_threshold
+    score_threshold <- as.numeric(mhcflurry_mhcnuggets_score_threshold)
 }
 
 data$condition_name <- as.factor(data$condition_name)
