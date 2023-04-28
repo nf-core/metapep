@@ -76,7 +76,7 @@ Additionally the pipeline reports some statistics on protein and peptide numbers
 
 </details>
 
-The epitope prediction scoring system and resulting prediction scores will depend on the chosen prediction method (`--pred_method`, --`pred_).
+The epitope prediction scoring system and resulting prediction scores will depend on the chosen prediction method (`--pred_method`, --`pred\_).
 
 - [SYFPEITHI](http://www.syfpeithi.de/index.html): The score represents how well a ligand is able to bind in comparison to all annotated binders of a specific allele. Therefore, the scores are normalized to the highest scoring ligand within each allele, resulting in scores between 0 and 1. For the downstream process `prepare_entity_binding_ratios` predicted binders are called within a score of ≥0.5.
 - [MHCflurry](https://pubmed.ncbi.nlm.nih.gov/29960884/) and [MCHnuggets](https://pubmed.ncbi.nlm.nih.gov/31871119/): The score is based on a affinity scoring representing an IC<sub>50</sub>. The affinity score is then converted to a scale from 0 to 1 by using the formula: `1-log<sub>50000</sub>`. The downstream process `prepare_entity_binding_ratios` predicts binders using a threshold of ≥0.426, corresponding to an IC50 of ≤500.
