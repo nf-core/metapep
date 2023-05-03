@@ -24,11 +24,13 @@ library(dplyr)
 library(stringr)
 
 args = commandArgs(trailingOnly=TRUE)
-scores <- args[1]                       # Input file containing: prediction_score, condition_name, weight_sum
-args_alleles <- args[2]                      # Input file containing: allele_id, allele_name
-conditions <- args[3]                   # Input file containing: microbiome_id, condition_id, condition_name
-allele_id <- args[4]                    # allele_id
-method <- args[5]                       # Epitope prediction method used
+scores <- args[1]                               # Input file containing: prediction_score, condition_name, weight_sum
+args_alleles <- args[2]                         # Input file containing: allele_id, allele_name
+conditions <- args[3]                           # Input file containing: microbiome_id, condition_id, condition_name
+allele_id <- args[4]                            # allele_id
+method <- args[5]                               # Epitope prediction method used
+syfpeithi_score_threshold <- args[6]            # Syfpeithi score threshold
+mhcflurry_mhcnuggets_score_threshold <- args[7] # MHCflurry and MHCnuggets score thresholds
 
 data <- fread(scores)
 alleles <- fread(args_alleles)
@@ -41,9 +43,9 @@ allele_str <- str_replace_all(allele_str, '\\:', '_')
 data <- data[data$weight_sum>0, ]
 
 if (method == "syfpeithi"){
-    score_threshold <- 0.50
+    score_threshold <- as.numeric(syfpeithi_score_threshold)
 } else {
-    score_threshold <- 500
+    score_threshold <- as.numeric(mhcflurry_mhcnuggets_score_threshold)
 }
 
 data$condition_name <- as.factor(data$condition_name)

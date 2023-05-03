@@ -269,6 +269,20 @@
                     "default": 75000,
                     "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
                 },
+                "syfpeithi_score_threshold": {
+                    "type": "number",
+                    "default": 0.5,
+                    "description": "Threshold for binder/non-binder calling when using SYFPEITHI epitope prediction method.",
+                    "minimum": 0.0,
+                    "maximum": 1.0
+                },
+                "mhcflurry_mhcnuggets_score_threshold": {
+                    "type": "number",
+                    "default": 0.426,
+                    "description": "Threshold for binder/non-binder calling when using MHCflurry or MHCnuggets epitope prediction methods. The default value of 0.426 corresponds to an IC50 of ≤500.",
+                    "minimum": 0.0,
+                    "maximum": 1.0
+                },
                 "proc_chunk_size": {
                     "type": "integer",
                     "default": 7500000,

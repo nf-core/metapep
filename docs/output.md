@@ -76,6 +76,11 @@ Additionally the pipeline reports some statistics on protein and peptide numbers
 
 </details>
 
+The epitope prediction scoring system and resulting prediction scores depend on the chosen prediction method (`--pred_method`).
+
+- [SYFPEITHI](http://www.syfpeithi.de/index.html): In SYFPEITHI the scoring is based on a position-specific scoring matrix (PSSM), which is built using known MHC binders. For each allele another matrix is used. For comparability the scores are normalized to the highest scoring ligand of each allele, resulting in scores between 0 and 1. Therefore, the final score represents how well a peptide is able to bind in comparison to all annotated binders of a specific allele. For downstream processes such as `prepare_entity_binding_ratios` peptides with a score of ≥0.5 are classified as binders.
+- [MHCflurry](https://pubmed.ncbi.nlm.nih.gov/29960884/) and [MCHnuggets](https://pubmed.ncbi.nlm.nih.gov/31871119/): The score is based on a affinity scoring representing an IC<sub>50</sub> (the concentration that leads to 50% inhibition of the binding of a standard reference peptide, note that lower IC<sub>50</sub> values indicate higher binding affinities). The affinity score is then log-transformed and converted to a scale from 0 to 1 by using the formula: <code>1-log<sub>50000</sub>(affinity score)</code>. For downstream processes such as `prepare_entity_binding_ratios` a threshold of ≥0.426 is used to classify binders, corresponding to an IC<sub>50</sub> of ≤500.
+
 ## Intermediate results
 
 The following intermediate results are generated and written to the output directory as well.
