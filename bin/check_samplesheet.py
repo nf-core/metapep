@@ -8,6 +8,8 @@ import sys
 import errno
 import argparse
 import pandas as pd
+from epytope.Core import Allele
+from epytope.EpitopePrediction import EpitopePredictorFactory
 
 
 def parse_args(args=None):
@@ -54,6 +56,22 @@ def parse_args(args=None):
         metavar="FILE",
         type=argparse.FileType("w"),
         help="Output file containing: condition_id, allele_id.",
+    )
+    parser.add_argument(
+        "-pm",
+        "--prediction_method",
+        required=True,
+        metavar="STRING",
+        type=str,
+        help="Chosen method for epitope prediction",
+    )
+    parser.add_argument(
+        "-pmv",
+        "--pred_method_version",
+        required=True,
+        metavar="STRING",
+        type=str,
+        help="Chosen version of epitope prediction method",
     )
     return parser.parse_args(args)
 
@@ -192,6 +210,20 @@ def check_samplesheet(args):
 
     # allele id - allele name
     unique_alleles = {allele for allele_list in input_table["alleles"] for allele in allele_list.split(" ")}
+
+    # Check if alleles are supported by chosen predictor
+    # Need Parameter for prediction method version
+    predictor = EpitopePredictorFactory(args.prediction_method, version=args.pred_method_version)
+    for allele in unique_alleles:
+        if not Allele(allele) in predictor.supportedAlleles:
+            sys.exit(
+                "The chosen allele: "
+                + allele
+                + " is not available for the chosen prediction method: "
+                + args.prediction_method
+                + ":"
+                + args.pred_method_version
+            )
 
     alleles = pd.DataFrame({"allele_name": list(unique_alleles)})
     alleles["allele_id"] = range(len(alleles))
