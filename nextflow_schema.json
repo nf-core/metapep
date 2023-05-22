@@ -283,6 +283,11 @@
                     "minimum": 0.0,
                     "maximum": 1.0
                 },
+                "supported_allele_information": {
+                    "type": "boolean",
+                    "description": "Display supported alleles of all prediction methods and exit.",
+                    "fa_icon": "fas fa-question-circle"
+                },
                 "proc_chunk_size": {
                     "type": "integer",
                     "default": 7500000,

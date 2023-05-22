@@ -223,6 +223,9 @@ def check_samplesheet(args):
                 + args.prediction_method
                 + ":"
                 + args.pred_method_version
+                + "\n\nFurther information on which allele is supported for "
+                + "which prediction method can be found when running: "
+                + "'nextflow run metapep -profile supported_models,docker --outdir results"
             )
 
     alleles = pd.DataFrame({"allele_name": list(unique_alleles)})
