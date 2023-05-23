@@ -8,6 +8,7 @@ import argparse
 
 from epytope.EpitopePrediction import EpitopePredictorFactory
 
+
 def convert_allele_back(allele):
     if str(allele).startswith("H-2-"):
         # convert internal Epytope representation back to the nf-core/metapep input allele format
@@ -30,8 +31,8 @@ def __main__():
     methods = {}
     with open(args.versions, "r") as versions_file:
         for row in csv.reader(versions_file, delimiter=","):
-            if not row[0]=="pred_method":
-                methods[row[0]]=row[1]
+            if not row[0] == "pred_method":
+                methods[row[0]] = row[1]
 
     for method, version in methods.items():
         if version not in EpitopePredictorFactory.available_methods()[method]:
