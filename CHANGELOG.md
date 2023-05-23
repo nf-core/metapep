@@ -14,6 +14,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#45](https://github.com/nf-core/metapep/pull/45) - Added support for multiple weights tables for one bin (i.e. co-assembly input)
 - [#56](https://github.com/nf-core/metapep/pull/56),[#61](https://github.com/nf-core/metapep/pull/61) - Updated documentation
 - [#67](https://github.com/nf-core/metapep/pull/67) - Added parameters to adjust binder/non-binder calling. Additional documentation on scoring by `SYPEITHI`, `MHCflurry`and `MHCnuggets`
+- [#70](https://github.com/nf-core/metapep/pull/70) - Added check for supported models and functionality to output all supported models.
 
 ### `Changed`
 
