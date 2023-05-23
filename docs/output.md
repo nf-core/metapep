@@ -45,7 +45,8 @@ Entities correspond to taxa, MAGs/bins, assembly contigs or proteins (if provide
 
 ### Supported Allele Models
 
-As not all alleles are supported by all supported tools, the pipeline comes with a functionality to print out txt files containing the corresponding supported alleles for each third party tool before starting the pipeline. This functionality can be reached by using `nextflow run nf-core/metapep -profile docker --outdir metapep_alleles --supported_allele_information` in which case the outdir parameter can also be changed to a directory of choice.
+As not all alleles are supported by all supported tools, the pipeline comes with a functionality to print out txt files containing the corresponding supported alleles for each third party tool before starting the pipeline. This functionality can be reached by using the following call (`--outdir` can be choosen by the user):
+`nextflow run nf-core/metapep -profile docker --outdir metapep_alleles --supported_allele_information`
 
 <details markdown="1">
 <summary>Output files</summary>
