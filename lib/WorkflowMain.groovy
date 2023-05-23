@@ -81,10 +81,7 @@ class WorkflowMain {
 
         // Check input has been provided
         if (!params.input) {
-            if (!params.supported_allele_information){
-                log.error "Please provide an input samplesheet to the pipeline e.g. '--input samplesheet.csv'"
-                System.exit(1)
-            }
+            WorkflowMetapep.checkInputRequired(params, log)
         }
     }
 }

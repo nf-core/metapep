@@ -10,6 +10,7 @@ process EPYTOPE_SHOW_SUPPORTED_MODELS {
     path(software_versions)
 
     output:
+    path "*.txt",        emit: txt
     path "versions.yml", emit: versions
 
     script:
