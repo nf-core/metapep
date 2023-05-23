@@ -15,7 +15,7 @@ process EPYTOPE_SHOW_SUPPORTED_MODELS {
 
     script:
     """
-    check_supported_models.py --versions ${software_versions}
+    show_supported_models.py --versions ${software_versions}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
