@@ -2,6 +2,7 @@
 // This file holds several functions specific to the workflow/metapep.nf in the nf-core/metapep pipeline
 //
 
+import nextflow.Nextflow
 import groovy.text.SimpleTemplateEngine
 
 class WorkflowMetapep {
@@ -61,9 +62,7 @@ class WorkflowMetapep {
     //
     public static void checkInputRequired(params, log) {
         if (!params.supported_allele_information) {
-            log.warn "'--input' parameter is required. Use: 'nextflow run nf-core/metapep --help' for more information on parameters or visit https://nf-co.re/metapep"
-            log.warn "If more information is needed on supported alleles use 'nextflow run nf-core/metapep -profile docker --outdir metapep_alleles --supported_allele_information'"
-            System.exit(1);
+            Nextflow.error("'--input' parameter is required. Use: 'nextflow run nf-core/metapep --help' for more information on parameters or visit https://nf-co.re/metapep\nIf more information is needed on supported alleles use 'nextflow run nf-core/metapep -profile docker --outdir metapep_alleles --supported_allele_information'")
         }
     }
 }
