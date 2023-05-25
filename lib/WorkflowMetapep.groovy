@@ -61,8 +61,8 @@ class WorkflowMetapep {
     // Check if input is required to run the pipeline
     //
     public static void checkInputRequired(params, log) {
-        if (!params.supported_allele_information) {
-            Nextflow.error("'--input' parameter is required. Use: 'nextflow run nf-core/metapep --help' for more information on parameters or visit https://nf-co.re/metapep\nIf more information is needed on supported alleles use 'nextflow run nf-core/metapep -profile docker --outdir metapep_alleles --supported_allele_information'")
+        if (!params.show_supported_models) {
+            Nextflow.error("'--input' parameter is required. Use: 'nextflow run nf-core/metapep --help' for more information on parameters or visit https://nf-co.re/metapep\nIf more information is needed on supported models use 'nextflow run nf-core/metapep -profile docker --outdir metapep_alleles --show_supported_models'")
         }
     }
 }

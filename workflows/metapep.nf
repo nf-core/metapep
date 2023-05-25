@@ -15,7 +15,7 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input)
-} else if (!params.supported_allele_information){
+} else if (!params.show_supported_models){
     exit 1, 'Input samplesheet not specified!'
     }
 
@@ -93,7 +93,7 @@ workflow METAPEP {
     //
     // SUBBRANCH: Show supported alleles for all prediction methods
     //
-    if (params.supported_allele_information) {
+    if (params.show_supported_models) {
         EPYTOPE_SHOW_SUPPORTED_MODELS()
         ch_versions = ch_versions.mix(EPYTOPE_SHOW_SUPPORTED_MODELS.out.versions)
         CUSTOM_DUMPSOFTWAREVERSIONS (ch_versions.unique().collectFile(name: 'collated_versions.yml'))

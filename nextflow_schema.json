@@ -283,7 +283,7 @@
                     "minimum": 0.0,
                     "maximum": 1.0
                 },
-                "supported_allele_information": {
+                "show_supported_models": {
                     "type": "boolean",
                     "description": "Display supported alleles of all prediction methods and exit.",
                     "fa_icon": "fas fa-question-circle"
