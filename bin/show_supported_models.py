@@ -24,8 +24,20 @@ def __main__():
     parser = argparse.ArgumentParser(
         "Write out information about supported models by Epytope for available prediction tool versions."
     )
-    parser.add_argument("-m", "--pred_methods", help="List of prediction models (sorted like list of --pred_method_versions)",nargs="+", required=True)
-    parser.add_argument("-v", "--pred_method_versions", help="List of prediction method versions (sorted like --pred_methods)", nargs="+", required=True)
+    parser.add_argument(
+        "-m",
+        "--pred_methods",
+        help="List of prediction models (sorted like list of --pred_method_versions)",
+        nargs="+",
+        required=True,
+    )
+    parser.add_argument(
+        "-v",
+        "--pred_method_versions",
+        help="List of prediction method versions (sorted like --pred_methods)",
+        nargs="+",
+        required=True,
+    )
     args = parser.parse_args()
 
     for method, version in zip(args.pred_methods, args.pred_method_versions):
