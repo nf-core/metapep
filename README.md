@@ -30,10 +30,12 @@ On release, automated continuous integration tests run the pipeline on a full-si
 
 ## Pipeline summary
 
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
-
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+1. Download proteins for input type taxa from [Entrez](https://www.ncbi.nlm.nih.gov/Web/Search/entrezfs.html).
+2. Predict proteins for input type assembly or bins using [Prodigal](https://github.com/hyattpd/Prodigal).
+3. Generate peptides from proteins.
+4. Split peptide files into chunks for parallel prediction and report stats.
+5. Predict epitopes for given alleles and peptides using [SYFPEITHI](http://www.syfpeithi.de), [MHCflurry](https://github.com/openvax/mhcflurry) or [MHCnuggets](https://github.com/KarchinLab/mhcnuggets).
+6. Produce plots.
 
 ## Quick Start
 
