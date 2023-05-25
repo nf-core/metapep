@@ -21,36 +21,49 @@ process SAMPLESHEET_CHECK {
     when:
     task.ext.when == null || task.ext.when
 
-    script: // This script is bundled with the pipeline, in nf-core/metapep/bin/
-    def pred_method           = params.pred_method
-    switch (pred_method) {
-        case "syfpeithi":
-            pred_method_version = "1.0";
-            break;
-        case "mhcflurry":
-            pred_method_version = "1.4.3";
-            break;
-        case "mhcnuggets-class-1":
-            pred_method_version = "2.3.2";
-            break;
-        case "mhcnuggets-class-2":
-            pred_method_version = "2.3.2";
-            break;
-        }
+    script:
     """
+    # Extract software versions from container
+    mhcflurry_version=\$(mhcflurry-predict --version 2>&1 | sed 's/^mhcflurry //; s/ .*\$//')
+    mhcnuggets_version=\$(python -c "import pkg_resources; print(pkg_resources.get_distribution('mhcnuggets').version)")
+
+    # Syfpeithi is not an external software, but rather a matrix on which scoring is based on -> titled version 1.0 in epytope
+    syfpeithi_version=1.0
+
+    # Assign version based on method
+    case $params.pred_method in
+
+        "syfpeithi")
+        pred_method_version=\$syfpeithi_version
+        ;;
+
+        "mhcflurry")
+        pred_method_version=\$mhcflurry_version
+        ;;
+
+        "mhcnuggets-class-1" | "mhcnuggets-class-2")
+        pred_method_version=\$mhcnuggets_version
+        ;;
+    esac
+
+
     check_samplesheet.py \\
         -i $samplesheet \\
         -m microbiomes.tsv \\
         -c conditions.tsv \\
         -a alleles.tsv \\
         -ca conditions_alleles.tsv \\
-        -pm ${pred_method} \\
-        -pmv ${pred_method_version}
+        -pm $params.pred_method \\
+        -pmv \$pred_method_version
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
+        epytope: \$(echo \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('epytope').version)"))
+        mhcflurry: \$mhcflurry_version
+        mhcnuggets: \$mhcnuggets_version
+        syfpeithi: \$syfpeithi_version
     END_VERSIONS
     """
 }

@@ -16,22 +16,29 @@ process PREDICT_EPITOPES {
     path "versions.yml",                emit:   versions
 
     script:
-    def pred_method           = params.pred_method
-    switch (pred_method) {
-        case "syfpeithi":
-            pred_method_version = "1.0";
-            break;
-        case "mhcflurry":
-            pred_method_version = "1.4.3";
-            break;
-        case "mhcnuggets-class-1":
-            pred_method_version = "2.3.2";
-            break;
-        case "mhcnuggets-class-2":
-            pred_method_version = "2.3.2";
-            break;
-        }
     """
+    # Extract software versions from container
+    mhcflurry_version=\$(mhcflurry-predict --version 2>&1 | sed 's/^mhcflurry //; s/ .*\$//')
+    mhcnuggets_version=\$(python -c "import pkg_resources; print(pkg_resources.get_distribution('mhcnuggets').version)")
+
+    # Syfpeithi is not an external software, but rather a matrix on which scoring is based on -> titled version 1.0 in epytope
+    syfpeithi_version=1.0
+
+    # Assign version based on method
+    case $params.pred_method in
+
+        "syfpeithi")
+        pred_method_version=\$syfpeithi_version
+        ;;
+
+        "mhcflurry")
+        pred_method_version=\$mhcflurry_version
+        ;;
+
+        "mhcnuggets-class-1" | "mhcnuggets-class-2")
+        pred_method_version=\$mhcnuggets_version
+        ;;
+    esac
 
     # Extract allele name from file header
     allele_name="\$(head -n1 "$peptides" | fgrep '#' | cut -f2 -d'#')"
@@ -48,8 +55,8 @@ process PREDICT_EPITOPES {
     # The --syfpeithi-norm flag enables score normalization when syfpeithi is
     # used and is ignored otherwise
     if ! epytope_predict.py --peptides "$peptides" \\
-                    --method "$pred_method" \\
-                    --method_version "$pred_method_version" \\
+                    --method "$params.pred_method" \\
+                    --method_version "\$pred_method_version" \\
                     --syfpeithi-norm \\
                     "\$allele_name" \\
                     2>stderr.log \\
@@ -69,9 +76,9 @@ process PREDICT_EPITOPES {
         python: \$(python --version 2>&1 | sed 's/Python //g')
         epytope: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('epytope').version)")
         pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
-        pyvcf: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pyvcf').version)")
-        mhcflurry: \$(mhcflurry-predict --version 2>&1 | sed 's/^mhcflurry //; s/ .*\$//')
-        mhcnuggets: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('mhcnuggets').version)")
+        mhcflurry: \$mhcflurry_version
+        mhcnuggets: \$mhcnuggets_version
+        syfpeithi: \$syfpeithi_version
     END_VERSIONS
     """
 }

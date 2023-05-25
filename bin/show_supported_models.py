@@ -3,7 +3,6 @@
 # Written by Sabrina Krakau, Christopher Mohr and released under the MIT license.
 # This script originates from the nf-core/epitopeprediction pipeline and is modified for use in nf-core/metapep
 
-import csv
 import argparse
 
 from epytope.EpitopePrediction import EpitopePredictorFactory
@@ -25,16 +24,11 @@ def __main__():
     parser = argparse.ArgumentParser(
         "Write out information about supported models by Epytope for available prediction tool versions."
     )
-    parser.add_argument("-v", "--versions", help="File with used software versions.", required=True)
+    parser.add_argument("-m", "--pred_methods", help="List of prediction models (sorted like list of --pred_method_versions)",nargs="+", required=True)
+    parser.add_argument("-v", "--pred_method_versions", help="List of prediction method versions (sorted like --pred_methods)", nargs="+", required=True)
     args = parser.parse_args()
 
-    methods = {}
-    with open(args.versions, "r") as versions_file:
-        for row in csv.reader(versions_file, delimiter=","):
-            if not row[0] == "pred_method":
-                methods[row[0]] = row[1]
-
-    for method, version in methods.items():
+    for method, version in zip(args.pred_methods, args.pred_method_versions):
         if version not in EpitopePredictorFactory.available_methods()[method]:
             raise ValueError("The specified version " + version + " for " + method + " is not supported by Epytope.")
 

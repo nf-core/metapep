@@ -94,7 +94,7 @@ workflow METAPEP {
     // SUBBRANCH: Show supported alleles for all prediction methods
     //
     if (params.supported_allele_information) {
-        EPYTOPE_SHOW_SUPPORTED_MODELS (Channel.fromPath("${baseDir}/assets/prediction_software_versions.csv"))
+        EPYTOPE_SHOW_SUPPORTED_MODELS()
         ch_versions = ch_versions.mix(EPYTOPE_SHOW_SUPPORTED_MODELS.out.versions)
         CUSTOM_DUMPSOFTWAREVERSIONS (ch_versions.unique().collectFile(name: 'collated_versions.yml'))
     } else {
