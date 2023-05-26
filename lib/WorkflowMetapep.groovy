@@ -2,6 +2,7 @@
 // This file holds several functions specific to the workflow/metapep.nf in the nf-core/metapep pipeline
 //
 
+import nextflow.Nextflow
 import groovy.text.SimpleTemplateEngine
 
 class WorkflowMetapep {

@@ -6,7 +6,7 @@ process PREPARE_SCORE_DISTRIBUTION {
     conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mulled-v2-d19e2715c83e4582e3f1fb0a2e473abde8ca636e:fc171b36fc2e2a38a259a1c82a139b59d94c968b-0' :
-        'quay.io/biocontainers/mulled-v2-d19e2715c83e4582e3f1fb0a2e473abde8ca636e:fc171b36fc2e2a38a259a1c82a139b59d94c968b-0' }"
+        'biocontainers/mulled-v2-d19e2715c83e4582e3f1fb0a2e473abde8ca636e:fc171b36fc2e2a38a259a1c82a139b59d94c968b-0' }"
 
     input:
     path predictions
