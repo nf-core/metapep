@@ -1,6 +1,7 @@
 process PREDICT_EPITOPES {
     label 'process_low'
     label 'cache_lenient'
+    label 'error_retry'
 
     conda "bioconda::epytope=3.3.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
