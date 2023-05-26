@@ -56,4 +56,13 @@ class WorkflowMetapep {
 
         return description_html
     }
+
+    //
+    // Check if input is required to run the pipeline
+    //
+    public static void checkInputRequired(params, log) {
+        if (!params.show_supported_models) {
+            Nextflow.error("'--input' parameter is required. Use: 'nextflow run nf-core/metapep --help' for more information on parameters or visit https://nf-co.re/metapep\nIf more information is needed on supported models use 'nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models'")
+        }
+    }
 }

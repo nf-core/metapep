@@ -10,7 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": ["outdir"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -284,6 +284,11 @@
                     "minimum": 0.0,
                     "maximum": 1.0,
                     "hidden": true
+                },
+                "show_supported_models": {
+                    "type": "boolean",
+                    "description": "Display supported alleles of all prediction methods and exit.",
+                    "fa_icon": "fas fa-question-circle"
                 },
                 "proc_chunk_size": {
                     "type": "integer",
