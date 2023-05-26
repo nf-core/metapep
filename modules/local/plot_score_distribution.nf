@@ -5,7 +5,7 @@ process PLOT_SCORE_DISTRIBUTION {
     conda "bioconda::bioconductor-alphabeta:1.8.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' :
-        'quay.io/biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
+        'biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
 
     input:
     path prep_scores

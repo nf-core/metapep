@@ -4,7 +4,7 @@ process FINALIZE_MICROBIOME_ENTITIES {
     conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/pandas:1.5.2' :
-        'quay.io/biocontainers/pandas:1.5.2' }"
+        'biocontainers/pandas:1.5.2' }"
 
     input:
     path(entrez_microbiomes_entities)

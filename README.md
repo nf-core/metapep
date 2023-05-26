@@ -12,7 +12,7 @@
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
 [![Launch on Nextflow Tower](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Nextflow%20Tower-%234256e7)](https://tower.nf/launch?pipeline=https://github.com/nf-core/metapep)
 
-[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23metapep-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/metapep)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
+[![Get help on Slack](http://img.shields.io/badge/slack-nf--core%20%23metapep-4A154B?labelColor=000000&logo=slack)](https://nfcore.slack.com/channels/metapep)[![Follow on Twitter](http://img.shields.io/badge/twitter-%40nf__core-1DA1F2?labelColor=000000&logo=twitter)](https://twitter.com/nf_core)[![Follow on Mastodon](https://img.shields.io/badge/mastodon-nf__core-6364ff?labelColor=FFFFFF&logo=mastodon)](https://mstdn.science/@nf_core)[![Watch on YouTube](http://img.shields.io/badge/youtube-nf--core-FF0000?labelColor=000000&logo=youtube)](https://www.youtube.com/c/nf-core)
 
 ## Introduction
 
@@ -62,9 +62,18 @@ On release, automated continuous integration tests run the pipeline on a full-si
    nextflow run nf-core/metapep --input samplesheet.csv --outdir <OUTDIR> -profile <docker/singularity/podman/shifter/charliecloud/conda/institute>
    ```
 
-## Documentation
+> **Warning:**
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those
+> provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_;
+> see [docs](https://nf-co.re/usage/configuration#custom-configuration-files).
 
-The nf-core/metapep pipeline comes with documentation about the pipeline [usage](https://nf-co.re/metapep/usage), [parameters](https://nf-co.re/metapep/parameters) and [output](https://nf-co.re/metapep/output).
+For more details, please refer to the [usage documentation](https://nf-co.re/metapep/usage) and the [parameter documentation](https://nf-co.re/metapep/parameters).
+
+## Pipeline output
+
+To see the the results of a test run with a full size dataset refer to the [results](https://nf-co.re/metapep/results) tab on the nf-core website pipeline page.
+For more details about the output files and reports, please refer to the
+[output documentation](https://nf-co.re/metapep/output).
 
 ## Credits
 
