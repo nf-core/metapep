@@ -17,7 +17,7 @@
                     },
                     "prodigal": {
                         "branch": "master",
-                        "git_sha": "8c4f2d2ceeb5e9cc4a49a91c0e9a675b6724c043",
+                        "git_sha": "603ecbd9f45300c9788f197d2a15a005685b4220",
                         "installed_by": ["modules"]
                     }
                 }

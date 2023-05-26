@@ -5,7 +5,7 @@ process PREDICT_EPITOPES {
     conda "bioconda::epytope=3.3.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/epytope:3.3.0--pyh7cba7a3_0' :
-        'quay.io/biocontainers/epytope:3.3.0--pyh7cba7a3_0' }"
+        'biocontainers/epytope:3.3.0--pyh7cba7a3_0' }"
 
     input:
     path(peptides)
