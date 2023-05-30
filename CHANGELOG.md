@@ -24,7 +24,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#36](https://github.com/nf-core/metapep/pull/36) - Replaced the tool `csvtk` by custom script for optimized TSV file concatenation in process `MERGE_PREDICTIONS_BUFFER` and `MERGE_PREDICTIONS`.
 - [#44](https://github.com/nf-core/metapep/pull/44) - Optimized memory usage of `COLLECT_STATS` process
 - [#46](https://github.com/nf-core/metapep/pull/46) - Input type `taxa` changed from TXT or TSV format to TSV only and increase format checks to ensure passing of optional `abundance` column
-- [#55](https://github.com/nf-core/metapep/pull/55) - Updated `PREDICT_EPITOPES` to use latest epytope version (3.3.0) and adjusted the script `predict_epitopes.py` accordingly. Exchanged the container to official epytope container.
+- [#55](https://github.com/nf-core/metapep/pull/55),[#73](https://github.com/nf-core/metapep/pull/73)  - Updated `PREDICT_EPITOPES` to use latest epytope version (3.3.1) and adjusted the script `predict_epitopes.py` accordingly. Exchanged the container to official epytope container.
 - [#64](https://github.com/nf-core/metapep/pull/64), [#65](https://github.com/nf-core/metapep/pull/65) - Updated the data model figure and using a white background to ensure readability in both dark and light themes.
 
 ### `Fixed`
