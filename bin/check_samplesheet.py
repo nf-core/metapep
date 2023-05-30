@@ -10,6 +10,7 @@ import argparse
 import pandas as pd
 from epytope.Core import Allele
 from epytope.EpitopePrediction import EpitopePredictorFactory
+import epytope
 
 
 def parse_args(args=None):
@@ -72,6 +73,14 @@ def parse_args(args=None):
         metavar="STRING",
         type=str,
         help="Chosen version of epitope prediction method",
+    )
+    parser.add_argument(
+        "-pl",
+        "--peptide_lengths",
+        required=True,
+        metavar="TUPLE",
+        nargs='+',
+        help="Peptide lengths as given in parameters",
     )
     return parser.parse_args(args)
 
@@ -227,6 +236,25 @@ def check_samplesheet(args):
                 + "which prediction method can be found when running: "
                 + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
             )
+    # check if peptide lengths are supported for model:
+    peptide_lengths = range(int(args.peptide_lengths[0]), int(args.peptide_lengths[1])+1)
+    checked_pep_lens = set(peptide_lengths)
+    for pep_len in peptide_lengths:
+        if pep_len in predictor.supportedLength:
+            checked_pep_lens.remove(pep_len)
+        if not pep_len in predictor.supportedLength:
+            sys.exit(
+                "The chosen lengths: "
+                + ", ".join([str(i) for i in checked_pep_lens])
+                + " are not available for the chosen prediction method: "
+                + str(args.prediction_method)
+                + ":"
+                + str(args.pred_method_version)
+                + "\n\nFurther information on which peptide lengths are supported for "
+                + "which prediction method can be found when running: "
+                + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
+            )
+
 
     alleles = pd.DataFrame({"allele_name": list(unique_alleles)})
     alleles["allele_id"] = range(len(alleles))
