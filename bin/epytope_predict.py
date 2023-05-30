@@ -232,13 +232,13 @@ def get_allele_model_max_value(allele, length):  # SYFPEITHI NORMALIZATION
         return None
 
 
-def syfpeithi_normalize(predictions):  # SYFPEITHI NORMALIZATION
+def syfpeithi_normalize(predictions, nan_alleles):  # SYFPEITHI NORMALIZATION
     """Normalizes syfpeithi prediction scores by dividing by the maximum
     attainable score for a particular allele model. This is needed as the
     score is dependent on the underlying model data and otherwise not
     comparable between alleles."""
     predictor = EpitopePredictorFactory("syfpeithi")
-    alleles = [cname for cname in predictions.columns if cname not in ["Seq", "Method"]]
+    alleles = [cname for cname in predictions.columns if cname not in ["Seq", "Method"] and cname not in nan_alleles]
     conv_alleles = predictor.convert_alleles(alleles)
 
     lengths = predictions.Seq.apply(len)
@@ -301,16 +301,18 @@ try:
         for message in {w.message for w in warnings}:
             logging.warning(f"PREDICTION ({predictor.name} {predictor.version}) - {str(message)}")
 
-    # Add missing alleles as NA values
+    # Add missing alleles as NA values and save alleles to set
+    nan_alleles = set([])
     for missing_allele in [str(allele) for allele in alleles if str(allele) not in predictions.columns]:
         logging.warning(
             f"PREDICTION ({predictor.name} {predictor.version}) yielded no results for allele {missing_allele}"
         )
         predictions[missing_allele] = np.NaN
+        nan_alleles.add(missing_allele)
 
     # Normalize syfpeithi scores
     if args.method == "syfpeithi" and args.syfpeithi_norm:
-        predictions = syfpeithi_normalize(predictions)
+        predictions = syfpeithi_normalize(predictions, nan_alleles)
 
     # Write results
     write_results(args.output, ids, peptides, predictions)
