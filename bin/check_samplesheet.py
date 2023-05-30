@@ -79,7 +79,7 @@ def parse_args(args=None):
         "--peptide_lengths",
         required=True,
         metavar="TUPLE",
-        nargs='+',
+        nargs="+",
         help="Peptide lengths as given in parameters",
     )
     return parser.parse_args(args)
@@ -237,7 +237,7 @@ def check_samplesheet(args):
                 + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
             )
     # check if peptide lengths are supported for model:
-    peptide_lengths = range(int(args.peptide_lengths[0]), int(args.peptide_lengths[1])+1)
+    peptide_lengths = range(int(args.peptide_lengths[0]), int(args.peptide_lengths[1]) + 1)
     checked_pep_lens = set(peptide_lengths)
     for pep_len in peptide_lengths:
         if pep_len in predictor.supportedLength:
@@ -254,7 +254,6 @@ def check_samplesheet(args):
                 + "which prediction method can be found when running: "
                 + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
             )
-
 
     alleles = pd.DataFrame({"allele_name": list(unique_alleles)})
     alleles["allele_id"] = range(len(alleles))
