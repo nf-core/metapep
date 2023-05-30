@@ -1,4 +1,4 @@
-process SAMPLESHEET_CHECK {
+process INPUT_TO_DATAMODEL {
     tag "$samplesheet"
     label 'process_single'
 
