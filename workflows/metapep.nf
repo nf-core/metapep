@@ -99,22 +99,25 @@ workflow METAPEP {
     } else {
 
         //
-        // SUBWORKFLOW: Read in samplesheet, validate and stage input files
+        // SUBWORKFLOW: Read in samplesheet, validate and create/populate datamodel based on input
         //
         PREPROCESSING_INPUT (
             ch_input
         )
         ch_versions = ch_versions.mix(PREPROCESSING_INPUT.out.versions)
 
-        /*
-        * Download proteins from entrez
-        */
+        //
+        // MODULE: Download proteins from entrez
+        //
         DOWNLOAD_PROTEINS (
             PREPROCESSING_INPUT.out.ch_taxa_input.map { meta, file -> meta.id }.collect(),
             PREPROCESSING_INPUT.out.ch_taxa_input.map { meta, file -> file }.collect()
         )
         ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
+        //
+        // MODULE: Predict proteins from nucleotides
+        //
         PRODIGAL(
             PREPROCESSING_INPUT.out.ch_nucl_input,
             "gff"
@@ -126,15 +129,19 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
 
+        //
+        // MODULE: Assign entity weights (Nucleotide Input)
+        //
         ASSIGN_NUCL_ENTITY_WEIGHTS (
             PREPROCESSING_INPUT.out.ch_weights.map { meta, file -> meta.id }.collect().ifEmpty([]),
             PREPROCESSING_INPUT.out.ch_weights.map { meta, file -> file }.collect().ifEmpty([])
         )
         ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
 
-        /*
-        * concat files and assign new, unique ids for all proteins (from different sources)
-        */
+        //
+        // MODULE: Generate protein and entity ids
+        //
+        // concat files and assign new, unique ids for all proteins (from different sources)
         // Sort predicted protein input for GENERATE_PROTEIN_AND_ENTITY_IDS to ensure deterministic id assignments
         ch_pred_proteins_sorted = CREATE_PROTEIN_TSV.out.ch_pred_proteins.toSortedList( { a, b -> a[0].id <=> b[0].id } ).flatMap()
 
@@ -150,10 +157,9 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(GENERATE_PROTEIN_AND_ENTITY_IDS.out.versions)
 
-        /*
-        * Create microbiome_entities
-        */
-
+        //
+        // MODULE: Create microbiome_entities
+        //
         FINALIZE_MICROBIOME_ENTITIES (
             DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
             ASSIGN_NUCL_ENTITY_WEIGHTS.out.ch_nucl_microbiomes_entities.ifEmpty([]),
@@ -162,17 +168,19 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(FINALIZE_MICROBIOME_ENTITIES.out.versions)
 
-        /*
-        * Generate peptides
-        */
+        //
+        // MODULE: Generate peptides
+        //
         GENERATE_PEPTIDES (
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_proteins
         )
         ch_versions = ch_versions.mix(GENERATE_PEPTIDES.out.versions)
 
-        /*
-        * Collect some numbers: proteins, peptides, unique peptides per conditon
-        */
+        //
+        // MODULE: Collect stats
+        //
+
+        // Collects proteins, peptides, unique peptides per conditon
         COLLECT_STATS (
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
@@ -181,10 +189,12 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
 
-        /*
-        * Split prediction tasks (peptide, allele) into chunks of peptides that are to
-        * be predicted against the same allele for parallel prediction
-        */
+        //
+        // MODULE: Split prediction tasks into chunks
+        //
+
+        // Split prediction tasks (peptide, allele) into chunks of peptides that are to
+        // be predicted against the same allele for parallel prediction
         SPLIT_PRED_TASKS (
         GENERATE_PEPTIDES.out.ch_peptides,
         GENERATE_PEPTIDES.out.ch_proteins_peptides,
@@ -196,18 +206,19 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
 
-        /*
-        * Perform epitope prediction
-        */
+        //
+        // MODULE: Epitope prediction
+        //
         PREDICT_EPITOPES (
             SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks.flatten()
         )
         ch_versions = ch_versions.mix(PREDICT_EPITOPES.out.versions)
 
-        /*
-        * Merge prediction results from peptide chunks into one prediction result
-        */
-        // gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
+        //
+        // MODULE: Merge prediction results
+        //
+
+        // Gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
         // (causing "sbatch: error: Batch job submission failed: Pathname of a file, directory or other parameter too long")
         // sort and buffer to ensure resume will work (inefficient, since this causes waiting for all predictions)
         ch_epitope_predictions_buffered = PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten().buffer(size: 1000, remainder: true)
@@ -225,9 +236,9 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
 
-        /*
-        * Generate figures
-        */
+        //
+        // MODULE: Plot score distributions
+        //
         PREPARE_SCORE_DISTRIBUTION (
             MERGE_PREDICTIONS.out.ch_predictions,
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
@@ -246,6 +257,9 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
 
+        //
+        // MODULE: Plot entity binding ratios
+        //
         PREPARE_ENTITY_BINDING_RATIOS (
             MERGE_PREDICTIONS.out.ch_predictions,
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
@@ -262,6 +276,10 @@ workflow METAPEP {
             PREPROCESSING_INPUT.out.ch_alleles
         )
         ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
+
+        //
+        // MODULE: Dump software versions
+        //
 
         CUSTOM_DUMPSOFTWAREVERSIONS (
             ch_versions.unique().collectFile(name: 'collated_versions.yml')
