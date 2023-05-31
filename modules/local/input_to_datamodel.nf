@@ -47,7 +47,7 @@ process INPUT_TO_DATAMODEL {
     esac
 
 
-    check_samplesheet.py \\
+    input_to_datamodel.py \\
         -i $samplesheet \\
         -m microbiomes.tsv \\
         -c conditions.tsv \\
