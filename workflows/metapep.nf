@@ -61,7 +61,7 @@ include { PLOT_ENTITY_BINDING_RATIOS        } from '../modules/local/plot_entity
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { PREPROCESSING_INPUT } from '../subworkflows/local/preprocessing_input'
+include { PROCESS_INPUT } from '../subworkflows/local/process_input'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -101,17 +101,17 @@ workflow METAPEP {
         //
         // SUBWORKFLOW: Read in samplesheet, validate and create/populate datamodel based on input
         //
-        PREPROCESSING_INPUT (
+        PROCESS_INPUT (
             ch_input
         )
-        ch_versions = ch_versions.mix(PREPROCESSING_INPUT.out.versions)
+        ch_versions = ch_versions.mix(PROCESS_INPUT.out.versions)
 
         //
         // MODULE: Download proteins from entrez
         //
         DOWNLOAD_PROTEINS (
-            PREPROCESSING_INPUT.out.ch_taxa_input.map { meta, file -> meta.id }.collect(),
-            PREPROCESSING_INPUT.out.ch_taxa_input.map { meta, file -> file }.collect()
+            PROCESS_INPUT.out.ch_taxa_input.map { meta, file -> meta.id }.collect(),
+            PROCESS_INPUT.out.ch_taxa_input.map { meta, file -> file }.collect()
         )
         ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
@@ -119,7 +119,7 @@ workflow METAPEP {
         // MODULE: Predict proteins from nucleotides
         //
         PRODIGAL(
-            PREPROCESSING_INPUT.out.ch_nucl_input,
+            PROCESS_INPUT.out.ch_nucl_input,
             "gff"
         )
         ch_versions = ch_versions.mix(PRODIGAL.out.versions)
@@ -133,8 +133,8 @@ workflow METAPEP {
         // MODULE: Assign entity weights (Nucleotide Input)
         //
         ASSIGN_NUCL_ENTITY_WEIGHTS (
-            PREPROCESSING_INPUT.out.ch_weights.map { meta, file -> meta.id }.collect().ifEmpty([]),
-            PREPROCESSING_INPUT.out.ch_weights.map { meta, file -> file }.collect().ifEmpty([])
+            PROCESS_INPUT.out.ch_weights.map { meta, file -> meta.id }.collect().ifEmpty([]),
+            PROCESS_INPUT.out.ch_weights.map { meta, file -> file }.collect().ifEmpty([])
         )
         ch_versions = ch_versions.mix(ASSIGN_NUCL_ENTITY_WEIGHTS.out.versions)
 
@@ -146,14 +146,14 @@ workflow METAPEP {
         ch_pred_proteins_sorted = CREATE_PROTEIN_TSV.out.ch_pred_proteins.toSortedList( { a, b -> a[0].id <=> b[0].id } ).flatMap()
 
         GENERATE_PROTEIN_AND_ENTITY_IDS (
-            PREPROCESSING_INPUT.out.ch_microbiomes,
+            PROCESS_INPUT.out.ch_microbiomes,
             ch_pred_proteins_sorted.collect { meta, file -> file }.ifEmpty([]),
             ch_pred_proteins_sorted.collect { meta, file -> meta }.ifEmpty([]),
             DOWNLOAD_PROTEINS.out.ch_entrez_proteins.ifEmpty([]),
             DOWNLOAD_PROTEINS.out.ch_entrez_entities_proteins.ifEmpty([]),
             DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
-            PREPROCESSING_INPUT.out.ch_proteins_input.collect { meta, file -> file }.ifEmpty([]),
-            PREPROCESSING_INPUT.out.ch_proteins_input.collect { meta, file -> meta }.ifEmpty([])
+            PROCESS_INPUT.out.ch_proteins_input.collect { meta, file -> file }.ifEmpty([]),
+            PROCESS_INPUT.out.ch_proteins_input.collect { meta, file -> meta }.ifEmpty([])
         )
         ch_versions = ch_versions.mix(GENERATE_PROTEIN_AND_ENTITY_IDS.out.versions)
 
@@ -185,7 +185,7 @@ workflow METAPEP {
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-            PREPROCESSING_INPUT.out.ch_conditions
+            PROCESS_INPUT.out.ch_conditions
         )
         ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
 
@@ -200,9 +200,9 @@ workflow METAPEP {
         GENERATE_PEPTIDES.out.ch_proteins_peptides,
         GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
         FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-        PREPROCESSING_INPUT.out.ch_conditions,
-        PREPROCESSING_INPUT.out.ch_conditions_alleles,
-        PREPROCESSING_INPUT.out.ch_alleles
+        PROCESS_INPUT.out.ch_conditions,
+        PROCESS_INPUT.out.ch_conditions_alleles,
+        PROCESS_INPUT.out.ch_alleles
         )
         ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
 
@@ -244,16 +244,16 @@ workflow METAPEP {
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-            PREPROCESSING_INPUT.out.ch_conditions,
-            PREPROCESSING_INPUT.out.ch_conditions_alleles,
-            PREPROCESSING_INPUT.out.ch_alleles
+            PROCESS_INPUT.out.ch_conditions,
+            PROCESS_INPUT.out.ch_conditions_alleles,
+            PROCESS_INPUT.out.ch_alleles
         )
         ch_versions = ch_versions.mix(PREPARE_SCORE_DISTRIBUTION.out.versions)
 
         PLOT_SCORE_DISTRIBUTION (
             PREPARE_SCORE_DISTRIBUTION.out.ch_prep_prediction_scores.flatten(),
-            PREPROCESSING_INPUT.out.ch_alleles,
-            PREPROCESSING_INPUT.out.ch_conditions
+            PROCESS_INPUT.out.ch_alleles,
+            PROCESS_INPUT.out.ch_conditions
         )
         ch_versions = ch_versions.mix(PLOT_SCORE_DISTRIBUTION.out.versions)
 
@@ -265,15 +265,15 @@ workflow METAPEP {
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-            PREPROCESSING_INPUT.out.ch_conditions,
-            PREPROCESSING_INPUT.out.ch_conditions_alleles,
-            PREPROCESSING_INPUT.out.ch_alleles
+            PROCESS_INPUT.out.ch_conditions,
+            PROCESS_INPUT.out.ch_conditions_alleles,
+            PROCESS_INPUT.out.ch_alleles
         )
         ch_versions = ch_versions.mix(PREPARE_ENTITY_BINDING_RATIOS.out.versions)
 
         PLOT_ENTITY_BINDING_RATIOS (
             PREPARE_ENTITY_BINDING_RATIOS.out.ch_prep_entity_binding_ratios.flatten(),
-            PREPROCESSING_INPUT.out.ch_alleles
+            PROCESS_INPUT.out.ch_alleles
         )
         ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
 
