@@ -2,10 +2,10 @@
 // Check input samplesheet, get main data channels and create data tables with provided data (i.e. microbiomes, conditions, alleles, conditions_alleles)
 //
 
-include { INPUT_TO_DATAMODEL   } from '../../modules/local/input_to_datamodel'
+include { CHECK_SAMPLESHEET_CREATE_TABLES   } from '../../modules/local/check_samplesheet_create_tables'
 include { UNPACK_BIN_ARCHIVES } from '../../modules/local/unpack_bin_archives'
 
-workflow PREPROCESSING_INPUT {
+workflow PROCESS_INPUT {
     take:
     samplesheet // file: /path/to/samplesheet.csv
 
@@ -13,9 +13,9 @@ workflow PREPROCESSING_INPUT {
 
     ch_versions = Channel.empty()
 
-    INPUT_TO_DATAMODEL ( samplesheet )
+    CHECK_SAMPLESHEET_CREATE_TABLES ( samplesheet )
 
-    INPUT_TO_DATAMODEL.out.microbiomes
+    CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
         // Read microbiomes table
         .splitCsv(sep:'\t', header:true)
         // Convert paths to files
@@ -139,7 +139,7 @@ workflow PREPROCESSING_INPUT {
         // ####################################################################################################
 
         ch_weights = Channel.empty()
-        INPUT_TO_DATAMODEL.out.microbiomes
+        CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
             .splitCsv(sep:'\t', header:true)
             .map { row ->
                     def meta = [:]
@@ -154,9 +154,9 @@ workflow PREPROCESSING_INPUT {
     ch_proteins_input
     ch_nucl_input
     ch_weights
-    ch_microbiomes          = INPUT_TO_DATAMODEL.out.microbiomes
-    ch_conditions           = INPUT_TO_DATAMODEL.out.conditions
-    ch_alleles              = INPUT_TO_DATAMODEL.out.alleles
-    ch_conditions_alleles   = INPUT_TO_DATAMODEL.out.conditions_alleles
+    ch_microbiomes          = CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
+    ch_conditions           = CHECK_SAMPLESHEET_CREATE_TABLES.out.conditions
+    ch_alleles              = CHECK_SAMPLESHEET_CREATE_TABLES.out.alleles
+    ch_conditions_alleles   = CHECK_SAMPLESHEET_CREATE_TABLES.out.conditions_alleles
     versions                = ch_versions
 }

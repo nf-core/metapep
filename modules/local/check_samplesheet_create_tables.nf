@@ -1,4 +1,4 @@
-process INPUT_TO_DATAMODEL {
+process CHECK_SAMPLESHEET_CREATE_TABLES {
     tag "$samplesheet"
     label 'process_single'
 
@@ -47,7 +47,7 @@ process INPUT_TO_DATAMODEL {
     esac
 
 
-    input_to_datamodel.py \\
+    check_samplesheet_create_tables.py \\
         -i $samplesheet \\
         -m microbiomes.tsv \\
         -c conditions.tsv \\

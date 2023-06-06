@@ -16,7 +16,7 @@ from epytope.EpitopePrediction import EpitopePredictorFactory
 
 def parse_args(args=None):
     Description = "Reformat nf-core/metapep samplesheet file, check its contents and create the data tables."
-    Epilog = "Example usage: python input_to_datamodel.py -i <FILE_IN> -m <MICROBIOMES_OUT> -c <CONDITIONS_OUT> -a <ALLELES_OUT> -ca <CONDITION_ALLELES_OUT> -pm <prediction_method> -pmv <prediction_method_version>"
+    Epilog = "Example usage: python check_samplesheet_create_tables.py -i <FILE_IN> -m <MICROBIOMES_OUT> -c <CONDITIONS_OUT> -a <ALLELES_OUT> -ca <CONDITION_ALLELES_OUT> -pm <prediction_method> -pmv <prediction_method_version>"
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument(
