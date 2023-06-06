@@ -1,5 +1,5 @@
 //
-// Check input samplesheet and get read channels
+// Check input samplesheet, get main data channels and create data tables with provided data (i.e. microbiomes, conditions, alleles, conditions_alleles)
 //
 
 include { INPUT_TO_DATAMODEL   } from '../../modules/local/input_to_datamodel'
