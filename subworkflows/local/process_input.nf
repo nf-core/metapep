@@ -3,7 +3,8 @@
 //
 
 include { CHECK_SAMPLESHEET_CREATE_TABLES   } from '../../modules/local/check_samplesheet_create_tables'
-include { UNPACK_BIN_ARCHIVES } from '../../modules/local/unpack_bin_archives'
+include { UNPACK_BIN_ARCHIVES               } from '../../modules/local/unpack_bin_archives'
+include { UNIFY_MODEL_LENGTHS               } from '../../modules/local/unify_model_lengths'
 
 workflow PROCESS_INPUT {
     take:
@@ -14,6 +15,10 @@ workflow PROCESS_INPUT {
     ch_versions = Channel.empty()
 
     CHECK_SAMPLESHEET_CREATE_TABLES ( samplesheet )
+
+    if (params.pred_method == "syfpeithi") {
+        UNIFY_MODEL_LENGTHS (CHECK_SAMPLESHEET_CREATE_TABLES.out.samplesheet_valid)
+    }
 
     CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
         // Read microbiomes table
