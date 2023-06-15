@@ -223,8 +223,9 @@ def process_samplesheet(args):
     # allele id - allele name
     unique_alleles = {allele for allele_list in input_table["alleles"] for allele in allele_list.split(" ")}
 
-    # Check if alleles are supported by chosen predictor
-    # Need Parameter for prediction method version
+    # Check if alleles are supported by chosen predictor and check if tool generally supports chosen lengths
+
+    # TODO Parameter for prediction method version
     predictor = EpitopePredictorFactory(args.prediction_method, version=args.pred_method_version)
     for allele in unique_alleles:
         if not Allele(allele) in predictor.supportedAlleles:
@@ -239,7 +240,8 @@ def process_samplesheet(args):
                 + "which prediction method can be found when running: "
                 + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
             )
-    # check if peptide lengths are supported for model:
+
+    # Check if peptide lengths are supported for model:
     peptide_lengths = range(int(args.peptide_lengths[0]), int(args.peptide_lengths[1]) + 1)
     checked_pep_lens = set(peptide_lengths)
     for pep_len in peptide_lengths:
