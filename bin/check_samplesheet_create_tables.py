@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-"""Provide a command line tool to validate and transform tabular samplesheets."""
+"""
+Provides a command line tool to validate and transform the samplesheet and create the data tables needed for nf-core/metapep.
+"""
 
 
 import os
@@ -14,8 +16,8 @@ import epytope
 
 
 def parse_args(args=None):
-    Description = "Reformat nf-core/metapep samplesheet file and check its contents."
-    Epilog = "Example usage: python check_samplesheet.py <FILE_IN>"
+    Description = "Reformat nf-core/metapep samplesheet file, check its contents and create the data tables."
+    Epilog = "Example usage: python check_samplesheet_create_tables.py -i <FILE_IN> -m <MICROBIOMES_OUT> -c <CONDITIONS_OUT> -a <ALLELES_OUT> -ca <CONDITION_ALLELES_OUT> -pm <prediction_method> -pmv <prediction_method_version>"
 
     parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
     parser.add_argument(
@@ -99,10 +101,11 @@ def print_error(error, context="Line", context_str=""):
 # - allow weight input for type 'proteins' as well! (for now use equal weight ?)
 
 
-def check_samplesheet(args):
+def process_samplesheet(args):
     """
-    Check that the tabular samplesheet has the structure expected by nf-core pipelines.
+    Check that the tabular samplesheet has the structure expected by nf-core/metapep and create the data tables.
 
+    Header structure:
     condition,type,microbiome_path,alleles,weights_path
 
     For an example see:
@@ -277,7 +280,7 @@ def check_samplesheet(args):
 
 def main(args=None):
     args = parse_args(args)
-    check_samplesheet(args)
+    process_samplesheet(args)
 
 
 if __name__ == "__main__":
