@@ -12,7 +12,7 @@ The directories listed below will be created in the results directory after the 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
-- [Create data model](#metapep-data-model) - Create tables according to the relational data model.
+- [Preprocess input](#metapep-data-model) - Create tables according to the relational data model and checks validity of the samplesheet.
 - [Download proteins](#download-proteins) - Download proteins for input type taxa from Entrez.
 - [Prodigal](#prodigal) - Predict proteins for input type assembly or bins.
 - [Generate peptides](#main-pipeline-output) - Generate peptides from proteins.

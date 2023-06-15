@@ -1,4 +1,4 @@
-process SAMPLESHEET_CHECK {
+process CHECK_SAMPLESHEET_CREATE_TABLES {
     tag "$samplesheet"
     label 'process_single'
 
@@ -47,7 +47,7 @@ process SAMPLESHEET_CHECK {
     esac
 
 
-    check_samplesheet.py \\
+    check_samplesheet_create_tables.py \\
         -i $samplesheet \\
         -m microbiomes.tsv \\
         -c conditions.tsv \\
