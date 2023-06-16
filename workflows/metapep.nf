@@ -172,7 +172,8 @@ workflow METAPEP {
         // MODULE: Generate peptides
         //
         GENERATE_PEPTIDES (
-            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_proteins
+            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_proteins,
+            PROCESS_INPUT.out.peptide_lengths
         )
         ch_versions = ch_versions.mix(GENERATE_PEPTIDES.out.versions)
 

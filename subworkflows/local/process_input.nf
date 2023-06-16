@@ -15,9 +15,38 @@ workflow PROCESS_INPUT {
     ch_versions = Channel.empty()
 
     CHECK_SAMPLESHEET_CREATE_TABLES ( samplesheet )
+    ch_versions = ch_versions.mix(CHECK_SAMPLESHEET_CREATE_TABLES.out.versions)
 
+    // Generate list of peptide lengths from min and max peptide length parameter
+    peptide_lengths = Channel.of( params.min_pep_len..params.max_pep_len ).toSortedList()
+
+    // When PSSMs methods are used we can check in epytope if the model exists for the given peptide lengths
+    // Only intersection of allele model lengths are used in further analysis
     if (params.pred_method == "syfpeithi") {
         UNIFY_MODEL_LENGTHS (CHECK_SAMPLESHEET_CREATE_TABLES.out.samplesheet_valid)
+        ch_versions = ch_versions.mix(UNIFY_MODEL_LENGTHS.out.versions)
+
+        // Extract supported peptide lengths
+        unified_pep_lens = UNIFY_MODEL_LENGTHS.out.allele_models
+            .splitCsv(sep:'\t', header:true)
+            .map {
+                row -> row.Peptide_Length.toInteger()
+            }.unique().toSortedList()
+
+        // Compare list of peptide lengths given by parameters and supported by existing models
+        if (unified_pep_lens != peptide_lengths) {
+            // Assign new unified list of peptide lengths
+            peptide_lengths = unified_pep_lens
+            // Report missing peptide lengths
+            excluded_pep_lens = peptide_lengths-unified_pep_lens
+            excluded_pep_lens.map{
+                it -> {
+                    log.warn "There is no model for one or more alleles and peptide length ${it}"
+                    log.warn "All peptide lengths with no matching model for one or more alleles will be omitted for further analysis."
+                    log.warn "For more information what models were used for which allele check '<OUTDIR>/pipeline_info/unified_allele_models.tsv'"
+                    }
+            }
+        }
     }
 
     CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
@@ -155,6 +184,7 @@ workflow PROCESS_INPUT {
             ch_weights.dump(tag:"weights")
 
     emit:
+    peptide_lengths
     ch_taxa_input
     ch_proteins_input
     ch_nucl_input

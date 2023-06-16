@@ -91,18 +91,18 @@ def main():
             availibility = check_model_availability(model_name, args.method)
             allele_availability.append([allele_s, pep_len, model_name, availibility])
 
-    allele_availability = pd.DataFrame(allele_availability, columns=["Allele", "Peptide Length", "Allele Model", "Availability"])
+    allele_availability = pd.DataFrame(allele_availability, columns=["Allele", "Peptide_Length", "Allele_Model", "Availability"])
 
     # Drop all non available models
     allele_availability = allele_availability[allele_availability["Availability"]]
     allele_availability.drop("Availability", axis=1, inplace=True)
 
     # get intersection of peptide lengths
-    len_sets = [set(allele_models["Peptide Length"]) for allele, allele_models in allele_availability.groupby("Allele")]
+    len_sets = [set(allele_models["Peptide_Length"]) for allele, allele_models in allele_availability.groupby("Allele")]
     len_intersect = set.intersection(*len_sets)
 
     # Remove all non fitting lengths
-    allele_availability = allele_availability[allele_availability["Peptide Length"].isin(len_intersect)]
+    allele_availability = allele_availability[allele_availability["Peptide_Length"].isin(len_intersect)]
 
     allele_availability.to_csv(args.output, sep="\t", index=False)
 main()
