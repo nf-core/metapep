@@ -241,7 +241,8 @@ def process_samplesheet(args):
                 + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
             )
 
-    # Check if peptide lengths are supported for model:
+    # Check if peptide lengths are listed as supported for the allele model by epytope:
+    # Note in some cases for individual alleles certain lengths are not supported, which is not captured here
     peptide_lengths = range(int(args.peptide_lengths[0]), int(args.peptide_lengths[1]) + 1)
     checked_pep_lens = set(peptide_lengths)
     for pep_len in peptide_lengths:
