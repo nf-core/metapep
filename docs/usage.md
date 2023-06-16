@@ -87,9 +87,13 @@ The pipeline needs to handle large amounts of data, depending on the size and nu
 
 The pipeline predicts epitopes for specific peptide lengths and for specific alleles of MHC class I or class II. As the prediction is performed by external tools, the user is restricted to the corresponding combinations the external tools are offering. Therefore, the metapep pipeline comes with a functionality to output all supported alleles and supported lengths of the supported external tools, which is invoked by:
 
-`nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models`
+```bash
+nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models
+```
 
 More on the output can be found at https://nf-co.re/metapep/dev/output#supported-allele-models
+
+Moreover, the pipeline checks if a supported prediction model (combination of allele and peptide length) is available if a PSSMs method like SYFPEITHI is chosen and reduces the peptide lengths to a common denominator for further analysis if models are not available.
 
 ### Updating the pipeline
 
