@@ -86,7 +86,7 @@ def main():
     # Check if a model is available at given lengths
     allele_availability = []
     for conv_allele, allele_s  in zip(conv_alleles, alleles_s):
-        for pep_len in range(args.peptide_min_len, args.peptide_max_len):
+        for pep_len in range(args.peptide_min_len, args.peptide_max_len+1):
             model_name = f"{conv_allele}_{pep_len}"
             availibility = check_model_availability(model_name, args.method)
             allele_availability.append([allele_s, pep_len, model_name, availibility])
