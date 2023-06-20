@@ -22,10 +22,12 @@ import pandas as pd
 from epytope.Core import Allele
 from epytope.EpitopePrediction import EpitopePredictorFactory
 
+
 class AlleleParseException(RuntimeError):
     """Represents a failure to parse an allele string"""
 
     pass
+
 
 def parse_args():
     """Parses the command line arguments specified by the user."""
@@ -58,6 +60,7 @@ def parse_args():
     )
     return parser.parse_args()
 
+
 def allele_from_string(allele_string):
     """Obtains an epytope Allele object from a string, handling errors"""
     try:
@@ -65,12 +68,14 @@ def allele_from_string(allele_string):
     except:
         raise AlleleParseException(allele_string)
 
+
 def check_model_availability(model_name, prediction_method):
     try:
         __import__("epytope.Data.pssms." + prediction_method + ".mat." + model_name, fromlist=[model_name])
         return True
     except ImportError:
         return False
+
 
 def main():
     args = parse_args()
@@ -85,13 +90,15 @@ def main():
     conv_alleles = predictor.convert_alleles(alleles)
     # Check if a model is available at given lengths
     allele_availability = []
-    for conv_allele, allele_s  in zip(conv_alleles, alleles_s):
-        for pep_len in range(args.peptide_min_len, args.peptide_max_len+1):
+    for conv_allele, allele_s in zip(conv_alleles, alleles_s):
+        for pep_len in range(args.peptide_min_len, args.peptide_max_len + 1):
             model_name = f"{conv_allele}_{pep_len}"
             availibility = check_model_availability(model_name, args.method)
             allele_availability.append([allele_s, pep_len, model_name, availibility])
 
-    allele_availability = pd.DataFrame(allele_availability, columns=["Allele", "Peptide_Length", "Allele_Model", "Availability"])
+    allele_availability = pd.DataFrame(
+        allele_availability, columns=["Allele", "Peptide_Length", "Allele_Model", "Availability"]
+    )
 
     # Drop all non available models
     allele_availability = allele_availability[allele_availability["Availability"]]
@@ -105,4 +112,6 @@ def main():
     allele_availability = allele_availability[allele_availability["Peptide_Length"].isin(len_intersect)]
 
     allele_availability.to_csv(args.output, sep="\t", index=False)
+
+
 main()

@@ -65,7 +65,9 @@ def parse_args(args=None):
         help="Output file containing: protein_id, protein_length.",
     )
 
-    parser.add_argument("-pll", "--peptide_lengths", required=True, metavar="LIST", nargs="*", help="Peptide lengths as list.")
+    parser.add_argument(
+        "-pll", "--peptide_lengths", required=True, metavar="LIST", nargs="*", help="Peptide lengths as list."
+    )
     return parser.parse_args(args)
 
 
