@@ -180,7 +180,7 @@ workflow PROCESS_INPUT {
             ch_weights.dump(tag:"weights")
 
     emit:
-    peptide_lengths         = peptide_lengths.collect()
+    peptide_lengths
     ch_taxa_input
     ch_proteins_input
     ch_nucl_input
