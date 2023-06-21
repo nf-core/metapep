@@ -34,12 +34,13 @@ workflow PROCESS_INPUT {
             }.unique().collect()
 
         // Get peptide lengths which are not supported and warn the user that they are omitted from analysis
-        excluded_pep_lengths = ( peptide_lengths.minus(unified_pep_lens) ).flatten()
+        peptide_lengths.minus(unified_pep_lens)
+            .flatten()
+            .map{
+                it -> log.warn("There is no model for at least one allele and peptide length ${it}. This peptide length will be omitted for all alleles.\n"+
+                                "      For more information what models were used for which allele check '$params.outdir/pipeline_info/unified_allele_models.tsv'")
+            }
 
-        excluded_pep_lengths.map{
-            it -> log.warn("There is no model for at least one allele and peptide length ${it}. This peptide length will be omitted for all alleles.\n"+
-                            "      For more information what models were used for which allele check '$params.outdir/pipeline_info/unified_allele_models.tsv'")
-        }
         // Use unified lengths for further analysis
         peptide_lengths = unified_pep_lens
     }
@@ -179,7 +180,7 @@ workflow PROCESS_INPUT {
             ch_weights.dump(tag:"weights")
 
     emit:
-    peptide_lengths
+    peptide_lengths         = peptide_lengths.collect()
     ch_taxa_input
     ch_proteins_input
     ch_nucl_input
