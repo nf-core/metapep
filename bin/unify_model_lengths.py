@@ -113,5 +113,5 @@ def main():
 
     allele_availability.to_csv(args.output, sep="\t", index=False)
 
-
-main()
+if __name__ == "__main__":
+    main()
