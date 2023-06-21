@@ -230,7 +230,7 @@ def process_samplesheet(args):
     for allele in unique_alleles:
         if not Allele(allele) in predictor.supportedAlleles:
             sys.exit(
-                "The chosen allele: "
+                "\n\n\n\nThe chosen allele: "
                 + allele
                 + " is not available for the chosen prediction method: "
                 + args.prediction_method
@@ -250,7 +250,7 @@ def process_samplesheet(args):
             checked_pep_lens.remove(pep_len)
         if not pep_len in predictor.supportedLength:
             sys.exit(
-                "The chosen lengths: "
+                "\n\n\n\nThe chosen lengths: "
                 + ", ".join([str(i) for i in checked_pep_lens])
                 + " are not available for the chosen prediction method: "
                 + str(args.prediction_method)
