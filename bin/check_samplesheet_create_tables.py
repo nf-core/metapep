@@ -82,7 +82,7 @@ def parse_args(args=None):
         required=True,
         metavar="TUPLE",
         nargs="+",
-        help="Peptide lengths as given in parameters",
+        help="Peptide lengths as given in parameters (min max)",
     )
     return parser.parse_args(args)
 

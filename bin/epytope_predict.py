@@ -245,16 +245,8 @@ def syfpeithi_normalize(predictions):  # SYFPEITHI NORMALIZATION
     for allele, conv_allele in zip(alleles, conv_alleles):
         scored_lengths = {l for l, score in zip(lengths, predictions[allele]) if not pd.isna(score)}
         max_vals = {l: get_allele_model_max_value(conv_allele, l) for l in scored_lengths}
-        unsupported_len = set()
-        for pep_len, val in max_vals.items():
-            if val == None:
-                logging.warning(
-                    f"PREDICTION ({predictor.name} {predictor.version}) - No model was found for allele {allele} with length {pep_len}"
-                )
-                unsupported_len.add(pep_len)
         new_scores = [
-            np.nan if pd.isna(score) or l in unsupported_len else score / max_vals[l]
-            for score, l in zip(predictions[allele], lengths)
+            np.nan if pd.isna(score) else score / max_vals[l] for score, l in zip(predictions[allele], lengths)
         ]
         predictions[allele] = new_scores
 
@@ -309,7 +301,7 @@ try:
         for message in {w.message for w in warnings}:
             logging.warning(f"PREDICTION ({predictor.name} {predictor.version}) - {str(message)}")
 
-    # Add missing alleles as NA values and save alleles to set
+    # Add missing alleles as NA values
     for missing_allele in [str(allele) for allele in alleles if str(allele) not in predictions.columns]:
         logging.warning(
             f"PREDICTION ({predictor.name} {predictor.version}) yielded no results for allele {missing_allele}"
@@ -332,5 +324,5 @@ except PredictorCreationException as e:
     fail(f"Failed to find a predictor based on your specification ('{args.method}' version '{args.method_version}')", 3)
 except PeptidesParseException as e:
     fail(f"The provided input file could not be parsed: {str(e)}", 4)
-# except Exception as e:
-#    fail(f"UNEXPECTED - {e}", 999)
+except Exception as e:
+    fail(f"UNEXPECTED - {e}", 999)
