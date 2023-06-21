@@ -33,8 +33,6 @@ process UNIFY_MODEL_LENGTHS {
         python: \$(python --version | sed 's/Python //g')
         pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
         epytope: \$(echo \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('epytope').version)"))
-        mhcflurry: \$(mhcflurry-predict --version 2>&1 | sed 's/^mhcflurry //; s/ .*\$//')
-        mhcnuggets: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('mhcnuggets').version)")
         syfpeithi: $syfpeithi_version
     END_VERSIONS
     """
