@@ -66,6 +66,12 @@ def parse_args(args=None):
         type=argparse.FileType("w"),
         help="Output file containing: protein_id, protein_length.",
     )
+    parser.add_argument(
+        "-mlld",
+        "--mem_log_level_deep",
+        help="log level for pandas memory usage ('deep' with extra computational costs or None)",
+        default=False,
+        action='store_true')
     return parser.parse_args(args)
 
 
@@ -83,7 +89,10 @@ def gen_peptides(prot_seq, k, prefix):
 
 def main(args=None):
     args = parse_args(args)
-    print_mem = None  # 'deep' (extra computational costs) or None
+    if args.mem_log_level_deep:
+        print_mem = "deep"
+    else:
+        print_mem = None
 
     # Generate peptides in chunks based on initial AA to reduce memory usage
     # valid amino acid codes:

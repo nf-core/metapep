@@ -26,6 +26,7 @@ process SPLIT_PRED_TASKS {
     script:
     def pred_chunk_size       = params.pred_chunk_size
     def proc_chunk_size       = params.proc_chunk_size
+    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     def subsampling = params.sample_n > 0 ? "--sample_n ${params.sample_n}" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \\
@@ -37,6 +38,7 @@ process SPLIT_PRED_TASKS {
                             --max-chunk-size $pred_chunk_size \\
                             --proc-chunk-size $proc_chunk_size \\
                             $subsampling \\
+                            $mem_log_level \\
                             --alleles "$alleles" \\
                             --outdir .
 

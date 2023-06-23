@@ -75,13 +75,22 @@ def parse_args(args=None):
         type=int,
         default=500000,
     )
+    parser.add_argument(
+        "-mlld",
+        "--mem_log_level_deep",
+        help="log level for pandas memory usage ('deep' with extra computational costs or None)",
+        default=False,
+        action='store_true')
 
     return parser.parse_args()
 
 
 def main(args=None):
     args = parse_args(args)
-    print_mem = "deep"  # 'deep' (extra computational costs) or None
+    if args.mem_log_level_deep:
+        print_mem = "deep"
+    else:
+        print_mem = None
 
     now = datetime.datetime.now()
     print("Start date and time : ")

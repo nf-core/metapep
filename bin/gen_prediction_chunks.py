@@ -85,6 +85,13 @@ def parse_args():
         type=int,
         default=500000,
     )
+    parser.add_argument(
+        "-mlld",
+        "--mem_log_level_deep",
+        help="log level for pandas memory usage ('deep' with extra computational costs or None)",
+        default=False,
+        action='store_true')
+
     # parser.add_argument("-sn"    , "--sample_n"                 , help="Number of peptides to subsample for each condition"     , type=int)
     # NOTE subsampling option currently not working in pipeline!
     return parser.parse_args()
@@ -161,7 +168,10 @@ try:
 
     # Print info including memory usage for input DataFrames
     # (Pandas df ~ 3x the size of input data)
-    print_mem = None  # 'deep' (extra computational costs) or None
+    if args.mem_log_level_deep:
+        print_mem = "deep"
+    else:
+        print_mem = None
     print("\nInfo: protein_peptide_occs", flush=True)
     protein_peptide_occs.info(verbose=False, memory_usage=print_mem)
     print("\nInfo: entities_proteins_occs", flush=True)
