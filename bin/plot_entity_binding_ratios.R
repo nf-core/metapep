@@ -22,6 +22,7 @@ library(ggplot2)
 library(data.table)
 library(dplyr)
 library(stringr)
+library(ggpubr)
 
 args = commandArgs(trailingOnly=TRUE)
 binding_rates <- args[1]                # Input file containing: condition_name, binding_rate, entity_weight.
@@ -42,6 +43,7 @@ p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     ggtitle(allele_name) +
     geom_boxplot() +
     geom_jitter(width = 0.2) +
+    stat_compare_means() +
     scale_fill_brewer(palette="Dark2") +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
@@ -54,6 +56,7 @@ p2 <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     xlab("Condition") +
     ggtitle(allele_name) +
     geom_boxplot() +
+    stat_compare_means() +
     scale_fill_brewer(palette="Dark2") +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))

@@ -2,10 +2,10 @@ process PLOT_ENTITY_BINDING_RATIOS {
     label 'cache_lenient'
     label 'process_medium_memory'
 
-    conda "bioconda::bioconductor-alphabeta:1.8.0"
+    conda "conda-forge::r-ggplot2=3.4.2 conda-forge::r-data.table=1.14.8 conda-forge::r-dplyr=1.1.2 conda-forge::r-stringr=1.5.0 conda-forge::r-ggpubr=0.6.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' :
-        'biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-ea91ce9d3f5052e6d1ab53975ea9774ed365996c:5a35843d615168187ed1757a15ea488ee0a0d634-0' :
+        'biocontainers/mulled-v2-ea91ce9d3f5052e6d1ab53975ea9774ed365996c:5a35843d615168187ed1757a15ea488ee0a0d634-0' }"
 
     publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
 
