@@ -27,6 +27,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#55](https://github.com/nf-core/metapep/pull/55),[#73](https://github.com/nf-core/metapep/pull/73) - Updated `PREDICT_EPITOPES` to use latest epytope version (3.3.1) and adjusted the script `predict_epitopes.py` accordingly. Exchanged the container to official epytope container.
 - [#64](https://github.com/nf-core/metapep/pull/64), [#65](https://github.com/nf-core/metapep/pull/65) - Updated the data model figure and using a white background to ensure readability in both dark and light themes.
 - [#76](https://github.com/nf-core/metapep/pull/76) - Restructure and rename `CHECK_INPUT` subworkflow to `PREPROCESS_INPUT` and move some channel logic into the subworkflow. Also `CHECK_SAMPLESHEET` module is renamed to `INPUT_TO_DATAMODEL` to have a more descriptive name and circumvent clashing with the nf-core template.
+- [#79](https://github.com/nf-core/metapep/pull/79) - Containers are changed to match the tool versions
 
 ### `Fixed`
 
