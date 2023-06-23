@@ -270,12 +270,6 @@
                     "enum": ["syfpeithi", "mhcflurry", "mhcnuggets-class-1", "mhcnuggets-class-2"],
                     "fa_icon": "fas fa-cogs"
                 },
-                "pred_chunk_size": {
-                    "type": "integer",
-                    "default": 75000,
-                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs",
-                    "fa_icon": "fas fa-cogs"
-                },
                 "syfpeithi_score_threshold": {
                     "type": "number",
                     "default": 0.5,
@@ -299,18 +293,6 @@
                     "description": "Display supported alleles of all prediction methods and exit.",
                     "fa_icon": "fas fa-question-circle"
                 },
-                "proc_chunk_size": {
-                    "type": "integer",
-                    "default": 7500000,
-                    "description": "Limits the number of peptides processed at once in the SPLIT_PRED_TASKS process and thus the memory footprint of the process. This parameter does not affect the pred_chunk_size parameter.",
-                    "fa_icon": "fas fa-cogs"
-                },
-                "ds_prep_chunk_size": {
-                    "type": "integer",
-                    "default": 7500000,
-                    "description": "Limits the number of peptide_ids or predictions processed at once in the downstream processes and thus the memory footprint of these processes.",
-                    "fa_icon": "fas fa-cogs"
-                },
                 "prodigal_mode": {
                     "type": "string",
                     "default": "meta",
@@ -322,6 +304,18 @@
                     "description": "Memory usage output \"deep\" for pandas script for more detailed calculation of memory usage (needs more resources).",
                     "hidden": true,
                     "fa_icon": "fas fa-align-justify"
+                },
+                "chunk_size": {
+                    "type": "integer",
+                    "default": 75000,
+                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs is scaled up for downstream processes by chunk_size_scaling parameter.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "chunk_size_scaling": {
+                    "type": "integer",
+                    "default": 100,
+                    "description": "Scaling factor for chunk size in downstream processes.",
+                    "fa_icon": "fas fa-cogs"
                 }
             }
         }

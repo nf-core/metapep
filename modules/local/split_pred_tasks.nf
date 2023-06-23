@@ -24,8 +24,8 @@ process SPLIT_PRED_TASKS {
     path "versions.yml",    emit:   versions
 
     script:
-    def pred_chunk_size       = params.pred_chunk_size
-    def proc_chunk_size       = params.proc_chunk_size
+    def pred_chunk_size       = params.chunk_size
+    def proc_chunk_size       = params.chunk_size * params.chunk_size_scaling
     def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     def subsampling = params.sample_n > 0 ? "--sample_n ${params.sample_n}" : ""
     """
