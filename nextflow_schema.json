@@ -308,13 +308,13 @@
                 "chunk_size": {
                     "type": "integer",
                     "default": 75000,
-                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs is scaled up for downstream processes by chunk_size_scaling parameter.",
+                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs is scaled up for downstream and upstream processes by chunk_size_scaling parameter.",
                     "fa_icon": "fas fa-cogs"
                 },
                 "chunk_size_scaling": {
                     "type": "integer",
                     "default": 100,
-                    "description": "Scaling factor for chunk size in downstream processes.",
+                    "description": "Scaling factor for chunk size in up- and downstream processes (from `PREDICT_EPITOPES`).",
                     "fa_icon": "fas fa-cogs"
                 }
             }
