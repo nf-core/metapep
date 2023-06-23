@@ -80,7 +80,8 @@ def parse_args(args=None):
         "--mem_log_level_deep",
         help="log level for pandas memory usage ('deep' with extra computational costs or None)",
         default=False,
-        action='store_true')
+        action="store_true",
+    )
 
     return parser.parse_args()
 

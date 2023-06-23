@@ -90,7 +90,8 @@ def parse_args():
         "--mem_log_level_deep",
         help="log level for pandas memory usage ('deep' with extra computational costs or None)",
         default=False,
-        action='store_true')
+        action="store_true",
+    )
 
     # parser.add_argument("-sn"    , "--sample_n"                 , help="Number of peptides to subsample for each condition"     , type=int)
     # NOTE subsampling option currently not working in pipeline!
