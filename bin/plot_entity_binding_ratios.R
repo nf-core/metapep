@@ -18,23 +18,45 @@
 #
 ####################################################################################################
 
+library(optparse)
 library(ggplot2)
 library(data.table)
 library(dplyr)
 library(stringr)
 library(ggpubr)
 
-args = commandArgs(trailingOnly=TRUE)
-binding_rates <- args[1]                # Input file containing: condition_name, binding_rate, entity_weight.
-args_alleles <- args[2]                      # Input file containing: allele_id, allele_namee
-allele_id <- args[3]                    # allele_id
+# Parse command line arguments
+option_list <- list(
+    make_option(c("-r", "--ratios"     ), type="character", default=NULL    , metavar="path"   , help="Input file containing the precomputed binding ratios: condition_name, binding_rate, entity_weight."),
+    make_option(c("-a", "--alleles"    ), type="character", default=NULL    , metavar="path"   , help="Alleles input file: allele_id, allele_name."                                                       ),
+    make_option(c("-i", "--allele_id"  ), type="integer"  , default=0       , metavar="integer", help="Allele ID."                                                                                        ),
+    make_option(c("-t", "--show_pvalue"), type="logical"  , default=FALSE   , metavar="boolean", help="Enable mean comparison and show p-value."                                                          )
+)
 
-data <- fread(binding_rates)
-alleles <- fread(args_alleles)
-match <- (alleles$allele_id == allele_id)
+opt_parser <- OptionParser(option_list=option_list)
+opt        <- parse_args(opt_parser)
+
+if (is.null(opt$ratios)){
+    print_help(opt_parser)
+    stop("Please provide the input file containing the precomputed binding ratios.", call.=FALSE)
+}
+if (is.null(opt$alleles)){
+    print_help(opt_parser)
+    stop("Please provide the alleles input file.", call.=FALSE)
+}
+if (is.null(opt$allele_id)){
+    print_help(opt_parser)
+    stop("Please provide the allele id.", call.=FALSE)
+}
+
+# Process data
+data <- fread(opt$ratios)
+alleles <- fread(opt$alleles)
+match <- (alleles$allele_id == opt$allele_id)
 allele_name <- alleles[match, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
+
 
 data$condition_name <- as.factor(data$condition_name)
 p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
@@ -43,7 +65,7 @@ p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     ggtitle(allele_name) +
     geom_boxplot() +
     geom_jitter(width = 0.2) +
-    stat_compare_means() +
+    {if(opt$show_pvalue) stat_compare_means()} +
     scale_fill_brewer(palette="Dark2") +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
@@ -56,7 +78,7 @@ p2 <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     xlab("Condition") +
     ggtitle(allele_name) +
     geom_boxplot() +
-    stat_compare_means() +
+    {if(opt$show_pvalue) stat_compare_means()} +
     scale_fill_brewer(palette="Dark2") +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))

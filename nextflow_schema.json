@@ -300,6 +300,10 @@
                     "default": 7500000,
                     "description": "Limits the number of peptide_ids or predictions processed at once in the downstream processes and thus the memory footprint of these processes."
                 },
+                "show_pvalue": {
+                    "type": "boolean",
+                    "description": "Display mean comparison p-values to boxplots."
+                },
                 "prodigal_mode": {
                     "type": "string",
                     "default": "meta",

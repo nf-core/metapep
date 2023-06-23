@@ -18,14 +18,16 @@ process PLOT_ENTITY_BINDING_RATIOS {
     path "versions.yml",                    emit:   versions
 
     script:
+    def handle_pvalue = params.show_pvalue ? "-t TRUE" : "-t FALSE"
     """
     [[ ${prep_entity_binding_ratios} =~ entity_binding_ratios.allele_(.*).tsv ]];
     allele_id="\${BASH_REMATCH[1]}"
     echo \$allele_id
 
     plot_entity_binding_ratios.R \\
-        $prep_entity_binding_ratios \\
-        $alleles \\
+        -r $prep_entity_binding_ratios \\
+        -a $alleles \\
+        $handle_pvalue \\
         \$allele_id
 
     cat <<-END_VERSIONS > versions.yml
