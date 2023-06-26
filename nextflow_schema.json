@@ -253,11 +253,6 @@
                     "default": 11,
                     "description": "Maximum length of produced peptides."
                 },
-                "sample_n": {
-                    "type": "integer",
-                    "default": 0,
-                    "description": "Number of peptides to subsample for epitope prediction."
-                },
                 "pred_method": {
                     "type": "string",
                     "default": "syfpeithi",
