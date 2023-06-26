@@ -3,10 +3,11 @@ process SPLIT_PRED_TASKS {
     label 'process_high_memory'
     label 'cache_lenient'
 
-    conda "conda-forge::pandas=1.4.3"
+    conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/pandas:1.4.3' :
-        'biocontainers/pandas:1.4.3' }"
+        'https://depot.galaxyproject.org/singularity/pandas:1.5.2' :
+        'biocontainers/pandas:1.5.2' }"
+
 
     input:
     path(peptides            )
