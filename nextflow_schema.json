@@ -308,7 +308,7 @@
                 "chunk_size": {
                     "type": "integer",
                     "default": 75000,
-                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs is scaled up for downstream and upstream processes by chunk_size_scaling parameter.",
+                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs. Is scaled up by `chunk_size_scaling` parameter and used in downstream and upstream processes as well (e.g. for internal processing of peptide_id chunks in python scripts to reduce memory usage) .",
                     "fa_icon": "fas fa-cogs"
                 },
                 "chunk_size_scaling": {
