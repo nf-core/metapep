@@ -69,7 +69,7 @@ def parse_args(args=None):
     parser.add_argument(
         "-mlld",
         "--mem_log_level_deep",
-        help="log level for pandas memory usage ('deep' with extra computational costs or None)",
+        help="Enable 'deep' option for pandas memory usage output ('deep' enables accurate usage values, but increases runtime). Default: None. ",
         default=False,
         action="store_true",
     )

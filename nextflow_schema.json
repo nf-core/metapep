@@ -301,7 +301,7 @@
                 },
                 "memory_usage_log_deep": {
                     "type": "boolean",
-                    "description": "Memory usage output \"deep\" for pandas script for more detailed calculation of memory usage (needs more resources).",
+                    "description": "Enables \"deep\" memory usage output for main DataFrames generated in pandas scripts (\"deep\" ensures accurate usage values, but slightly increases runtime).",
                     "hidden": true,
                     "fa_icon": "fas fa-align-justify"
                 },
@@ -314,7 +314,7 @@
                 "chunk_size_scaling": {
                     "type": "integer",
                     "default": 100,
-                    "description": "Scaling factor for chunk size in up- and downstream processes (from `PREDICT_EPITOPES`).",
+                    "description": "Scaling factor for `chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
                     "fa_icon": "fas fa-cogs"
                 }
             }
