@@ -39,7 +39,7 @@ workflow PROCESS_INPUT {
                 it ->
                 input_peptide_lengths = (params.min_pep_len..params.max_pep_len).toList()
                 if (it != input_peptide_lengths){
-                    log.warn "There is no model for at least one allele and peptide lengths ${input_peptide_lengths.minus(it).join(", ")}. This/These peptide length(s) will be omitted for all alleles."
+                    log.warn "There is no model for at least one allele and peptide length(s) ${input_peptide_lengths.minus(it).join(", ")}. This/These peptide length(s) will be omitted for all alleles."
                     log.warn "For more information what models were used for which allele check '$params.outdir/pipeline_info/unified_allele_models.tsv'"
                 }
             }
