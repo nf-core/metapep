@@ -28,6 +28,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#64](https://github.com/nf-core/metapep/pull/64), [#65](https://github.com/nf-core/metapep/pull/65) - Updated the data model figure and using a white background to ensure readability in both dark and light themes.
 - [#76](https://github.com/nf-core/metapep/pull/76) - Restructure and rename `CHECK_INPUT` subworkflow to `PREPROCESS_INPUT` and move some channel logic into the subworkflow. Also `CHECK_SAMPLESHEET` module is renamed to `INPUT_TO_DATAMODEL` to have a more descriptive name and circumvent clashing with the nf-core template.
 - [#79](https://github.com/nf-core/metapep/pull/79) - Replaced multi-package BioContainers by single-package pandas BioContainer and updated containers with old pandas versions
+- [#82](https://github.com/nf-core/metapep/pull/82) - Add label `error_retry` to process `DOWNLOAD_PROTEINS`
 
 ### `Fixed`
 
