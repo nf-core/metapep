@@ -1,6 +1,7 @@
 process DOWNLOAD_PROTEINS {
     tag "$microbiome_ids"
     label 'process_low'
+    label 'error_retry'
 
     conda "conda-forge::biopython=1.78"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
