@@ -27,7 +27,6 @@ process SPLIT_PRED_TASKS {
     script:
     def pred_chunk_size       = params.pred_chunk_size
     def proc_chunk_size       = params.proc_chunk_size
-    def subsampling = params.sample_n > 0 ? "--sample_n ${params.sample_n}" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -37,7 +36,6 @@ process SPLIT_PRED_TASKS {
                             --condition-allele-map "$conditions_alleles" \\
                             --max-chunk-size $pred_chunk_size \\
                             --proc-chunk-size $proc_chunk_size \\
-                            $subsampling \\
                             --alleles "$alleles" \\
                             --outdir .
 

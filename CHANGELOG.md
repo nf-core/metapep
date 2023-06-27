@@ -44,6 +44,8 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 
 ### `Deprecated`
 
+- [#81](https://github.com/nf-core/metapep/pull/81) - Removed subsampling option
+
 ## v0.9dev - [date]
 
 Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/) template.
