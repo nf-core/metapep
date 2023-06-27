@@ -19,11 +19,13 @@ process GENERATE_PEPTIDES {
     //file "proteins_lengths.tsv"
 
     script:
+    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     generate_peptides.py -i $proteins \\
                         -p "peptides.tsv.gz" \\
                         -pp "proteins_peptides.tsv" \\
                         -l "proteins_lengths.tsv" \\
+                        $mem_log_level \\
                         -pll ${peptide_lengths.join(" ")}
 
     cat <<-END_VERSIONS > versions.yml

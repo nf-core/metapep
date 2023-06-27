@@ -91,6 +91,13 @@ def parse_args(args=None):
         type=float,
         default=0.426,
     )
+    parser.add_argument(
+        "-mlld",
+        "--mem_log_level_deep",
+        help="Enable 'deep' option for pandas memory usage output ('deep' enables accurate usage values, but increases runtime). Default: None. ",
+        default=False,
+        action="store_true",
+    )
 
     return parser.parse_args()
 
@@ -152,7 +159,10 @@ def main(args=None):
     alleles = pd.read_csv(args.alleles, sep="\t")
     alleles["allele_id"] = pd.to_numeric(alleles["allele_id"], downcast="unsigned")
 
-    print_mem = "deep"  # 'deep' (extra computational costs) or None
+    if args.mem_log_level_deep:
+        print_mem = "deep"
+    else:
+        print_mem = None
 
     print("\nInfo: predictions", flush=True)
     predictions.info(verbose=False, memory_usage=print_mem)

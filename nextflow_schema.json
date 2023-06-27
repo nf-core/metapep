@@ -237,73 +237,79 @@
             "properties": {
                 "ncbi_key": {
                     "type": "string",
-                    "description": "Required for downloading proteins from ncbi."
+                    "description": "Required for downloading proteins from ncbi.",
+                    "fa_icon": "fas fa-id-card"
                 },
                 "ncbi_email": {
                     "type": "string",
-                    "description": "Required for downloading proteins from ncbi."
+                    "description": "Required for downloading proteins from ncbi.",
+                    "fa_icon": "fas fa-id-card"
                 },
                 "min_pep_len": {
                     "type": "integer",
                     "default": 9,
-                    "description": "Minimum length of produced peptides."
+                    "description": "Minimum length of produced peptides.",
+                    "fa_icon": "fas fa-cogs"
                 },
                 "max_pep_len": {
                     "type": "integer",
                     "default": 11,
-                    "description": "Maximum length of produced peptides."
-                },
-                "sample_n": {
-                    "type": "integer",
-                    "default": 0,
-                    "description": "Number of peptides to subsample for epitope prediction."
+                    "description": "Maximum length of produced peptides.",
+                    "fa_icon": "fas fa-cogs"
                 },
                 "pred_method": {
                     "type": "string",
                     "default": "syfpeithi",
                     "description": "Epitope prediction method to use",
-                    "enum": ["syfpeithi", "mhcflurry", "mhcnuggets-class-1", "mhcnuggets-class-2"]
-                },
-                "pred_chunk_size": {
-                    "type": "integer",
-                    "default": 75000,
-                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs"
+                    "enum": ["syfpeithi", "mhcflurry", "mhcnuggets-class-1", "mhcnuggets-class-2"],
+                    "fa_icon": "fas fa-cogs"
                 },
                 "syfpeithi_score_threshold": {
                     "type": "number",
                     "default": 0.5,
                     "description": "Threshold for binder/non-binder calling when using SYFPEITHI epitope prediction method.",
-                    "minimum": 0.0,
-                    "maximum": 1.0,
-                    "hidden": true
+                    "minimum": 0,
+                    "maximum": 1,
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
                 },
                 "mhcflurry_mhcnuggets_score_threshold": {
                     "type": "number",
                     "default": 0.426,
-                    "description": "Threshold for binder/non-binder calling when using MHCflurry or MHCnuggets epitope prediction methods. The default value of 0.426 corresponds to an IC50 of ≤500.",
-                    "minimum": 0.0,
-                    "maximum": 1.0,
-                    "hidden": true
+                    "description": "Threshold for binder/non-binder calling when using MHCflurry or MHCnuggets epitope prediction methods. The default value of 0.426 corresponds to an IC50 of \u2264500.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
                 },
                 "show_supported_models": {
                     "type": "boolean",
                     "description": "Display supported alleles of all prediction methods and exit.",
                     "fa_icon": "fas fa-question-circle"
                 },
-                "proc_chunk_size": {
-                    "type": "integer",
-                    "default": 7500000,
-                    "description": "Limits the number of peptides processed at once in the SPLIT_PRED_TASKS process and thus the memory footprint of the process. This parameter does not affect the pred_chunk_size parameter."
-                },
-                "ds_prep_chunk_size": {
-                    "type": "integer",
-                    "default": 7500000,
-                    "description": "Limits the number of peptide_ids or predictions processed at once in the downstream processes and thus the memory footprint of these processes."
-                },
                 "prodigal_mode": {
                     "type": "string",
                     "default": "meta",
-                    "description": "Prodigal mode, 'meta' or 'single'."
+                    "description": "Prodigal mode, 'meta' or 'single'.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "memory_usage_log_deep": {
+                    "type": "boolean",
+                    "description": "Enables \"deep\" memory usage output for main DataFrames generated in pandas scripts (\"deep\" ensures accurate usage values, but slightly increases runtime).",
+                    "hidden": true,
+                    "fa_icon": "fas fa-align-justify"
+                },
+                "chunk_size": {
+                    "type": "integer",
+                    "default": 75000,
+                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs. Is scaled up by `chunk_size_scaling` parameter and used in downstream and upstream processes as well (e.g. for internal processing of peptide_id chunks in python scripts to reduce memory usage) .",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "chunk_size_scaling": {
+                    "type": "integer",
+                    "default": 100,
+                    "description": "Scaling factor for `chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
+                    "fa_icon": "fas fa-cogs"
                 }
             }
         }

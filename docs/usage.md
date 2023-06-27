@@ -81,7 +81,9 @@ You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-c
 
 ### Memory considerations
 
-The pipeline needs to handle large amounts of data, depending on the size and number of microbiomes the user has defined in the input. To handle these data the pipeline mainly uses python scripts and the python module pandas. As the data needs to be compared memory consumption is currently peaking at around 150 GB for the full-size test, but can easily be higher depending on the input. If the memory is still an issue one can try to reduce the chunk sizes for high memory consuming processes. The parameters are: `--proc_chunk_size` for the preprocessing of the peptides prior to the epitope prediction in `SPLIT_PRED_TASKS`, `--pred_chunk_size` for the epitope prediction process `PREDICT_EPITOPES` and `--ds_prep_chunk_size` for the downstream analysis processes `PREPARE_ENTITY_BINDING_RATIOS` and `PREPARE_SCORE_DISTRIBUTION`.
+The pipeline needs to handle large amounts of data, depending on the size and number of microbiomes the user has defined in the input. To handle these data the pipeline mainly uses python scripts and the python module pandas. As the data needs to be compared memory consumption is currently peaking at around 150 GB for the full-size test, but can easily be higher depending on the input.
+
+If the memory is still an issue one can try to reduce the chunk sizes for high memory consuming processes. The parameters are: `--chunk_size <INTEGER>` and the scaling factor `--chunk_size_scaling <INTEGER>` which are used for the preprocessing of the peptides prior to the epitope prediction in `SPLIT_PRED_TASKS` and the downstream processes `MERGE_PREDICTIONS`, `PREPARE_ENTITY_BINDING_RATIOS` and `PREPARE_SCORE_DISTRIBUTION`. For for the epitope prediction process `PREDICT_EPITOPES` the chunk size equals the unscaled parameter `--chunk_size <INTEGER>`.
 
 ### Supported allele models
 
