@@ -257,12 +257,6 @@
                     "description": "Maximum length of produced peptides.",
                     "fa_icon": "fas fa-cogs"
                 },
-                "sample_n": {
-                    "type": "integer",
-                    "default": 0,
-                    "description": "Number of peptides to subsample for epitope prediction.",
-                    "fa_icon": "fas fa-cogs"
-                },
                 "pred_method": {
                     "type": "string",
                     "default": "syfpeithi",

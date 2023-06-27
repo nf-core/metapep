@@ -93,8 +93,6 @@ def parse_args():
         action="store_true",
     )
 
-    # parser.add_argument("-sn"    , "--sample_n"                 , help="Number of peptides to subsample for each condition"     , type=int)
-    # NOTE subsampling option currently not working in pipeline!
     return parser.parse_args()
 
 
