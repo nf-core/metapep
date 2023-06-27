@@ -22,7 +22,8 @@ process PREPARE_SCORE_DISTRIBUTION {
     path "versions.yml"                  , emit: versions
 
     script:
-    def chunk_size = params.ds_prep_chunk_size
+    def chunk_size            = params.chunk_size * params.chunk_size_scaling
+    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     prepare_score_distribution.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -32,6 +33,7 @@ process PREPARE_SCORE_DISTRIBUTION {
                             --condition-allele-map "$conditions_alleles" \\
                             --alleles "$alleles" \\
                             --chunk-size $chunk_size \\
+                            $mem_log_level \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml

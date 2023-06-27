@@ -22,9 +22,10 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     path "versions.yml"                      , emit: versions
 
     script:
-    def chunk_size = params.ds_prep_chunk_size
+    def chunk_size                = params.chunk_size * params.chunk_size_scaling
     def syfpeithi_score_threshold = params.syfpeithi_score_threshold
     def mhcf_mhcn_score_threshold = params.mhcflurry_mhcnuggets_score_threshold
+    def mem_log_level             = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     prepare_entity_binding_ratios.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -37,6 +38,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
                             --chunk-size $chunk_size \\
                             --syfpeithi_score_threshold $syfpeithi_score_threshold \\
                             --mhcf_mhcn_score_threshold $mhcf_mhcn_score_threshold \\
+                            $mem_log_level \\
                             --outdir .
 
     cat <<-END_VERSIONS > versions.yml

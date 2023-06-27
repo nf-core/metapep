@@ -18,7 +18,7 @@ process MERGE_PREDICTIONS_BUFFER {
     path "versions.yml",                        emit: versions
 
     script:
-    def chunk_size = params.ds_prep_chunk_size
+    def chunk_size = params.chunk_size * params.chunk_size_scaling
     """
     [[ ${predictions[0]} =~  peptides_(.*)_predictions.tsv ]];
     uname="\${BASH_REMATCH[1]}"

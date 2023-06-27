@@ -18,15 +18,17 @@ process GENERATE_PEPTIDES {
     //file "proteins_lengths.tsv"
 
     script:
-    def min_pep_len = params.min_pep_len
-    def max_pep_len = params.max_pep_len
+    def min_pep_len           = params.min_pep_len
+    def max_pep_len           = params.max_pep_len
+    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     generate_peptides.py -i $proteins \\
                         -min $min_pep_len \\
                         -max $max_pep_len \\
                         -p "peptides.tsv.gz" \\
                         -pp "proteins_peptides.tsv" \\
-                        -l "proteins_lengths.tsv"
+                        -l "proteins_lengths.tsv" \\
+                        $mem_log_level
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

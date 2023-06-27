@@ -25,8 +25,9 @@ process SPLIT_PRED_TASKS {
     path "versions.yml",    emit:   versions
 
     script:
-    def pred_chunk_size       = params.pred_chunk_size
-    def proc_chunk_size       = params.proc_chunk_size
+    def pred_chunk_size       = params.chunk_size
+    def proc_chunk_size       = params.chunk_size * params.chunk_size_scaling
+    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -36,6 +37,7 @@ process SPLIT_PRED_TASKS {
                             --condition-allele-map "$conditions_alleles" \\
                             --max-chunk-size $pred_chunk_size \\
                             --proc-chunk-size $proc_chunk_size \\
+                            $mem_log_level \\
                             --alleles "$alleles" \\
                             --outdir .
 
