@@ -34,11 +34,14 @@ workflow PROCESS_INPUT {
             }.unique().collect()
 
         // Get peptide lengths which are not supported and warn the user that they are omitted from analysis
-        peptide_lengths.minus(unified_pep_lens)
-            .flatten()
+        unified_pep_lens
             .map{
-                it -> log.warn("There is no model for at least one allele and peptide length ${it}. This peptide length will be omitted for all alleles.\n"+
-                                "      For more information what models were used for which allele check '$params.outdir/pipeline_info/unified_allele_models.tsv'")
+                it ->
+                input_peptide_lengths = (params.min_pep_len..params.max_pep_len).toList()
+                if (it != input_peptide_lengths){
+                    log.warn "There is no model for at least one allele and peptide lengths ${input_peptide_lengths.minus(it).join(", ")}. This/These peptide length(s) will be omitted for all alleles."
+                    log.warn "For more information what models were used for which allele check '$params.outdir/pipeline_info/unified_allele_models.tsv'"
+                }
             }
 
         // Use unified lengths for further analysis
