@@ -313,7 +313,8 @@
                 },
                 "hide_pvalue": {
                     "type": "boolean",
-                    "description": "Do not display mean comparison p-values in boxplots."
+                    "description": "Do not display mean comparison p-values in boxplots.",
+                    "fa_icon": "fas fa-cogs"
                 }
             }
         }

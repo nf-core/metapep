@@ -57,7 +57,6 @@ allele_name <- alleles[match, ]$allele_name
 allele_str <- str_replace_all(allele_name, '\\*', '_')
 allele_str <- str_replace_all(allele_str, '\\:', '_')
 
-
 data$condition_name <- as.factor(data$condition_name)
 p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     ylab("Entity-wise binding ratio") +

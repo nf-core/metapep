@@ -18,7 +18,7 @@ process PLOT_ENTITY_BINDING_RATIOS {
     path "versions.yml",                    emit:   versions
 
     script:
-    def handle_pvalue = params.hide_pvalue ? "-d TRUE" : "-d FALSE"
+    def hide_pvalue = params.hide_pvalue ? "TRUE" : "FALSE"
     """
     [[ ${prep_entity_binding_ratios} =~ entity_binding_ratios.allele_(.*).tsv ]];
     allele_id="\${BASH_REMATCH[1]}"
@@ -27,7 +27,7 @@ process PLOT_ENTITY_BINDING_RATIOS {
     plot_entity_binding_ratios.R \\
         -r $prep_entity_binding_ratios \\
         -a $alleles \\
-        $handle_pvalue \\
+       -d $hide_pvalue \\
         -i \$allele_id
 
     cat <<-END_VERSIONS > versions.yml
