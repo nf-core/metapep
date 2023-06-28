@@ -30,7 +30,7 @@ option_list <- list(
     make_option(c("-r", "--ratios"     ), type="character", default=NULL    , metavar="path"   , help="Input file containing the precomputed binding ratios: condition_name, binding_rate, entity_weight."),
     make_option(c("-a", "--alleles"    ), type="character", default=NULL    , metavar="path"   , help="Alleles input file: allele_id, allele_name."                                                       ),
     make_option(c("-i", "--allele_id"  ), type="integer"  , default=0       , metavar="integer", help="Allele ID."                                                                                        ),
-    make_option(c("-t", "--show_pvalue"), type="logical"  , default=FALSE   , metavar="boolean", help="Enable mean comparison and show p-value."                                                          )
+    make_option(c("-d", "--hide_pvalue"), type="logical"  , default=FALSE   , metavar="boolean", help="Disable mean comparison and do not show p-values."                                                          )
 )
 
 opt_parser <- OptionParser(option_list=option_list)
@@ -65,7 +65,7 @@ p <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     ggtitle(allele_name) +
     geom_boxplot() +
     geom_jitter(width = 0.2) +
-    {if(opt$show_pvalue) stat_compare_means()} +
+    {if(!opt$hide_pvalue) stat_compare_means()} +
     scale_fill_brewer(palette="Dark2") +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))
@@ -78,7 +78,7 @@ p2 <- ggplot(data, aes(x=condition_name, y=binding_rate, fill=condition_name)) +
     xlab("Condition") +
     ggtitle(allele_name) +
     geom_boxplot() +
-    {if(opt$show_pvalue) stat_compare_means()} +
+    {if(!opt$hide_pvalue) stat_compare_means()} +
     scale_fill_brewer(palette="Dark2") +
     theme_classic() +
     theme(legend.position="none", plot.title = element_text(hjust = 0.5))

@@ -311,9 +311,9 @@
                     "description": "Scaling factor for `chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
                     "fa_icon": "fas fa-cogs"
                 },
-                "show_pvalue": {
+                "hide_pvalue": {
                     "type": "boolean",
-                    "description": "Display mean comparison p-values to boxplots."
+                    "description": "Do not display mean comparison p-values in boxplots."
                 }
             }
         }
