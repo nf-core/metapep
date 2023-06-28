@@ -27,7 +27,7 @@ process PLOT_ENTITY_BINDING_RATIOS {
     plot_entity_binding_ratios.R \\
         -r $prep_entity_binding_ratios \\
         -a $alleles \\
-       -d $hide_pvalue \\
+        -d $hide_pvalue \\
         -i \$allele_id
 
     cat <<-END_VERSIONS > versions.yml
