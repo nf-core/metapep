@@ -54,7 +54,8 @@ process CHECK_SAMPLESHEET_CREATE_TABLES {
         -a alleles.tsv \\
         -ca conditions_alleles.tsv \\
         -pm $params.pred_method \\
-        -pmv \$pred_method_version
+        -pmv \$pred_method_version \\
+        -pl $params.min_pep_len $params.max_pep_len
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

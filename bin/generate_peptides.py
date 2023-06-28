@@ -45,8 +45,6 @@ def parse_args(args=None):
         metavar="FILE",
         help="Compressed TSV file containing: protein_id, protein_sequence.",
     )
-    parser.add_argument("-min", "--min_len", required=True, metavar="N", type=int, help="Min. peptide length.")
-    parser.add_argument("-max", "--max_len", required=True, metavar="N", type=int, help="Max. peptide length.")
     parser.add_argument(
         "-p", "--peptides", required=True, metavar="FILE", help="Output file containing: peptide_id, peptide_sequence."
     )  # use str type to allow compression of output
@@ -72,6 +70,10 @@ def parse_args(args=None):
         help="Enable 'deep' option for pandas memory usage output ('deep' enables accurate usage values, but increases runtime). Default: None. ",
         default=False,
         action="store_true",
+    )
+
+    parser.add_argument(
+        "-pll", "--peptide_lengths", required=True, metavar="LIST", nargs="*", help="Peptide lengths as list."
     )
     return parser.parse_args(args)
 
@@ -148,6 +150,9 @@ def main(args=None):
     # write out protein lengths
     protid_protseq_protlen[["protein_id", "protein_length"]].to_csv(args.proteins_lengths, sep="\t", index=False)
 
+    # Parse peptide_lengths input list to int
+    peptide_lengths_int = [int(p_len) for p_len in args.peptide_lengths]
+
     ####################
     # generate peptides
     with gzip.open(args.peptides, "wt") as pep_handle:
@@ -155,7 +160,7 @@ def main(args=None):
         id_counter = 0
 
         # for each k
-        for k in range(args.min_len, args.max_len + 1):
+        for k in peptide_lengths_int:
             print("Generate peptides of length ", k, " ...", flush=True)
 
             # Note: could be done with prefixes instead of single first letters if this remains bottleneck

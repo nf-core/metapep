@@ -12,6 +12,7 @@ import argparse
 import pandas as pd
 from epytope.Core import Allele
 from epytope.EpitopePrediction import EpitopePredictorFactory
+import epytope
 
 
 def parse_args(args=None):
@@ -74,6 +75,14 @@ def parse_args(args=None):
         metavar="STRING",
         type=str,
         help="Chosen version of epitope prediction method",
+    )
+    parser.add_argument(
+        "-pl",
+        "--peptide_lengths",
+        required=True,
+        metavar="TUPLE",
+        nargs="+",
+        help="Peptide lengths as given in parameters (min max)",
     )
     return parser.parse_args(args)
 
@@ -214,19 +223,40 @@ def process_samplesheet(args):
     # allele id - allele name
     unique_alleles = {allele for allele_list in input_table["alleles"] for allele in allele_list.split(" ")}
 
-    # Check if alleles are supported by chosen predictor
-    # Need Parameter for prediction method version
+    # Check if alleles are supported by chosen predictor and check if tool generally supports chosen lengths
+
+    # TODO Parameter for prediction method version
     predictor = EpitopePredictorFactory(args.prediction_method, version=args.pred_method_version)
     for allele in unique_alleles:
         if not Allele(allele) in predictor.supportedAlleles:
             sys.exit(
-                "The chosen allele: "
+                "\n\n\n\nThe chosen allele: "
                 + allele
                 + " is not available for the chosen prediction method: "
                 + args.prediction_method
                 + ":"
                 + args.pred_method_version
                 + "\n\nFurther information on which allele is supported for "
+                + "which prediction method can be found when running: "
+                + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
+            )
+
+    # Check if peptide lengths are listed as supported for the allele model by epytope:
+    # Note in some cases for individual alleles certain lengths are not supported, which is not captured here
+    peptide_lengths = range(int(args.peptide_lengths[0]), int(args.peptide_lengths[1]) + 1)
+    checked_pep_lens = set(peptide_lengths)
+    for pep_len in peptide_lengths:
+        if pep_len in predictor.supportedLength:
+            checked_pep_lens.remove(pep_len)
+        if not pep_len in predictor.supportedLength:
+            sys.exit(
+                "\n\n\n\nThe chosen lengths: "
+                + ", ".join([str(i) for i in checked_pep_lens])
+                + " are not available for the chosen prediction method: "
+                + str(args.prediction_method)
+                + ":"
+                + str(args.pred_method_version)
+                + "\n\nFurther information on which peptide lengths are supported for "
                 + "which prediction method can be found when running: "
                 + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
             )

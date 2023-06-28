@@ -17,6 +17,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
   [#78](https://github.com/nf-core/metapep/pull/78) - Added parameter `memory_usage_log_deep` for pandas memory usage logging.
   [#78](https://github.com/nf-core/metapep/pull/78) - Added a global chunk size parameter `chunk_size` as well as a scaling parameter `chunk_size_scaling`.
 - [#70](https://github.com/nf-core/metapep/pull/70) - Added check for supported models and functionality to output all supported models.
+- [#75](https://github.com/nf-core/metapep/pull/75) - Peptide lengths are checked if supported generally and unified if models are not available in `UNIFY_MODEL_LENGTHS`
 
 ### `Changed`
 
