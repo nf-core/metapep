@@ -3,7 +3,8 @@
 //
 
 include { CHECK_SAMPLESHEET_CREATE_TABLES   } from '../../modules/local/check_samplesheet_create_tables'
-include { UNPACK_BIN_ARCHIVES } from '../../modules/local/unpack_bin_archives'
+include { UNPACK_BIN_ARCHIVES               } from '../../modules/local/unpack_bin_archives'
+include { UNIFY_MODEL_LENGTHS               } from '../../modules/local/unify_model_lengths'
 
 workflow PROCESS_INPUT {
     take:
@@ -14,6 +15,38 @@ workflow PROCESS_INPUT {
     ch_versions = Channel.empty()
 
     CHECK_SAMPLESHEET_CREATE_TABLES ( samplesheet )
+    ch_versions = ch_versions.mix(CHECK_SAMPLESHEET_CREATE_TABLES.out.versions)
+
+    // Generate list of peptide lengths from min and max peptide length parameter
+    peptide_lengths = Channel.from( params.min_pep_len..params.max_pep_len ).collect()
+
+    // When PSSMs methods are used we can check in epytope if the model exists for the given peptide lengths
+    // Only intersection of allele model lengths are used in further analysis
+    if (params.pred_method == "syfpeithi") {
+        UNIFY_MODEL_LENGTHS (CHECK_SAMPLESHEET_CREATE_TABLES.out.samplesheet_valid)
+        ch_versions = ch_versions.mix(UNIFY_MODEL_LENGTHS.out.versions)
+
+        // Extract supported peptide lengths
+        unified_pep_lens = UNIFY_MODEL_LENGTHS.out.allele_models
+            .splitCsv(sep:'\t', header:true)
+            .map {
+                row -> row.Peptide_Length.toInteger()
+            }.unique().collect()
+
+        // Get peptide lengths which are not supported and warn the user that they are omitted from analysis
+        unified_pep_lens
+            .map{
+                it ->
+                input_peptide_lengths = (params.min_pep_len..params.max_pep_len).toList()
+                if (it != input_peptide_lengths){
+                    log.warn "There is no SYFPEITHI model available for at least one allele and the following peptide length(s): ${input_peptide_lengths.minus(it).join(", ")}. This/These peptide length(s) will be omitted for all alleles specified for this pipeline run."
+                    log.warn "For more information about which peptide lengths were used for which allele check '$params.outdir/pipeline_info/unified_allele_models.tsv'"
+                }
+            }
+
+        // Use unified lengths for further analysis
+        peptide_lengths = unified_pep_lens
+    }
 
     CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
         // Read microbiomes table
@@ -150,6 +183,7 @@ workflow PROCESS_INPUT {
             ch_weights.dump(tag:"weights")
 
     emit:
+    peptide_lengths
     ch_taxa_input
     ch_proteins_input
     ch_nucl_input

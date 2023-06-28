@@ -2,11 +2,11 @@ process MERGE_PREDICTIONS_BUFFER {
     label 'cache_lenient'
     label 'process_medium_memory'
 
-    // TODO generate extra biocontainer with only specifying pandas version (currently mulled container taken from "bedtools=2.23.0,pandas=1.5.2")
     conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mulled-v2-d19e2715c83e4582e3f1fb0a2e473abde8ca636e:fc171b36fc2e2a38a259a1c82a139b59d94c968b-0' :
-        'biocontainers/mulled-v2-d19e2715c83e4582e3f1fb0a2e473abde8ca636e:fc171b36fc2e2a38a259a1c82a139b59d94c968b-0' }"
+        'https://depot.galaxyproject.org/singularity/pandas:1.5.2' :
+        'biocontainers/pandas:1.5.2' }"
+
 
     input:
     path    predictions
@@ -18,7 +18,7 @@ process MERGE_PREDICTIONS_BUFFER {
     path "versions.yml",                        emit: versions
 
     script:
-    def chunk_size = params.ds_prep_chunk_size
+    def chunk_size = params.chunk_size * params.chunk_size_scaling
     """
     [[ ${predictions[0]} =~  peptides_(.*)_predictions.tsv ]];
     uname="\${BASH_REMATCH[1]}"
