@@ -2,10 +2,10 @@ process PLOT_ENTITY_BINDING_RATIOS {
     label 'cache_lenient'
     label 'process_medium_memory'
 
-    conda "bioconda::bioconductor-alphabeta:1.8.0"
+    conda "conda-forge::r-ggplot2=3.4.2 conda-forge::r-data.table=1.14.8 conda-forge::r-dplyr=1.1.2 conda-forge::r-stringr=1.5.0 conda-forge::r-ggpubr=0.6.0 conda-forge::r-optparse=1.7.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' :
-        'biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
+        'https://depot.galaxyproject.org/singularity/mulled-v2-0be74e7b0c2e289bc8098b1491baf4f181012b1c:a1635746bc2c13635cbea8c29bd5a2837bdd7cd5-0' :
+        'biocontainers/mulled-v2-0be74e7b0c2e289bc8098b1491baf4f181012b1c:a1635746bc2c13635cbea8c29bd5a2837bdd7cd5-0' }"
 
     publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
 
@@ -18,15 +18,17 @@ process PLOT_ENTITY_BINDING_RATIOS {
     path "versions.yml",                    emit:   versions
 
     script:
+    def hide_pvalue = params.hide_pvalue ? "TRUE" : "FALSE"
     """
     [[ ${prep_entity_binding_ratios} =~ entity_binding_ratios.allele_(.*).tsv ]];
     allele_id="\${BASH_REMATCH[1]}"
     echo \$allele_id
 
     plot_entity_binding_ratios.R \\
-        $prep_entity_binding_ratios \\
-        $alleles \\
-        \$allele_id
+        -r $prep_entity_binding_ratios \\
+        -a $alleles \\
+        -d $hide_pvalue \\
+        -i \$allele_id
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

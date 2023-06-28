@@ -310,6 +310,11 @@
                     "default": 100,
                     "description": "Scaling factor for `chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
                     "fa_icon": "fas fa-cogs"
+                },
+                "hide_pvalue": {
+                    "type": "boolean",
+                    "description": "Do not display mean comparison p-values in boxplots.",
+                    "fa_icon": "fas fa-cogs"
                 }
             }
         }
