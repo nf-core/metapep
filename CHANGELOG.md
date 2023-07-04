@@ -34,6 +34,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#79](https://github.com/nf-core/metapep/pull/79) - Replaced multi-package BioContainers by single-package pandas BioContainer and updated containers with old pandas versions
 - [#82](https://github.com/nf-core/metapep/pull/82) - Add label `error_retry` to process `DOWNLOAD_PROTEINS`
 
+
 ### `Fixed`
 
 - [#11](https://github.com/nf-core/metapep/pull/11) - Template update for nf-core/tools version 2.3
@@ -44,6 +45,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#58](https://github.com/nf-core/metapep/pull/58) - Ensured deterministic microbiome_id and entity_id assignments.
 - [#62](https://github.com/nf-core/metapep/pull/62) - nf-core module prodigal is updated
 - [#77](https://github.com/nf-core/metapep/pull/77) - Remove unused github workflow files to push dockerimage to dockerhub
+- [#85](https://github.com/nf-core/metapep/pull/85) - Fixed typo in `output.md`: file `unified_allele_modesl.tsv` was in the wrong section
 
 ### `Dependencies`
 
