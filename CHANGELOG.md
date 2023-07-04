@@ -34,7 +34,6 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#79](https://github.com/nf-core/metapep/pull/79) - Replaced multi-package BioContainers by single-package pandas BioContainer and updated containers with old pandas versions
 - [#82](https://github.com/nf-core/metapep/pull/82) - Add label `error_retry` to process `DOWNLOAD_PROTEINS`
 
-
 ### `Fixed`
 
 - [#11](https://github.com/nf-core/metapep/pull/11) - Template update for nf-core/tools version 2.3
