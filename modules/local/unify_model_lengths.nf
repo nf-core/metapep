@@ -12,6 +12,7 @@ process UNIFY_MODEL_LENGTHS {
 
     output:
     path "unified_allele_models.tsv"    , emit: allele_models  // allele_name, peptide_length, allele_model
+    path "unify_peptide_lengths.log"    , emit: log
     path "versions.yml"                 , emit: versions
 
     when:
@@ -26,7 +27,8 @@ process UNIFY_MODEL_LENGTHS {
         -m $params.pred_method \\
         -pll $params.min_pep_len \\
         -plh $params.max_pep_len \\
-        -o "unified_allele_models.tsv"
+        -o "unified_allele_models.tsv" \\
+        -log "unify_peptide_lengths.log"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

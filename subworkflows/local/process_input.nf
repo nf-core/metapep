@@ -40,7 +40,7 @@ workflow PROCESS_INPUT {
                 input_peptide_lengths = (params.min_pep_len..params.max_pep_len).toList()
                 if (it != input_peptide_lengths){
                     log.warn "There is no SYFPEITHI model available for at least one allele and the following peptide length(s): ${input_peptide_lengths.minus(it).join(", ")}. This/These peptide length(s) will be omitted for all alleles specified for this pipeline run."
-                    log.warn "For more information about which peptide lengths were used for which allele check '$params.outdir/pipeline_info/unified_allele_models.tsv'"
+                    log.warn "For more information about which peptide lengths were used for which allele check '$params.outdir/logs/unify_peptide_lengths.log'"
                 }
             }
 
