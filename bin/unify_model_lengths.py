@@ -125,13 +125,14 @@ def main():
     len_intersect = set.intersection(*len_sets)
 
     log.write("\nReducing the used peptide lengths to the common denominator\n")
-    log.write(f"Following lengths are used for the epitope prediction on the alleles {', '.join(alleles_s)}: {', '.join(map(str, len_intersect))}\n")
+    log.write(
+        f"Following lengths are used for the epitope prediction on the alleles {', '.join(alleles_s)}: {', '.join(map(str, len_intersect))}\n"
+    )
     log.write("All other peptide lengths are omitted from further analysis.")
     # Remove all non fitting lengths
     allele_availability = allele_availability[allele_availability["Peptide_Length"].isin(len_intersect)]
 
     allele_availability.to_csv(args.output, sep="\t", index=False)
-
 
 
 if __name__ == "__main__":
