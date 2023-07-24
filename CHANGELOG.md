@@ -20,6 +20,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#75](https://github.com/nf-core/metapep/pull/75) - Peptide lengths are checked if supported generally and unified if models are not available in `UNIFY_MODEL_LENGTHS`
 - [#80](https://github.com/nf-core/metapep/pull/80) - Add mean comparison to entity binding ratios plots.
 - [#84](https://github.com/nf-core/metapep/pull/84) - Added MultiQC again with updated method description and updated references
+- [#88](https://github.com/nf-core/metapep/pull/88) - Updated Citations.md
 
 ### `Changed`
 
