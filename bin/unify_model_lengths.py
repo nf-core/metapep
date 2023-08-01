@@ -105,7 +105,6 @@ def main():
         allele_availability, columns=["Allele", "Peptide_Length", "Allele_Model", "Availability"]
     )
 
-
     # Drop all non available models
     allele_availability = allele_availability[allele_availability["Availability"]]
     allele_availability.drop("Availability", axis=1, inplace=True)
