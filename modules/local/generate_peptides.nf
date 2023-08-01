@@ -1,6 +1,6 @@
 process GENERATE_PEPTIDES {
     label 'process_long'
-    label 'process_high_memory'
+    label 'process_medium_memory'
     label 'cache_lenient'
 
     conda "conda-forge::pandas=1.5.2 conda-forge::biopython=1.79 conda-forge::numpy=1.23.5"

@@ -1,5 +1,5 @@
 process MERGE_PREDICTIONS {
-    label "process_high_memory"
+    label "process_long"
     label 'cache_lenient'
 
     conda "conda-forge::pandas=1.5.2"
