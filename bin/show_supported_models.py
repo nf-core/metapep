@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-# Written by Sabrina Krakau, Christopher Mohr and released under the MIT license.
 # This script originates from the nf-core/epitopeprediction pipeline and is modified for use in nf-core/metapep
 
 import argparse
