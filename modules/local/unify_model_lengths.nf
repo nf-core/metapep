@@ -11,8 +11,9 @@ process UNIFY_MODEL_LENGTHS {
     path samplesheet_valid
 
     output:
-    path "unified_allele_models.tsv"    , emit: allele_models  // allele_name, peptide_length, allele_model
-    path "versions.yml"                 , emit: versions
+    path "*_unify_peptide_lengths.log"      , emit: log
+    env unified_peptide_lengths             , emit: unified_pep_lens
+    path "versions.yml"                     , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,12 +22,12 @@ process UNIFY_MODEL_LENGTHS {
     // Syfpeithi is not an external software, but rather a matrix on which scoring is based on -> titled version 1.0 in epytope
     def syfpeithi_version = "1.0"
     """
-    unify_model_lengths.py \\
-        -i $samplesheet_valid \\
-        -m $params.pred_method \\
-        -pll $params.min_pep_len \\
-        -plh $params.max_pep_len \\
-        -o "unified_allele_models.tsv"
+    unified_peptide_lengths=\$(unify_model_lengths.py \\
+                                -i $samplesheet_valid \\
+                                -m $params.pred_method \\
+                                -pll $params.min_pep_len \\
+                                -plh $params.max_pep_len \\
+                                -s "_unify_peptide_lengths")
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
