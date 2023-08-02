@@ -1,6 +1,5 @@
 process MERGE_PREDICTIONS_BUFFER {
     label 'cache_lenient'
-    label 'process_medium_memory'
 
     conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

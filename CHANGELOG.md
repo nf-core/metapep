@@ -19,6 +19,8 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#70](https://github.com/nf-core/metapep/pull/70) - Added check for supported models and functionality to output all supported models.
 - [#75](https://github.com/nf-core/metapep/pull/75) - Peptide lengths are checked if supported generally and unified if models are not available in `UNIFY_MODEL_LENGTHS`
 - [#80](https://github.com/nf-core/metapep/pull/80) - Add mean comparison to entity binding ratios plots.
+- [#84](https://github.com/nf-core/metapep/pull/84) - Added MultiQC again with updated method description and updated references
+- [#88](https://github.com/nf-core/metapep/pull/88) - Updated Citations.md
 
 ### `Changed`
 
@@ -34,6 +36,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#79](https://github.com/nf-core/metapep/pull/79) - Replaced multi-package BioContainers by single-package pandas BioContainer and updated containers with old pandas versions
 - [#82](https://github.com/nf-core/metapep/pull/82) - Add label `error_retry` to process `DOWNLOAD_PROTEINS`
 - [#89](https://github.com/nf-core/metapep/pull/85) - Changed the output of `UNIFY_MODEL_LENGTHS` to a logfile and fixed channellogic
+- [#90](https://github.com/nf-core/metapep/pull/90) - Removed script headers and unused imports
 
 ### `Fixed`
 

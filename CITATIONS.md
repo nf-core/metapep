@@ -14,24 +14,79 @@
 
   > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
 
-* [Entrez](https://pubmed.ncbi.nlm.nih.gov/15608257/)
+- [Entrez](https://pubmed.ncbi.nlm.nih.gov/15608257/)
 
   > Maglott D, Ostell J, Pruitt KD, Tatusova T. Entrez Gene: gene-centered information at NCBI. Nucleic Acids Res. 2005 Jan 1;33(Database issue):D54-8. doi: 10.1093/nar/gki031. Update in: Nucleic Acids Res. 2007 Jan;35(Database issue):D26-31. PMID: 15608257; PMCID: PMC539985.
 
-* [Prodigal](https://pubmed.ncbi.nlm.nih.gov/20211023/)
+- [Prodigal](https://pubmed.ncbi.nlm.nih.gov/20211023/)
 
   > Hyatt D, Chen GL, Locascio PF, Land ML, Larimer FW, Hauser LJ. Prodigal: prokaryotic gene recognition and translation initiation site identification. BMC Bioinformatics. 2010 Mar 8;11:119. doi: 10.1186/1471-2105-11-119. PMID: 20211023; PMCID: PMC2848648.
 
-* [SYFPEITHI](https://pubmed.ncbi.nlm.nih.gov/10602881/)
+- [Epytope](https://academic.oup.com/bioinformatics/article/32/13/2044/1743767)
+
+  > Schubert, B., Walzer, M., Brachvogel, H-P., Sozolek, A., Mohr, C., and Kohlbacher, O. (2016). FRED 2 - An Immunoinformatics Framework for Python. Bioinformatics 2016; doi: 10.1093/bioinformatics/btw113
+
+- [SYFPEITHI](https://pubmed.ncbi.nlm.nih.gov/10602881/)
 
   > Hans-Georg Rammensee, Jutta Bachmann, Niels Nikolaus Emmerich, Oskar Alexander Bachor, Stefan Stevanovic: SYFPEITHI: database for MHC ligands and peptide motifs. Immunogenetics (1999) 50: 213-219
 
-* [MHCflurry](https://dx.doi.org/10.1016/j.cels.2018.05.014)
+- [MHCflurry](https://dx.doi.org/10.1016/j.cels.2018.05.014)
 
   > Timothy J. O’Donnell, Alex Rubinsteyn, Maria Bonsack, Angelika B. Riemer, Uri Laserson, Jeff Hammerbacher. MHC flurry: open-source class I MHC binding affinity prediction. Cell systems 7(1), 129-132 (2018). doi: 10.1016/j.cels.2018.05.014.
 
-* [MHCnuggets](https://dx.doi.org/10.1158/2326-6066.CIR-19-0464)
+- [MHCnuggets](https://dx.doi.org/10.1158/2326-6066.CIR-19-0464)
+
   > Xiaoshan M. Shao, Rohit Bhattacharya, Justin Huang, I.K. Ashok Sivakumar, Collin Tokheim, Lily Zheng, Dylan Hirsch, Benjamin Kaminow, Ashton Omdahl, Maria Bonsack, Angelika B. Riemer, Victor E. Velculescu, Valsamo Anagnostou, Kymberleigh A. Pagel and Rachel Karchin. High-throughput prediction of MHC class i and ii neoantigens with MHCnuggets. Cancer Immunology Research 8(3), 396-408 (2020). doi: 10.1158/2326-6066.CIR-19-0464.
+
+- [pigz](https://zlib.net/pigz/)
+
+## Python Packages
+
+- [Python](https://www.python.org/)
+
+  > Python Core Team (2022). Python: A dynamic, open source programming language. Python Software Foundation. https://www.python.org/.
+
+- [biopython](https://academic.oup.com/bioinformatics/article/25/11/1422/330687)
+
+  > Cock PA, Antao T, Chang JT, Chapman BA, Cox CJ, Dalke A, Friedberg I, Hamelryck T, Kauff F, Wilczynski B and de Hoon MJL (2009) Biopython: freely available Python tools for computational molecular biology and bioinformatics. Bioinformatics, 25, 1422-1423. https://doi.org/10.1093/bioinformatics/btp163.
+
+- [pandas](https://doi.org/10.5281/zenodo.3509134)
+
+  > The pandas development team. (2023). pandas-dev/pandas: Pandas (v2.0.3). Zenodo. https://doi.org/10.5281/zenodo.8092754
+
+- [numpy](https://www.nature.com/articles/s41586-020-2649-2)
+
+  > Harris, C.R., Millman, K.J., van der Walt, S.J. et al. Array programming with NumPy. Nature 585, 357–362 (2020). DOI: 10.1038/s41586-020-2649-2. https://www.nature.com/articles/s41586-020-2649-2.
+
+## R Packages
+
+- [R](https://www.R-project.org/)
+
+  > R Core Team (2022). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. https://www.R-project.org/.
+
+- [ggplot2](https://cran.r-project.org/package=ggplot2)
+
+  > H. Wickham (2016). ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York.
+
+- [dplyr](https://dplyr.tidyverse.org)
+
+  > Wickham H, François R, Henry L, Müller K, Vaughan D (2023). dplyr: A Grammar of Data Manipulation. https://dplyr.tidyverse.org, https://github.com/tidyverse/dplyr.
+
+- [data.table](https://cran.r-project.org/package=data.table)
+
+  > Dowle Matt (2022). data.table: Extension of 'data.frame'.
+
+- [stringr](https://stringr.tidyverse.org)
+
+  > Wickham H (2022). stringr: Simple, Consistent Wrappers for Common String Operations. https://stringr.tidyverse.org, https://github.com/tidyverse/stringr.
+
+- [ggpubr](https://cran.r-project.org/package=ggpubr)
+
+  > Kassambara Alboukadel (2023). ggpubr: 'ggplot2' Based Publication Ready Plots.
+
+- [optparse](https://CRAN.R-project.org/package=optparse)
+
+  > Trevor L Davis (2022). optparse: Command Line Option Parser.
 
 ## Software packaging/containerisation tools
 
