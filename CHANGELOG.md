@@ -48,6 +48,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#58](https://github.com/nf-core/metapep/pull/58) - Ensured deterministic microbiome_id and entity_id assignments.
 - [#62](https://github.com/nf-core/metapep/pull/62) - nf-core module prodigal is updated
 - [#77](https://github.com/nf-core/metapep/pull/77) - Remove unused github workflow files to push dockerimage to dockerhub
+- [#92](https://github.com/nf-core/metapep/pull/92) - Added check for min and max peptide length parameters
 
 ### `Dependencies`
 
