@@ -37,6 +37,8 @@ process PLOT_ENTITY_BINDING_RATIOS {
         data.table: \$(Rscript -e "library(data.table); cat(as.character(packageVersion('data.table')))")
         dplyr: \$(Rscript -e "library(dplyr); cat(as.character(packageVersion('dplyr')))")
         stringr: \$(Rscript -e "library(stringr); cat(as.character(packageVersion('stringr')))")
+        ggpubr: \$(Rscript -e "library(ggpubr); cat(as.character(packageVersion('ggpubr')))")
+        optparse: \$(Rscript -e "library(optparse); cat(as.character(packageVersion('optparse')))")
     END_VERSIONS
     """
 }

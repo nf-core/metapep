@@ -1,40 +1,16 @@
 #!/usr/bin/env python3
-####################################################################################################
-#
-# Author: Sabrina Krakau
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-####################################################################################################
+
 # for each strain: select largest assembly (for now)
 
 import sys
 import gzip
 import csv
 import xml.etree.ElementTree as ET
-
-# import tqdm
-import io
 import argparse
 import time
-
 from Bio import Entrez, SeqIO
-from pprint import pprint
-from datetime import datetime
-from collections import Counter, defaultdict
+from collections import defaultdict
 from urllib.error import HTTPError
-
 import sys
 
 

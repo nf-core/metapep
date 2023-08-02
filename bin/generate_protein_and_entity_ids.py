@@ -1,22 +1,5 @@
 #!/usr/bin/env python3
-####################################################################################################
-#
-# Author: Sabrina Krakau
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-####################################################################################################
+
 # NOTE
 # entrez proteins of all microbiome input files already within one file (proteins.entrez.tsv.gz)
 # proteins from different assemblies have non-unique names originating from enumerated contigs, should get new ids assigned separately for each file (proteins.pred_${microbiome_id}.tsv.gz)
@@ -24,14 +7,9 @@
 
 import sys
 import gzip
-import csv
-import io
 import argparse
 
-from Bio import SeqIO
 import pandas as pd
-
-import sys
 
 
 def parse_args(args=None):

@@ -1,18 +1,10 @@
 #!/usr/bin/env python
 
-"""
-Provides a command line tool to validate and transform the samplesheet and create the data tables needed for nf-core/metapep.
-"""
-
-
-import os
 import sys
-import errno
 import argparse
 import pandas as pd
 from epytope.Core import Allele
 from epytope.EpitopePrediction import EpitopePredictorFactory
-import epytope
 
 
 def parse_args(args=None):
@@ -97,10 +89,6 @@ def print_error(error, context="Line", context_str=""):
     sys.exit(1)
 
 
-# TODO for 'proteins' type
-# - allow weight input for type 'proteins' as well! (for now use equal weight ?)
-
-
 def process_samplesheet(args):
     """
     Check that the tabular samplesheet has the structure expected by nf-core/metapep and create the data tables.
@@ -158,12 +146,6 @@ def process_samplesheet(args):
                 + " of type 'assembly' has invalid file extension. Valid extensions are '.fa', '.fa.gz', '.fasta' and"
                 " '.fasta.gz'."
             )
-
-    # check if microbiome_path files exist
-    # for fname in input_table["microbiome_path"]:
-    #     if not os.path.isfile(fname):
-    #         sys.exit("In " + args.input.name + " specified file " + fname + " does not exist!")
-    # NOTE not possible for urls, will be checked afterwards during channel creation for microbiome files
 
     # check if condition names unique
     if len(input_table["condition"]) != len(input_table["condition"].drop_duplicates()):
