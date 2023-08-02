@@ -19,7 +19,7 @@ workflow PROCESS_INPUT {
 
     // When PSSMs methods are used we can check in epytope if the model exists for the given peptide lengths
     // Only intersection of allele model lengths are used in further analysis
-    if (params.pred_method == "syfpeithi") {
+    if (params.pred_method == "syfpeithi" && !params.allow_all_peptide_lengths) {
         UNIFY_MODEL_LENGTHS (CHECK_SAMPLESHEET_CREATE_TABLES.out.samplesheet_valid)
 
         peptide_lengths = UNIFY_MODEL_LENGTHS.out.unified_pep_lens.tokenize(",")
