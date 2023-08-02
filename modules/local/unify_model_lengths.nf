@@ -27,7 +27,7 @@ process UNIFY_MODEL_LENGTHS {
                                 -m $params.pred_method \\
                                 -pll $params.min_pep_len \\
                                 -plh $params.max_pep_len \\
-                                -log_s "_unify_peptide_lengths")
+                                -s "_unify_peptide_lengths")
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

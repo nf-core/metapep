@@ -31,8 +31,8 @@ def parse_args():
         "-plh", "--peptide_max_len", help="Maximum length of peptide used for prediction", type=int, default=13
     )
     parser.add_argument(
-        "-log_s",
-        "--output_log_suffix",
+        "-s",
+        "--log_suffix",
         required=True,
         help="Suffix for the output log file.",
         type=str,
@@ -110,7 +110,7 @@ def main():
         log_prefix = "ERROR"
     else:
         log_prefix = "WARNING"
-    log_fname = log_prefix + args.output_log_suffix + ".log"
+    log_fname = log_prefix + args.log_suffix + ".log"
 
     with open(log_fname, "w") as log:
         log.write(log_str)
