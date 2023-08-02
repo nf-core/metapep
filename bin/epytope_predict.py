@@ -223,7 +223,7 @@ def syfpeithi_normalize(predictions):  # SYFPEITHI NORMALIZATION
         scored_lengths = {l for l, score in zip(lengths, predictions[allele]) if not pd.isna(score)}
         max_vals = {l: get_allele_model_max_value(conv_allele, l) for l in scored_lengths}
         new_scores = [
-            np.nan if pd.isna(score) else score / max_vals[l] for score, l in zip(predictions[allele], lengths)
+            np.nan if pd.isna(score) or max_vals[l]==None else score / max_vals[l] for score, l in zip(predictions[allele], lengths)
         ]
         predictions[allele] = new_scores
 
@@ -279,10 +279,7 @@ try:
             logging.warning(f"PREDICTION ({predictor.name} {predictor.version}) - {str(message)}")
 
     # Add missing alleles as NA values
-    for missing_allele in [str(allele) for allele in alleles if str(allele) not in predictions.columns]:
-        logging.warning(
-            f"PREDICTION ({predictor.name} {predictor.version}) yielded no results for allele {missing_allele}"
-        )
+    for missing_allele in [allele for allele in alleles if allele not in predictions.columns]:
         predictions[missing_allele] = np.NaN
 
     # Normalize syfpeithi scores
