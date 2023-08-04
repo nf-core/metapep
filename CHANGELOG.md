@@ -37,6 +37,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#82](https://github.com/nf-core/metapep/pull/82) - Add label `error_retry` to process `DOWNLOAD_PROTEINS`
 - [#89](https://github.com/nf-core/metapep/pull/85) - Changed the output of `UNIFY_MODEL_LENGTHS` to a logfile and fixed channellogic
 - [#90](https://github.com/nf-core/metapep/pull/90) - Removed script headers and unused imports
+- [#93](https://github.com/nf-core/metapep/pull/93) - Added new tests and replaced tests to have a broader test landscape
 
 ### `Fixed`
 
