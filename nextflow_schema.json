@@ -265,7 +265,7 @@
                     "description": "Maximum length of produced peptides.",
                     "fa_icon": "fas fa-cogs"
                 },
-                "allow_all_peptide_lengths": {
+                "allow_inconsistent_pep_lengths": {
                     "type": "boolean",
                     "description": "Only takes effect for `pred_method 'syfpeithi'` Allow all peptide lengths within the range of `min_pep_len` to `max_pep_len` without reducing them to the matching allele models",
                     "hidden": true,
