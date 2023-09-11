@@ -18,12 +18,17 @@ WorkflowMetapep.initialise(params, log)
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input)
 } else if (!params.show_supported_models){
-    exit 1, 'Input samplesheet not specified!'
+    error 'Input samplesheet not specified!'
     }
 
 // Exit if running this pipeline with -profile conda / -profile mamba
 if (workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1) {
-    exit 1, "This pipeline does not support Conda. Please use a container engine such as Docker or Singularity instead."
+    error "This pipeline does not support Conda. Please use a container engine such as Docker or Singularity instead."
+}
+
+// Exit if peptide length parameters are exchanged
+if (params.min_pep_len >= params.max_pep_len) {
+    error "The minimum peptide length needs to be smaller or equal than the maximum. See 'https://nf-co.re/metapep/dev/parameters' for more information."
 }
 
 /*
