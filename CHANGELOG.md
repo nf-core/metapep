@@ -37,6 +37,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#82](https://github.com/nf-core/metapep/pull/82) - Add label `error_retry` to process `DOWNLOAD_PROTEINS`
 - [#89](https://github.com/nf-core/metapep/pull/85) - Changed the output of `UNIFY_MODEL_LENGTHS` to a logfile and fixed channellogic
 - [#90](https://github.com/nf-core/metapep/pull/90) - Removed script headers and unused imports
+- [#91](https://github.com/nf-core/metapep/pull/91) - Added new parameter to allow all input peptide lengths to be predicted, and also necessary checks to circumvent errors during predictions
 - [#94](https://github.com/nf-core/metapep/pull/94) - Updated workflow overview figure
 
 ### `Fixed`
@@ -49,6 +50,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#58](https://github.com/nf-core/metapep/pull/58) - Ensured deterministic microbiome_id and entity_id assignments.
 - [#62](https://github.com/nf-core/metapep/pull/62) - nf-core module prodigal is updated
 - [#77](https://github.com/nf-core/metapep/pull/77) - Remove unused github workflow files to push dockerimage to dockerhub
+- [#92](https://github.com/nf-core/metapep/pull/92) - Added check for min and max peptide length parameters
 
 ### `Dependencies`
 
