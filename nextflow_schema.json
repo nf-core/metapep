@@ -313,16 +313,23 @@
                     "hidden": true,
                     "fa_icon": "fas fa-align-justify"
                 },
-                "chunk_size": {
+                "prediction_chunk_size": {
                     "type": "integer",
-                    "default": 75000,
-                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs. Is scaled up by `chunk_size_scaling` parameter and used in downstream and upstream processes as well (e.g. for internal processing of peptide_id chunks in python scripts to reduce memory usage) .",
+                    "default": 1000000,
+                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs.",
                     "fa_icon": "fas fa-cogs"
                 },
-                "chunk_size_scaling": {
+                "pred_chunk_size_scaling": {
                     "type": "integer",
-                    "default": 100,
-                    "description": "Scaling factor for `chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
+                    "default": 10,
+                    "description": "Scaling factor for `prediction_chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
+                },
+                "downstream_chunk_size": {
+                    "type": "integer",
+                    "default": 7500000,
+                    "description": "Maximum chunk size (#epitope predictions) for processing of downstream visualisations.",
                     "fa_icon": "fas fa-cogs"
                 },
                 "hide_pvalue": {

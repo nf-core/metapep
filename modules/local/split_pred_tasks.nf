@@ -25,8 +25,8 @@ process SPLIT_PRED_TASKS {
     path "versions.yml",    emit:   versions
 
     script:
-    def pred_chunk_size       = params.chunk_size
-    def proc_chunk_size       = params.chunk_size * params.chunk_size_scaling
+    def pred_chunk_size       = params.prediction_chunk_size
+    def proc_chunk_size       = params.prediction_chunk_size * params.pred_chunk_size_scaling
     def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \\

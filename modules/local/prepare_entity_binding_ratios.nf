@@ -22,7 +22,7 @@ process PREPARE_ENTITY_BINDING_RATIOS {
     path "versions.yml"                      , emit: versions
 
     script:
-    def chunk_size                = params.chunk_size * params.chunk_size_scaling
+    def chunk_size                = params.downstream_chunk_size
     def syfpeithi_score_threshold = params.syfpeithi_score_threshold
     def mhcf_mhcn_score_threshold = params.mhcflurry_mhcnuggets_score_threshold
     def mem_log_level             = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
