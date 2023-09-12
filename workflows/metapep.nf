@@ -230,8 +230,8 @@ workflow METAPEP {
         // Gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
         // (causing "sbatch: error: Batch job submission failed: Pathname of a file, directory or other parameter too long")
         // sort and buffer to ensure resume will work (inefficient, since this causes waiting for all predictions)
-        ch_epitope_predictions_buffered = PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten().buffer(size: 1000, remainder: true)
-        ch_epitope_prediction_warnings_buffered = PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten().buffer(size: 1000, remainder: true)
+        ch_epitope_predictions_buffered = PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten().buffer(size: params.pred_buffer_files, remainder: true)
+        ch_epitope_prediction_warnings_buffered = PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten().buffer(size: params.pred_buffer_files, remainder: true)
 
         MERGE_PREDICTIONS_BUFFER (
             ch_epitope_predictions_buffered,

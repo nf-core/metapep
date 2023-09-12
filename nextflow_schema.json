@@ -332,6 +332,13 @@
                     "description": "Maximum chunk size (#epitope predictions) for processing of downstream visualisations.",
                     "fa_icon": "fas fa-cogs"
                 },
+                "pred_buffer_files": {
+                    "type": "integer",
+                    "default": 100,
+                    "description": "Number of files, which are merged in `MERGE_PREDICTION_BUFFER`",
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
+                },
                 "hide_pvalue": {
                     "type": "boolean",
                     "description": "Do not display mean comparison p-values in boxplots.",
