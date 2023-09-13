@@ -38,6 +38,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#89](https://github.com/nf-core/metapep/pull/85) - Changed the output of `UNIFY_MODEL_LENGTHS` to a logfile and fixed channellogic
 - [#90](https://github.com/nf-core/metapep/pull/90) - Removed script headers and unused imports
 - [#91](https://github.com/nf-core/metapep/pull/91) - Added new parameter to allow all input peptide lengths to be predicted, and also necessary checks to circumvent errors during predictions
+- [#94](https://github.com/nf-core/metapep/pull/94) - Updated workflow overview figure
 
 ### `Fixed`
 
