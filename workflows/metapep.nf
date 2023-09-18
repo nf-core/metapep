@@ -227,21 +227,46 @@ workflow METAPEP {
         // MODULE: Merge prediction results
         //
 
-        // Gather chunks of predictions and merge them already to avoid too many input files for `merge_predictions` process
-        // (causing "sbatch: error: Batch job submission failed: Pathname of a file, directory or other parameter too long")
-        // sort and buffer to ensure resume will work (inefficient, since this causes waiting for all predictions)
-        ch_epitope_predictions_buffered = PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten().buffer(size: params.pred_buffer_files, remainder: true)
-        ch_epitope_prediction_warnings_buffered = PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten().buffer(size: params.pred_buffer_files, remainder: true)
+        // Count all generated files for prediction for buffering decision
+        // Generates a channel with tuples: [count, prediction_file, warnings_file]
+        // the channel is branched into buffer or unbuffer depending on the file count
+        // therefore one of both channels will be empty
+        SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks.flatten().count()
+            .combine(PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten())
+            .merge(PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten())
+            .branch{it ->
+                buffer: it[0] > params.pred_buffer_files
+                    return [it[1], it[2]]
+                unbuffered: it[0] <= params.pred_buffer_files
+                    return [it[1], it[2]]
+            }.set { ch_pred_merge_input }
 
+        // remap the individual files to individual channels to make the buffering work in later step
+        // unbuffered needs to be remapped to individual channels to make the mixing of merge buffer and merge input work
+        ch_pred_merge_input.buffer.multiMap{it ->
+            predictions: it[0]
+            warnings: it[1]
+        }.set { ch_predictions_mergebuffer_input }
+
+        ch_pred_merge_input.unbuffered.multiMap{it ->
+            predictions: it[0]
+            warnings: it[1]
+        }.set { ch_predictions_unbuffered }
+
+        // Process is only used when files exceed the buffer files parameter (default 1000) -> May generates issues for slurm if larger
         MERGE_PREDICTIONS_BUFFER (
-            ch_epitope_predictions_buffered,
-            ch_epitope_prediction_warnings_buffered
+            ch_predictions_mergebuffer_input.predictions.buffer(size: params.pred_buffer_files, remainder: true),
+            ch_predictions_mergebuffer_input.warnings.buffer(size: params.pred_buffer_files, remainder: true)
         )
         ch_versions = ch_versions.mix(MERGE_PREDICTIONS_BUFFER.out.versions)
 
+        // Mix the output of the merge predictions buffer channel and merge predictions channel (one of them will be empty)
+        ch_merge_predictions_input_pred = MERGE_PREDICTIONS_BUFFER.out.ch_predictions_merged_buffer.mix(ch_predictions_unbuffered.predictions)
+        ch_merge_predictions_input_warn = MERGE_PREDICTIONS_BUFFER.out.ch_prediction_warnings_merged_buffer.mix(ch_predictions_unbuffered.warnings)
+
         MERGE_PREDICTIONS (
-            MERGE_PREDICTIONS_BUFFER.out.ch_predictions_merged_buffer.collect(),
-            MERGE_PREDICTIONS_BUFFER.out.ch_prediction_warnings_merged_buffer.collect()
+            ch_merge_predictions_input_pred.collect(),
+            ch_merge_predictions_input_warn.collect()
         )
         ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
 
