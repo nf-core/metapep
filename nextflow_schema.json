@@ -315,7 +315,7 @@
                 },
                 "prediction_chunk_size": {
                     "type": "integer",
-                    "default": 1000000,
+                    "default": 4000000,
                     "description": "Maximum chunk size (#peptides) for epitope prediction jobs.",
                     "fa_icon": "fas fa-cogs"
                 },
@@ -334,7 +334,7 @@
                 },
                 "pred_buffer_files": {
                     "type": "integer",
-                    "default": 100,
+                    "default": 1000,
                     "description": "Number of files, which are merged in `MERGE_PREDICTION_BUFFER`",
                     "hidden": true,
                     "fa_icon": "fas fa-cogs"
