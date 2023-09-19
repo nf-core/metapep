@@ -14,7 +14,7 @@ process PREDICT_EPITOPES {
 
     output:
     path "*predictions.tsv",            emit:   ch_epitope_predictions
-    path "*prediction_warnings.log",    emit:   ch_epitope_prediction_warnings
+    path "*pred_warnings.log",          emit:   ch_epitope_prediction_warnings
     path "versions.yml",                emit:   versions
 
     script:
@@ -48,7 +48,7 @@ process PREDICT_EPITOPES {
 
     out_basename="\$(basename "$peptides" .txt)"
     out_predictions="\$out_basename"_predictions.tsv
-    out_warnings="\$out_basename"_prediction_warnings.log
+    out_warnings="\$out_basename"_pred_warnings.log
 
     # Create output header
     echo "peptide_id	prediction_score	allele_id" >"\$out_predictions"
