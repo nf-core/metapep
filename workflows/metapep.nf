@@ -27,7 +27,7 @@ if (workflow.profile.tokenize(',').intersect(['conda', 'mamba']).size() >= 1) {
 }
 
 // Exit if peptide length parameters are exchanged
-if (params.min_pep_len >= params.max_pep_len) {
+if (params.min_pep_len > params.max_pep_len) {
     error "The minimum peptide length needs to be smaller or equal than the maximum. See 'https://nf-co.re/metapep/dev/parameters' for more information."
 }
 
