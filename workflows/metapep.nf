@@ -234,23 +234,23 @@ workflow METAPEP {
         SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks.flatten().count()
             .combine(PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten())
             .merge(PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten())
-            .branch{it ->
-                buffer: it[0] > params.pred_buffer_files
-                    return [it[1], it[2]]
-                unbuffered: it[0] <= params.pred_buffer_files
-                    return [it[1], it[2]]
+            .branch{count, predictions_file, warnings_file ->
+                buffer: count > params.pred_buffer_files
+                    return [predictions_file, warnings_file]
+                unbuffered: count <= params.pred_buffer_files
+                    return [predictions_file, warnings_file]
             }.set { ch_pred_merge_input }
 
         // remap the individual files to individual channels to make the buffering work in later step
         // unbuffered needs to be remapped to individual channels to make the mixing of merge buffer and merge input work
-        ch_pred_merge_input.buffer.multiMap{it ->
-            predictions: it[0]
-            warnings: it[1]
+        ch_pred_merge_input.buffer.multiMap{predictions_file, warnings_file ->
+            predictions: predictions_file
+            warnings: warnings_file
         }.set { ch_predictions_mergebuffer_input }
 
-        ch_pred_merge_input.unbuffered.multiMap{it ->
-            predictions: it[0]
-            warnings: it[1]
+        ch_pred_merge_input.unbuffered.multiMap{predictions_file, warnings_file ->
+            predictions: predictions_file
+            warnings: warnings_file
         }.set { ch_predictions_unbuffered }
 
         // Process is only used when files exceed the buffer files parameter (default 1000) -> May generates issues for slurm if larger
