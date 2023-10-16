@@ -40,7 +40,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#91](https://github.com/nf-core/metapep/pull/91) - Added new parameter to allow all input peptide lengths to be predicted, and also necessary checks to circumvent errors during predictions
 - [#94](https://github.com/nf-core/metapep/pull/94) - Updated workflow overview figure
 - [#96](https://github.com/nf-core/metapep/pull/96) - Rework of chunk sizes and adjusting and creating the corresponding parameters (`--prediction_chunk_size`, `--pred_chunk_size_scaling`, `--downstream_chunk_size`, `--pred_buffer_files`) to optimise the number and size of jobs for large datasets
-- [#93](https://github.com/nf-core/metapep/pull/93) - Added new tests and replaced tests to have a broader test landscape
+- [#93](https://github.com/nf-core/metapep/pull/93), [#98](https://github.com/nf-core/metapep/pull/98) - Added new tests and replaced tests to have a broader test landscape
 
 ### `Fixed`
 
