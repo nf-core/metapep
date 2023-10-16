@@ -38,7 +38,7 @@ jobs:
 
       - name: Run pipeline with assembly test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test_assembly_only,docker --outdir ./results
+          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
 
   profile:
     name: Run additional profile tests
@@ -48,7 +48,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tests: ["test_bins", "test_coassembly", "test_model_information"] # add further test profiles here, will be run in parallel (but only with one nextflow version)
+        tests: [
+            "test_model_information",
+            "test_mouse_all_pep_lengths",
+            "test_assembly_only",
+            "test_bins_only",
+            "test_coassembly",
+            "test_mhcflurry",
+            "test_mhcnuggets_1",
+            "test_mhcnuggets_2",
+          ] # add further test profiles here, will be run in parallel (but only with one nextflow version)
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v2
@@ -71,7 +80,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tests: ["test", "test_mouse", "test_tiny"] # add further test profiles here, will be run in parallel (but only with one nextflow version)
+        tests: ["test_all", "test_mouse", "test_taxa_only"] # add further test profiles here, will be run in parallel (but only with one nextflow version)
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v2

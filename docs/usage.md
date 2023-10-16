@@ -139,7 +139,10 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 
 - `test`
   - A profile with a complete configuration for automated testing
-  - Includes links to test data so needs no other parameters
+  - Includes links to test data but needs your own NCBI credentials
+- `test_assembly_only`
+  - A small test profile, whith complete configuration for automated testing
+  - Includes links to test data and needs no other parameters
 - `docker`
   - A generic configuration profile to be used with [Docker](https://docker.com/)
 - `singularity`
