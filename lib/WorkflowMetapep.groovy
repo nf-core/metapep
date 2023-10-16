@@ -11,13 +11,6 @@ class WorkflowMetapep {
     // Check and validate parameters
     //
     public static void initialise(params, log) {
-
-        genomeExistsError(params, log)
-
-
-        if (!params.fasta) {
-            Nextflow.error "Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file."
-        }
     }
 
     //
@@ -53,7 +46,7 @@ class WorkflowMetapep {
 
     public static String toolCitationText(params) {
 
-        // TODO nf-core: Optionally add in-text citation tools to this list.
+        // TODO Optionally add in-text citation tools to this list.
         // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "Tool (Foo et al. 2023)" : "",
         // Uncomment function in methodsDescriptionText to render in MultiQC report
         def citation_text = [
@@ -107,16 +100,11 @@ class WorkflowMetapep {
     }
 
     //
-    // Exit pipeline if incorrect --genome key provided
+    // Check if input is required to run the pipeline
     //
-    private static void genomeExistsError(params, log) {
-        if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
-            def error_string = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-                "  Genome '${params.genome}' not found in any config files provided to the pipeline.\n" +
-                "  Currently, the available genome keys are:\n" +
-                "  ${params.genomes.keySet().join(", ")}\n" +
-                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            Nextflow.error(error_string)
+    public static void checkInputRequired(params, log) {
+        if (!params.show_supported_models) {
+            Nextflow.error("'--input' parameter is required. Use: 'nextflow run nf-core/metapep --help' for more information on parameters or visit https://nf-co.re/metapep\nIf more information is needed on supported models use 'nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models'")
         }
     }
 }
