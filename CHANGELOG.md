@@ -9,7 +9,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 
 ### `Added`
 
-- [#12](https://github.com/nf-core/metapep/pull/12), [#56](https://github.com/nf-core/metapep/pull/56), [#61](https://github.com/nf-core/metapep/pull/61), [#88](https://github.com/nf-core/metapep/pull/88) - Updated documentation and Citations
+- [#12](https://github.com/nf-core/metapep/pull/12), [#56](https://github.com/nf-core/metapep/pull/56), [#61](https://github.com/nf-core/metapep/pull/61), [#88](https://github.com/nf-core/metapep/pull/88), [#99](https://github.com/nf-core/metapep/pull/99) - Updated documentation, Citations and Changelog
 - [#29](https://github.com/nf-core/metapep/pull/29), [#64](https://github.com/nf-core/metapep/pull/64), [#65](https://github.com/nf-core/metapep/pull/65) - Added data model figure to `output.md`
 - [#40](https://github.com/nf-core/metapep/pull/40), [#45](https://github.com/nf-core/metapep/pull/45) - Added support for multiple weights tables for one bin (i.e. co-assembly input)
 - [#67](https://github.com/nf-core/metapep/pull/67) - Added parameters to adjust binder/non-binder calling. Additional documentation on scoring by `SYPEITHI`, `MHCflurry`and `MHCnuggets`.
