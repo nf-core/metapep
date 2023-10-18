@@ -23,6 +23,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 ### `Changed`
 
 #### `Resource usage optimization`
+
 - [#26](https://github.com/nf-core/metapep/pull/26) - Optimized memory usage of `PREPARE_ENTITY_BINDING_RATIOS`: peptide_ids are processed chunk-wise now.
 - [#32](https://github.com/nf-core/metapep/pull/32) - Optimized memory usage of `PREPARE_SCORE_DISTRIBUTION`: peptide_ids are processed chunk-wise now. Peptide `count`s are used for `weight_sum` computation.
 - [#21](https://github.com/nf-core/metapep/pull/21) - Optimized peptide processing and Pandas joining in process `SPLIT_PRED_TASK` to reduce memory usage.
@@ -46,7 +47,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 
 ### `Dependencies`
 
-- [#11](https://github.com/nf-core/metapep/pull/11), [#15](https://github.com/nf-core/metapep/pull/15), [#16](https://github.com/nf-core/metapep/pull/16), [#19](https://github.com/nf-core/metapep/pull/19), [#28](https://github.com/nf-core/metapep/pull/28), [#31](https://github.com/nf-core/metapep/pull/31), [#69](https://github.com/nf-core/metapep/pull/69), [#87](https://github.com/nf-core/metapep/pull/87), [#97](https://github.com/nf-core/metapep/pull/97)   - Template update for nf-core/tools up to version 2.10
+- [#11](https://github.com/nf-core/metapep/pull/11), [#15](https://github.com/nf-core/metapep/pull/15), [#16](https://github.com/nf-core/metapep/pull/16), [#19](https://github.com/nf-core/metapep/pull/19), [#28](https://github.com/nf-core/metapep/pull/28), [#31](https://github.com/nf-core/metapep/pull/31), [#69](https://github.com/nf-core/metapep/pull/69), [#87](https://github.com/nf-core/metapep/pull/87), [#97](https://github.com/nf-core/metapep/pull/97) - Template update for nf-core/tools up to version 2.10
 - [#13](https://github.com/nf-core/metapep/pull/13), [#62](https://github.com/nf-core/metapep/pull/62) - Update modules custom/dumpsoftwareversions and prodigal
 - [#55](https://github.com/nf-core/metapep/pull/55), [#73](https://github.com/nf-core/metapep/pull/73) - Updated `PREDICT_EPITOPES` to use latest epytope version (3.3.1) and adjusted the script `predict_epitopes.py` accordingly. Exchanged the container to official epytope container.
 - [#79](https://github.com/nf-core/metapep/pull/79) - Replaced multi-package BioContainers by single-package pandas BioContainer and updated containers with old pandas versions
