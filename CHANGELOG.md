@@ -13,8 +13,8 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 - [#29](https://github.com/nf-core/metapep/pull/29), [#64](https://github.com/nf-core/metapep/pull/64), [#65](https://github.com/nf-core/metapep/pull/65) - Added data model figure to `output.md`
 - [#40](https://github.com/nf-core/metapep/pull/40), [#45](https://github.com/nf-core/metapep/pull/45) - Added support for multiple weights tables for one bin (i.e. co-assembly input)
 - [#67](https://github.com/nf-core/metapep/pull/67) - Added parameters to adjust binder/non-binder calling. Additional documentation on scoring by `SYPEITHI`, `MHCflurry`and `MHCnuggets`.
-  [#78](https://github.com/nf-core/metapep/pull/78) - Added parameter `memory_usage_log_deep` for pandas memory usage logging.
-  [#78](https://github.com/nf-core/metapep/pull/78), [#96](https://github.com/nf-core/metapep/pull/96) - Added chunk size parameters (`--prediction_chunk_size`, `--pred_chunk_size_scaling`, `--downstream_chunk_size`, `--pred_buffer_files`) to optimise the number and size of jobs for large datasets
+- [#78](https://github.com/nf-core/metapep/pull/78) - Added parameter `memory_usage_log_deep` for pandas memory usage logging.
+- [#78](https://github.com/nf-core/metapep/pull/78), [#96](https://github.com/nf-core/metapep/pull/96) - Added chunk size parameters (`--prediction_chunk_size`, `--pred_chunk_size_scaling`, `--downstream_chunk_size`, `--pred_buffer_files`) to optimise the number and size of jobs for large datasets
 - [#70](https://github.com/nf-core/metapep/pull/70) - Added check for supported models and functionality to output all supported models (`--show_supported_models`).
 - [#75](https://github.com/nf-core/metapep/pull/75), [#89](https://github.com/nf-core/metapep/pull/85), [#92](https://github.com/nf-core/metapep/pull/92), [#95](https://github.com/nf-core/metapep/pull/95) - Added module `UNIFY_MODEL_LENGTHS`: Peptide lengths are checked if supported generally and unified if models are not available
 - [#80](https://github.com/nf-core/metapep/pull/80) - Add mean comparison to entity binding ratios plots.
@@ -33,7 +33,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 
 #### `Miscellaneous`
 
-- [#46](https://github.com/nf-core/metapep/pull/46) - Input type `taxa` changed from TXT or TSV format to TSV only and increase format checks to ensure passing of optional `abundance` column
+- [#46](https://github.com/nf-core/metapep/pull/46) - Input type `taxa` changed to TSV only and increase format checks to ensure passing of optional `abundance` column
 - [#76](https://github.com/nf-core/metapep/pull/76) - Restructure and rename `CHECK_INPUT` subworkflow to `PREPROCESS_INPUT` and move some channel logic into the subworkflow. Also `CHECK_SAMPLESHEET` module is renamed to `INPUT_TO_DATAMODEL` to have a more descriptive name and circumvent clashing with the nf-core template.
 - [#82](https://github.com/nf-core/metapep/pull/82) - Add label `error_retry` to process `DOWNLOAD_PROTEINS`
 - [#91](https://github.com/nf-core/metapep/pull/91) - Added new parameter (`--allow_inconsistent_pep_lengths`) to allow all input peptide lengths to be predicted, and also necessary checks to circumvent errors during predictions
@@ -48,7 +48,7 @@ Pipeline has been re-implemented in [Nextflow DSL2](https://www.nextflow.io/docs
 
 - [#11](https://github.com/nf-core/metapep/pull/11), [#15](https://github.com/nf-core/metapep/pull/15), [#16](https://github.com/nf-core/metapep/pull/16), [#19](https://github.com/nf-core/metapep/pull/19), [#28](https://github.com/nf-core/metapep/pull/28), [#31](https://github.com/nf-core/metapep/pull/31), [#69](https://github.com/nf-core/metapep/pull/69), [#87](https://github.com/nf-core/metapep/pull/87), [#97](https://github.com/nf-core/metapep/pull/97)   - Template update for nf-core/tools up to version 2.10
 - [#13](https://github.com/nf-core/metapep/pull/13), [#62](https://github.com/nf-core/metapep/pull/62) - Update modules custom/dumpsoftwareversions and prodigal
-- [#55](https://github.com/nf-core/metapep/pull/55),[#73](https://github.com/nf-core/metapep/pull/73) - Updated `PREDICT_EPITOPES` to use latest epytope version (3.3.1) and adjusted the script `predict_epitopes.py` accordingly. Exchanged the container to official epytope container.
+- [#55](https://github.com/nf-core/metapep/pull/55), [#73](https://github.com/nf-core/metapep/pull/73) - Updated `PREDICT_EPITOPES` to use latest epytope version (3.3.1) and adjusted the script `predict_epitopes.py` accordingly. Exchanged the container to official epytope container.
 - [#79](https://github.com/nf-core/metapep/pull/79) - Replaced multi-package BioContainers by single-package pandas BioContainer and updated containers with old pandas versions
 
 ### `Deprecated`
