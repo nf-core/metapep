@@ -7,28 +7,36 @@
     "items": {
         "type": "object",
         "properties": {
-            "sample": {
+            "condition": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "errorMessage": "Condition name must be provided and cannot contain spaces"
             },
-            "fastq_1": {
+            "type": {
+                "type": "string",
+                "pattern": "^(bins)|(assembly)|(taxa)$",
+                "errorMessage": "Microbiome type must be provided and needs to be either 'bins', 'assembly' or 'taxa'"
+            },
+            "microbiome_path": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+$",
+                "errorMessage": "Microbiome path needs to be provided and is not allowed to contain whitespaces."
             },
-            "fastq_2": {
+            "alleles": {
+                "type": "string",
+                "pattern": "^(\\S+)+(\\s\\S+)*$",
+                "errorMessage": "Alleles must be provided."
+            },
+            "weights_path": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+$",
+                "errorMessage": "Weights path is not allowed to contain whitespaces."
             }
         },
-        "required": ["sample", "fastq_1"]
+        "required": ["condition", "type", "microbiome_path", "alleles"]
     }
 }
