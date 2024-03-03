@@ -52,7 +52,7 @@ workflow METAPEP {
     ch_multiqc_files = Channel.empty()
 
     //
-    // SUBBRANCH: Show supported alleles for all prediction methods
+    // TODO: SUBBRANCH: Show supported alleles for all prediction methods
     //
     if (params.show_supported_models) {
         EPYTOPE_SHOW_SUPPORTED_MODELS()
