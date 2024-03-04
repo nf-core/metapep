@@ -5,9 +5,9 @@
 # proteins from different assemblies have non-unique names originating from enumerated contigs, should get new ids assigned separately for each file (proteins.pred_${microbiome_id}.tsv.gz)
 # proteins from 'proteins' input type: not known if unique or not, handle separately for now (in case of unique ids this causes unnecessary redundancy; could add parameter for this in future)
 
-import sys
-import gzip
 import argparse
+import gzip
+import sys
 
 import pandas as pd
 

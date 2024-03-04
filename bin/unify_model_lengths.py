@@ -2,6 +2,8 @@
 
 
 import argparse
+import sys
+
 import pandas as pd
 from epytope.Core import Allele
 from epytope.EpitopePrediction import EpitopePredictorFactory
@@ -116,8 +118,8 @@ def main():
         log.write(log_str)
 
     # Output the unified lengths to the stdout, so it can be used as output for the process
-    print(",".join(str(l) for l in len_intersect))
+    print(",".join(str(length) for length in len_intersect))
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

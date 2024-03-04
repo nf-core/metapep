@@ -1,17 +1,18 @@
 #!/usr/bin/env python
 
-import sys
 import argparse
+import sys
+
 import pandas as pd
 from epytope.Core import Allele
 from epytope.EpitopePrediction import EpitopePredictorFactory
 
 
 def parse_args(args=None):
-    Description = "Reformat nf-core/metapep samplesheet file, check its contents and create the data tables."
-    Epilog = "Example usage: python check_samplesheet_create_tables.py -i <FILE_IN> -m <MICROBIOMES_OUT> -c <CONDITIONS_OUT> -a <ALLELES_OUT> -ca <CONDITION_ALLELES_OUT> -pm <prediction_method> -pmv <prediction_method_version>"
+    description = "Reformat nf-core/metapep samplesheet file, check its contents and create the data tables."
+    epilog = "Example usage: python check_samplesheet_create_tables.py -i <FILE_IN> -m <MICROBIOMES_OUT> -c <CONDITIONS_OUT> -a <ALLELES_OUT> -ca <CONDITION_ALLELES_OUT> -pm <prediction_method> -pmv <prediction_method_version>"
 
-    parser = argparse.ArgumentParser(description=Description, epilog=Epilog)
+    parser = argparse.ArgumentParser(description=description, epilog=epilog)
     parser.add_argument(
         "-i",
         "--input",
@@ -80,11 +81,9 @@ def parse_args(args=None):
 
 
 def print_error(error, context="Line", context_str=""):
-    error_str = "ERROR: Please check samplesheet -> {}".format(error)
+    error_str = f"ERROR: Please check samplesheet -> {error}"
     if context != "" and context_str != "":
-        error_str = "ERROR: Please check samplesheet -> {}\n{}: '{}'".format(
-            error, context.strip(), context_str.strip()
-        )
+        error_str = f"ERROR: Please check samplesheet -> {error}\n{context.strip()}: '{context_str.strip()}'"
     print(error_str)
     sys.exit(1)
 
@@ -120,7 +119,7 @@ def process_samplesheet(args):
                 + args.input.name
                 + ". Valid types are 'taxa', 'bins' and 'assembly'."
             )
-        if type == "taxa" and not fname.lower().endswith((".tsv")):
+        if type == "taxa" and not fname.lower().endswith(".tsv"):
             print_error(
                 "In "
                 + args.input.name
@@ -210,7 +209,7 @@ def process_samplesheet(args):
     # TODO Parameter for prediction method version
     predictor = EpitopePredictorFactory(args.prediction_method, version=args.pred_method_version)
     for allele in unique_alleles:
-        if not Allele(allele) in predictor.supportedAlleles:
+        if Allele(allele) not in predictor.supportedAlleles:
             sys.exit(
                 "\n\n\n\nThe chosen allele: "
                 + allele
@@ -230,7 +229,7 @@ def process_samplesheet(args):
     for pep_len in peptide_lengths:
         if pep_len in predictor.supportedLength:
             checked_pep_lens.remove(pep_len)
-        if not pep_len in predictor.supportedLength:
+        if pep_len not in predictor.supportedLength:
             sys.exit(
                 "\n\n\n\nThe chosen lengths: "
                 + ", ".join([str(i) for i in checked_pep_lens])

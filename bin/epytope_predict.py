@@ -1,21 +1,20 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
-import warnings
 import contextlib
 import io
 
 ####################################################################################################
-
 import logging
+import sys
+import warnings
 
 logging.basicConfig(format="%(levelname)s - %(message)s", level=logging.WARNING)
 
 ####################################################################################################
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from epytope.Core import Allele, Peptide
 from epytope.EpitopePrediction import EpitopePredictorFactory
 
@@ -220,11 +219,11 @@ def syfpeithi_normalize(predictions):  # SYFPEITHI NORMALIZATION
 
     lengths = predictions.Seq.apply(len)
     for allele, conv_allele in zip(alleles, conv_alleles):
-        scored_lengths = {l for l, score in zip(lengths, predictions[allele]) if not pd.isna(score)}
-        max_vals = {l: get_allele_model_max_value(conv_allele, l) for l in scored_lengths}
+        scored_lengths = {length for length, score in zip(lengths, predictions[allele]) if not pd.isna(score)}
+        max_vals = {length: get_allele_model_max_value(conv_allele, length) for length in scored_lengths}
         new_scores = [
-            np.nan if pd.isna(score) or max_vals[l] == None else score / max_vals[l]
-            for score, l in zip(predictions[allele], lengths)
+            np.nan if pd.isna(score) or max_vals[length] is None else score / max_vals[length]
+            for score, length in zip(predictions[allele], lengths)
         ]
         predictions[allele] = new_scores
 
@@ -274,7 +273,7 @@ try:
                     ]
                 )
             predictions["Method"].fillna(args.method, inplace=True)
-        except ValueError as e:
+        except ValueError:
             predictions = pd.DataFrame({"Seq": query_peptides_index, "Method": args.method})
         for message in {w.message for w in warnings}:
             logging.warning(f"PREDICTION ({predictor.name} {predictor.version}) - {str(message)}")
@@ -292,10 +291,10 @@ try:
 
     sys.exit(0)
 except KeyboardInterrupt:
-    fail(f"User requested shutdown.", 1)
+    fail("User requested shutdown.", 1)
 except AlleleParseException as e:
     fail(f"Failed to parse allele specification '{e}'.", 2)
-except PredictorCreationException as e:
+except PredictorCreationException:
     fail(f"Failed to find a predictor based on your specification ('{args.method}' version '{args.method_version}')", 3)
 except PeptidesParseException as e:
     fail(f"The provided input file could not be parsed: {str(e)}", 4)
