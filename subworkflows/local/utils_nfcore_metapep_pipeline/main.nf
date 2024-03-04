@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the nf-core/pipeline pipeline
+// Subworkflow with functionality specific to the nf-core/metapep pipeline
 //
 
 /*
@@ -142,6 +142,7 @@ def validateInputParameters() {
         error "The minimum peptide length needs to be smaller or equal than the maximum. See 'https://nf-co.re/metapep/dev/parameters' for more information."
     }
 }
+
 //
 // Generate methods description for MultiQC
 //
