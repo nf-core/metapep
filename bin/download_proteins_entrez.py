@@ -2,17 +2,16 @@
 
 # for each strain: select largest assembly (for now)
 
-import sys
-import gzip
-import csv
-import xml.etree.ElementTree as ET
 import argparse
+import csv
+import gzip
+import sys
 import time
-from Bio import Entrez, SeqIO
+import xml.etree.ElementTree as ET
 from collections import defaultdict
 from urllib.error import HTTPError
-import sys
 
+from Bio import Entrez, SeqIO
 
 # TODO
 # clean code

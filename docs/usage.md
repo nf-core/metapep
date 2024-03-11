@@ -20,7 +20,7 @@ You will need to create a samplesheet with information about the samples you wou
 
 A final samplesheet file may look something like the one below.
 
-```console
+```csv title="samplesheet.csv"
 condition,type,microbiome_path,alleles,weights_path
 cond_1,taxa,testdata/taxids.txt,A*01:01,
 cond_2,taxa,testdata/taxids.tiny.txt,A*01:01 B*07:02,

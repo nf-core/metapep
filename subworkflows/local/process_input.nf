@@ -21,11 +21,10 @@ workflow PROCESS_INPUT {
     // Only intersection of allele model lengths are used in further analysis
     if (params.pred_method == "syfpeithi" && !params.allow_inconsistent_pep_lengths) {
         UNIFY_MODEL_LENGTHS (CHECK_SAMPLESHEET_CREATE_TABLES.out.samplesheet_valid)
-
-        peptide_lengths = UNIFY_MODEL_LENGTHS.out.unified_pep_lens.tokenize(",")
+        peptide_lengths =  UNIFY_MODEL_LENGTHS.out.unified_pep_lens.first().tokenize(",")
 
         // Throw Error or warning depending on file prefix
-        log_prefix = UNIFY_MODEL_LENGTHS.out.log.baseName.tokenize("_").flatten().first()
+        log_prefix = UNIFY_MODEL_LENGTHS.out.log.first().baseName.tokenize("_").flatten().first()
         log_prefix.map{it ->
             if (it == "WARNING"){
                 log.warn "There is no SYFPEITHI model available for at least one allele and the peptide lengths are reduced to the common denominator of the alleles."

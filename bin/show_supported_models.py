@@ -1,25 +1,14 @@
 #!/usr/bin/env python
 
-# This script originates from the nf-core/epitopeprediction pipeline and is modified for use in nf-core/metapep
+# This script originates from the nf-core/epitopeprediction pipeline and is modified and refactored for use in nf-core/metapep
 
 import argparse
+import sys
 
 from epytope.EpitopePrediction import EpitopePredictorFactory
 
 
-def convert_allele_back(allele):
-    if str(allele).startswith("H-2-"):
-        # convert internal Epytope representation back to the nf-core/metapep input allele format
-        return allele.replace("H-2-", "H2-")
-    elif allele.startswith("HLA-"):
-        return allele.replace("HLA-", "")
-    else:
-        raise ValueError(
-            "Allele type unknown: " + allele + ". Currently expects allele to start either with 'HLA-' or 'H-2-'."
-        )
-
-
-def __main__():
+def parse_args():
     parser = argparse.ArgumentParser(
         "Write out information about supported models by Epytope for available prediction tool versions."
     )
@@ -37,7 +26,23 @@ def __main__():
         nargs="+",
         required=True,
     )
-    args = parser.parse_args()
+
+    return parser.parse_args()
+
+
+def convert_allele_back(allele):
+    if str(allele).startswith("H-2-"):
+        # convert internal Epytope representation back to the nf-core/metapep input allele format
+        return allele.replace("H-2-", "H2-")
+    elif allele.startswith("HLA-"):
+        return allele.replace("HLA-", "")
+    else:
+        raise ValueError(
+            "Allele type unknown: " + allele + ". Currently expects allele to start either with 'HLA-' or 'H-2-'."
+        )
+
+def main():
+    args = parse_args()
 
     for method, version in zip(args.pred_methods, args.pred_method_versions):
         if version not in EpitopePredictorFactory.available_methods()[method]:
@@ -48,9 +53,9 @@ def __main__():
             for a in sorted(predictor.supportedAlleles):
                 output.write(convert_allele_back(a) + "\n")
         with open(method + ".v" + str(version) + ".supported_lengths.txt", "w") as output:
-            for l in sorted(predictor.supportedLength):
-                output.write(str(l) + "\n")
+            for length in sorted(predictor.supportedLength):
+                output.write(str(length) + "\n")
 
 
 if __name__ == "__main__":
-    __main__()
+    sys.exit(main())

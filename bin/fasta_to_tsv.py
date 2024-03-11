@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
 import gzip
+import sys
+
 from Bio import SeqIO
 
 parser = argparse.ArgumentParser("Converts FASTA to TSV")
