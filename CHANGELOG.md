@@ -21,19 +21,20 @@ First release of [nf-core/metapep](https://nf-co.re/metapep/dev), created based 
 
 - Relational datamodel to handle large amounts of data
   Tables defined within model:
-    - `alleles.tsv`
-    - `condition_alleles.tsv`
-    - `conditions.tsv`
-    - `entities_proteins.tsv`
-    - `entities.tsv`
-    - `microbiomes_entities.no_weights.tsv`
-    - `microbiome_entities.nucl.tsv`
-    - `microbiomes_entities.tsv`
-    - `microbiomes.tsv`
-    - `preptides.tsv.gz`
-    - `predictions.tsv.gz`
-    - `proteins_peptides.tsv`
-    - `proteins.tsv.gz`
-    - `stats.txt`
+
+  - `alleles.tsv`
+  - `condition_alleles.tsv`
+  - `conditions.tsv`
+  - `entities_proteins.tsv`
+  - `entities.tsv`
+  - `microbiomes_entities.no_weights.tsv`
+  - `microbiome_entities.nucl.tsv`
+  - `microbiomes_entities.tsv`
+  - `microbiomes.tsv`
+  - `preptides.tsv.gz`
+  - `predictions.tsv.gz`
+  - `proteins_peptides.tsv`
+  - `proteins.tsv.gz`
+  - `stats.txt`
 
 - Additional subworkflow to fetch possible model and peptide lengths for the prediction tools
