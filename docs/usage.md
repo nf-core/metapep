@@ -32,7 +32,7 @@ cond_4,assembly,testdata/test_minigut.contigs.fa.gz,A*01:01,testdata/test_minigu
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `condition`       | The condition name for this entry. Conditions have to be unique and describe a combination of a microbiome, alleles and weights.                                                                           |
 | `type`            | Input type, can be one of "assembly", "bins" or "taxa".                                                                                                                                                    |
-| `microbiome_path` | Full path to microbiome file, the format of which can vary with type: fasta, folder, compressed folder or tsv file for taxon ids (taxon_id[\\tassembly_ids\\tabundance]).                                                                               |
+| `microbiome_path` | Full path to microbiome file, the format of which can vary with type: fasta, folder, compressed folder or tsv file for taxon ids (taxon_id ["\\t" assembly_ids "\\t" abundance]).                                                                               |
 | `alleles`         | List of alleles to predict epitopes for.                                                                                                                                                                   |
 | `weights_path`    | Full path to a tab-separated file contataining weights. Currently allowed are contig weights for input types assembly and bins. Please use "contig_name" or "bin_basename" and "weight" as column headers. |
 
