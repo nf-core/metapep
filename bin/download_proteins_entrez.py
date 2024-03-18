@@ -126,8 +126,40 @@ def main(args=None):
                 )
 
     taxIds = list(set(taxIds))
-    print("Processing the following taxonmy IDs:")
+    ####################################################################################################
+    # Process TaxIDs
+
+    print("Processing the following taxonomy IDs:")
     print(taxIds)
+
+    ####################################################################################################
+    # 0) Check if the taxids link to a strain level organism
+    print("Check if taxonomy IDs are on strain rank:")
+
+    success = False
+    for attempt in range(3):
+        try:
+            with Entrez.efetch(db="taxonomy", id=taxIds) as entrez_handle:
+                record = Entrez.read(entrez_handle)
+                if len(record) == len(taxIds):
+                    for taxid, rec in zip(taxIds, record):
+                        rank = rec["Rank"]
+                        if rank != "strain":
+                            sys.exit(f"Strain level check failed for taxid: {taxid}. {taxid} linked to rank: {rank}")
+                    time.sleep(1)  # avoid getting blocked by ncbi
+                    success = True
+                    break
+        except HTTPError as err:
+            if 500 <= err.code <= 599:
+                print("Received error from server %s" % err)
+                print("Attempt %i of 3" % attempt)
+                time.sleep(10)
+            else:
+                raise
+    if not success:
+        sys.exit("Entrez efetch download failed!")
+
+    print("Taxids succeeded strain level check.")
 
     ####################################################################################################
     # 1) for each taxId -> get all assembly IDs
