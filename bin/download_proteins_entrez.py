@@ -27,7 +27,7 @@ def parse_args(args=None):
         nargs="+",
         metavar="FILE",
         type=argparse.FileType("r"),
-        help="List of microbiome files containing: taxon_id [, abundance].",
+        help="List of microbiome files containing: taxon_id [,assembly_id, abundance].",
     )
     parser.add_argument(
         "-m", "--microbiome_ids", required=True, nargs="+", help="List of corresponding microbiome IDs."
@@ -101,6 +101,7 @@ def main(args=None):
 
     # read taxonomic ids for download (together with abundances) and write 'microbiomes_entities' output
     taxIds = []
+    input_taxids_assemblyids = {}
     print("entity_name", "microbiome_id", "entity_weight", sep="\t", file=args.microbiomes_entities)
     for taxid_input, microbiomeId in zip(args.taxid_input, args.microbiome_ids):
         reader = csv.DictReader(taxid_input, delimiter="\t")
@@ -118,6 +119,23 @@ def main(args=None):
                 )
             elif row.keys() == set(["taxon_id"]):
                 taxIds.append(row["taxon_id"])
+                print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
+            elif row.keys() == set(["taxon_id", "assembly_id", "abundance"]):
+                taxIds.append(row["taxon_id"])
+                if row["assembly_id"] != "":
+                    input_taxids_assemblyids[row["taxon_id"]] = row["assembly_id"]
+                print(
+                    row["taxon_id"],
+                    microbiomeId,
+                    row["abundance"],
+                    sep="\t",
+                    file=args.microbiomes_entities,
+                    flush=True,
+                )
+            elif row.keys() == set(["taxon_id", "assembly_id"]):
+                taxIds.append(row["taxon_id"])
+                if row["assembly_id"] != "":
+                    input_taxids_assemblyids[row["taxon_id"]] = row["assembly_id"]
                 print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
             else:
                 sys.exit(
@@ -162,15 +180,17 @@ def main(args=None):
     print("Taxids succeeded strain level check.")
 
     ####################################################################################################
-    # 1) for each taxId -> get all assembly IDs
+    # 1) for each taxId -> get all assembly IDs // skip if assemblyID is given in input
     print("# taxa: ", len(taxIds))
-    print("for each taxon retrieve assembly IDs ...")
+    print("# taxa without assemblyId: ", len(set(taxIds)-set(input_taxids_assemblyids.keys())))
+    print("for each taxon without assemblyID retrieve assembly IDs ...")
 
+    taxIds_without_assemblyID = set(taxIds)-set(input_taxids_assemblyids.keys())
     success = False
     for attempt in range(3):
         try:
             with Entrez.elink(
-                dbfrom="taxonomy", db="assembly", LinkName="taxonomy_assembly", id=taxIds
+                dbfrom="taxonomy", db="assembly", LinkName="taxonomy_assembly", id=taxIds_without_assemblyID
             ) as entrez_handle:
                 assembly_results = Entrez.read(entrez_handle)
             time.sleep(1)  # avoid getting blocked by ncbi
@@ -186,7 +206,7 @@ def main(args=None):
     if not success:
         sys.exit("Entrez elink download failed!")
 
-    # 2) for each taxon -> select one assembly (largest for now)
+    # 2) for each taxon -> select one assembly (largest for now) and merge with input assembly ids
     print("get assembly lengths and select largest assembly for each taxon ...")
     dict_taxId_assemblyId = {}
     for tax_record in assembly_results:
@@ -199,7 +219,8 @@ def main(args=None):
             # get id for largest assembly
             selected_assemblyId = ids[lengths.index(max(lengths))]
             dict_taxId_assemblyId[taxId] = selected_assemblyId
-
+    # Merge input assembly ids with fetched assembly ids for taxids
+    dict_taxId_assemblyId = dict_taxId_assemblyId | input_taxids_assemblyids
     # write taxId - assemblyId out
     print("taxon_id", "assembly_id", sep="\t", file=args.taxa_assemblies, flush=True)
     for taxId in dict_taxId_assemblyId.keys():
