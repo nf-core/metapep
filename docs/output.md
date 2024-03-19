@@ -125,6 +125,8 @@ The following intermediate results are generated and written to the output direc
   - `proteins.entrez.tsv.gz`: contains protein_tmp_id (protein id given by Entrez) and protein_sequence for all proteins downloaded from Entrez.
   - `taxa_assemblies.tsv`: matches taxon id to assembly id.
 
+- `logs/`
+  - `download_proteins.log`: Contains info about the Entrez download of proteins, chosen taxon_ids and specific assembly_ids
 </details>
 
 Proteins are downloaded for input type `taxa` from Entrez.
