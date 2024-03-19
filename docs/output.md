@@ -120,6 +120,7 @@ The following intermediate results are generated and written to the output direc
 <summary>Output files</summary>
 
 - `entrez_data/`
+
   - `entities_proteins.entrez.tsv`: matches temporary protein id given by Entrez to entities. Contains protein_tmp_id and entity_name.
   - `microbiomes_entities.entrez.tsv`: matches entities (taxa) and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for unique microbiome - entity combinations downloaded from Entrez.
   - `proteins.entrez.tsv.gz`: contains protein_tmp_id (protein id given by Entrez) and protein_sequence for all proteins downloaded from Entrez.
@@ -127,7 +128,7 @@ The following intermediate results are generated and written to the output direc
 
 - `logs/`
   - `download_proteins.log`: Contains info about the Entrez download of proteins, chosen taxon_ids and specific assembly_ids
-</details>
+  </details>
 
 Proteins are downloaded for input type `taxa` from Entrez.
 
