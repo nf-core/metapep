@@ -107,7 +107,11 @@ def main(args=None):
         reader = csv.DictReader(taxid_input, delimiter="\t")
         for row in reader:
             # If the abundance is not defined in the taxid_input it is assigned as 1.
-            if row.keys() == set(["taxon_id", "abundance"]):
+            if row.keys() == set(["taxon_id"]):
+                taxIds.append(row["taxon_id"])
+                print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
+
+            elif row.keys() == set(["taxon_id", "abundance"]):
                 taxIds.append(row["taxon_id"])
                 print(
                     row["taxon_id"],
@@ -117,9 +121,7 @@ def main(args=None):
                     file=args.microbiomes_entities,
                     flush=True,
                 )
-            elif row.keys() == set(["taxon_id"]):
-                taxIds.append(row["taxon_id"])
-                print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
+
             elif row.keys() == set(["taxon_id", "assembly_id", "abundance"]):
                 taxIds.append(row["taxon_id"])
                 if row["assembly_id"] != "":
@@ -132,15 +134,17 @@ def main(args=None):
                     file=args.microbiomes_entities,
                     flush=True,
                 )
+
             elif row.keys() == set(["taxon_id", "assembly_id"]):
                 taxIds.append(row["taxon_id"])
                 if row["assembly_id"] != "":
                     input_taxids_assemblyids[row["taxon_id"]] = row["assembly_id"]
                 print(row["taxon_id"], microbiomeId, 1, sep="\t", file=args.microbiomes_entities, flush=True)
+
             else:
                 sys.exit(
                     f"The format of the input file '{taxid_input.name}' is invalid!"
-                    + "It needs to be a csv file containing taxon_id,abundance or just taxon_id."
+                    + "It needs to be a tsv file containing 'taxon_id' and/or optionally 'assembly_id' and 'abundance."
                 )
 
     taxIds = list(set(taxIds))
