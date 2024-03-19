@@ -38,6 +38,18 @@ cond_4,assembly,testdata/test_minigut.contigs.fa.gz,A*01:01,testdata/test_minigu
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
+### Input type taxa
+
+The input type taxa allows the user to specify a taxid on strain level, for which all proteins are downloaded. The microbiome path corresponds to a tsv file containing one column for taxon_id and optionally specific assembly_ids and/or the abundance of a specific strain (see below). If only the taxid(s) (and optionally abundance) is provided, the pipeline will automatically download the largest assembly of the given taxid(s). If a specific assembly_id is provided it will download proteins of the given assembly_id. The input allows for a mixed assignment of specific assembly_ids and unspecific taxon_ids, but this is only recommended for specific use cases.
+
+As the pipeline is only generating reproducible results for this type of input if a specific assembly_id is chosen, it is highly recommended to use this option.
+
+| Column        | Description                                                            |
+| ------------- | ---------------------------------------------------------------------- |
+| `taxon_id`    | Chosen Taxids for the microbiome condition (Must be on strain level).  |
+| `assembly_id` | Specific assembly id for a strain level taxid.                         |
+| `abundance`   | Abundance of strain level taxid and/or assembly id.                    |
+
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
@@ -121,6 +133,8 @@ To further assist in reproducbility, you can use share and re-use [parameter fil
 :::tip
 If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
 :::
+
+If the pipeline input contains microbiomes of type `taxa` it may not generate the same results, as for each taxid the largest assembly is chosen, wihch might change. Therefore, using a specific assembly_id as explained in the section `Input type taxa` is highly recommended.
 
 ## Core Nextflow arguments
 
