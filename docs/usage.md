@@ -44,11 +44,11 @@ The input type taxa allows the user to specify a taxid on strain level, for whic
 
 As the pipeline is only generating reproducible results for this type of input if a specific assembly_id is chosen, it is highly recommended to use this option.
 
-| Column        | Description                                                            |
-| ------------- | ---------------------------------------------------------------------- |
-| `taxon_id`    | Chosen Taxids for the microbiome condition (Must be on strain level).  |
-| `assembly_id` | Specific assembly id for a strain level taxid.                         |
-| `abundance`   | Abundance of strain level taxid and/or assembly id.                    |
+| Column        | Description                                                           |
+| ------------- | --------------------------------------------------------------------- |
+| `taxon_id`    | Chosen Taxids for the microbiome condition (Must be on strain level). |
+| `assembly_id` | Specific assembly id for a strain level taxid.                        |
+| `abundance`   | Abundance of strain level taxid and/or assembly id.                   |
 
 ## Running the pipeline
 
