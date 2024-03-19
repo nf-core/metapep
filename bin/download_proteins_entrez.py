@@ -187,6 +187,8 @@ def main(args=None):
     # 1) for each taxId -> get all assembly IDs // skip if assemblyID is given in input
     print("# taxa: ", len(taxIds))
     print("# taxa without assemblyId: ", len(set(taxIds)-set(input_taxids_assemblyids.keys())))
+    if len(set(taxIds)) != len(set(input_taxids_assemblyids.keys())) and len(set(input_taxids_assemblyids.keys())) != 0:
+        print("WARNING: A mix of specific assembly Ids and unspecific taxids was chosen!")
     print("for each taxon without assemblyID retrieve assembly IDs ...")
 
     taxIds_without_assemblyID = set(taxIds)-set(input_taxids_assemblyids.keys())
