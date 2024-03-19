@@ -56,17 +56,6 @@ def parse_args(args=None):
         type=str,
         help="TSV file associating entrez entity_name with microbiome_id and entity_weight.",
     )
-    # Bare Proteins
-    parser.add_argument(
-        "-bp", "--bare-proteins", type=str, nargs="*", help="Protein TSV file with user-provided proteins"
-    )
-    parser.add_argument(
-        "-bpm",
-        "--bare-proteins-microbiome-ids",
-        type=int,
-        nargs="*",
-        help="Microbiome ids of the user provided protein TSV files in corresponding order",
-    )
 
     # Output
     parser.add_argument(
@@ -241,10 +230,6 @@ def main(args=None):
             entities_microbiomes_proteins[microbiomes_entities_columns].drop_duplicates().to_csv(
                 outfile_microbiomes_entities, sep="\t", header=False, index=False
             )
-
-        #
-        # BARE PROTEINS
-        #
 
 
 if __name__ == "__main__":
