@@ -212,6 +212,7 @@ def main(args=None):
     if not success:
         sys.exit("Entrez elink download failed!")
 
+    ####################################################################################################
     # 2) for each taxon -> select one assembly (largest for now) and merge with input assembly ids
     print("get assembly lengths and select largest assembly for each taxon ...")
     dict_taxId_assemblyId = {}
@@ -232,6 +233,7 @@ def main(args=None):
     for taxId in dict_taxId_assemblyId.keys():
         print(taxId, dict_taxId_assemblyId[taxId], sep="\t", file=args.taxa_assemblies, flush=True)
 
+    ####################################################################################################
     # 3) (selected) assembly -> nucleotide sequences
     # (maybe split here)
     assemblyIds = dict_taxId_assemblyId.values()
@@ -268,6 +270,7 @@ def main(args=None):
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
 
+    ####################################################################################################
     # 4) nucelotide sequences -> proteins
     print("for each nucleotide sequence get proteins ...")
 
@@ -309,6 +312,7 @@ def main(args=None):
     print("# proteins (unique): ", len(proteinIds))
     # -> # proteins with refseq source (<= # IPG proteins)
 
+    ####################################################################################################
     # 5) download protein FASTAs, convert to TSV
     print("    download proteins ...")
     # (or if mem problem: assembly-wise)
@@ -361,11 +365,13 @@ def main(args=None):
     if not success:
         sys.exit("Entrez efetch download failed!")
 
+    ####################################################################################################
     # 6) write out 'entities_proteins.entrez.tsv'
     print("protein_tmp_id", "entity_name", sep="\t", file=args.entities_proteins)
     dict_assemblyId_taxId = {v: k for k, v in dict_taxId_assemblyId.items()}
     if len(dict_assemblyId_taxId) != len(dict_taxId_assemblyId):
         sys.exit("Creation of dict_assemblyId_taxId failed!")
+
     for proteinId in proteinIds:
         accVersion = dict_protein_uid_acc[proteinId]
         # write out protein_tmp_id, entity_name (taxon_id)
@@ -377,7 +383,6 @@ def main(args=None):
     # in contrast, for assemblies UIDs are written out
 
     print("Done!")
-
 
 if __name__ == "__main__":
     sys.exit(main())
