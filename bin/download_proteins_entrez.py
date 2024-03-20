@@ -13,11 +13,6 @@ from urllib.error import HTTPError
 
 from Bio import Entrez, SeqIO
 
-# TODO
-# clean code
-# double check!
-
-
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -89,7 +84,7 @@ def get_assembly_length(assemblyId):
         sys.exit("Entrez efetch download failed!")
 
     root = ET.fromstring("<root>" + str(assembly_stats["DocumentSummarySet"]["DocumentSummary"][0]["Meta"]) + "</root>")
-    return root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text
+    return int(root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text)
 
 
 def main(args=None):
@@ -214,6 +209,11 @@ def main(args=None):
 
     ####################################################################################################
     # 2) for each taxon -> select one assembly (largest for now) and merge with input assembly ids
+    #    Selecting the "largest" assembly is not reproducible, there are taxon_ids (e.g. 83333
+    #    (E.coli K12)) which contains many duplicate assembly lengths. This results in different
+    #    numbers of downloaded proteins for each assembly, in combination with other assemblies
+    #    (as the overlap may be different between assemblies even though having the same size)
+
     print("get assembly lengths and select largest assembly for each taxon ...")
     dict_taxId_assemblyId = {}
     for tax_record in assembly_results:
@@ -235,7 +235,7 @@ def main(args=None):
 
     ####################################################################################################
     # 3) (selected) assembly -> nucleotide sequences
-    # (maybe split here)
+
     assemblyIds = dict_taxId_assemblyId.values()
     print("# selected assemblies: ", len(assemblyIds))
     print("for each assembly get nucloetide sequence IDs...")
