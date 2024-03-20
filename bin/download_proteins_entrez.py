@@ -315,55 +315,73 @@ def main(args=None):
     ####################################################################################################
     # 5) download protein FASTAs, convert to TSV
     print("    download proteins ...")
-    # (or if mem problem: assembly-wise)
-    # TODO check if max. number of item that can be returned by efetch (retmax)!? compare numbers!
 
+    # Chunking into retmax (maximum defined by E-Utilities 9999)
+    prot_id_chunks = []
+    retmax = 9999
+    if len(proteinIds) > retmax:
+        for n_chunk in range(1, int(len(proteinIds)/retmax)+1):
+            prot_id_chunks.append(proteinIds[n_chunk*retmax-retmax:retmax])
+        prot_id_chunks.append(proteinIds[(n_chunk+1)*retmax-retmax:])
+    else:
+        prot_id_chunks.append(proteinIds)
+
+    print(f"Generated {len(prot_id_chunks)} chunks and start processing:")
+
+    protein_summaries = []
     # first retrieve mapping for protein UIDs and accession versions
-    success = False
-    for attempt in range(3):
-        try:
-            with Entrez.esummary(
-                db="protein", id=",".join(proteinIds)
-            ) as entrez_handle:  # esummary doesn't work on python lists somehow
-                protein_summaries = Entrez.read(entrez_handle)
-            time.sleep(1)  # avoid getting blocked by ncbi
-            success = True
-            break
-        except HTTPError as err:
-            if 500 <= err.code <= 599:
-                print("Received error from server %s" % err)
-                print("Attempt %i of 3" % attempt)
-                time.sleep(10)
-            else:
-                raise
-    if not success:
-        sys.exit("Entrez esummary download failed!")
+    for prot_id_chunk in prot_id_chunks:
+        print(f"Process chunk with {len(prot_id_chunk)} protein_ids:")
+        success = False
+        for attempt in range(3):
+            try:
+                with Entrez.esummary(
+                    db="protein", id=",".join(prot_id_chunk)
+                ) as entrez_handle:  # esummary doesn't work on python lists somehow
+                    protein_summaries.extend(Entrez.read(entrez_handle))
+                time.sleep(1)  # avoid getting blocked by ncbi
+                success = True
+                break
+            except HTTPError as err:
+                if 500 <= err.code <= 599:
+                    print("Received error from server %s" % err)
+                    print("Attempt %i of 3" % attempt)
+                    time.sleep(10)
+                else:
+                    raise
+        if not success:
+            sys.exit("Entrez esummary download failed!")
+
+        # download actual fasta records and write out
+        success = False
+        for attempt in range(3):
+            try:
+                with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=prot_id_chunk) as entrez_handle:
+                    with gzip.open(args.proteins, "wt") as out_handle:
+                        print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
+                        for record in SeqIO.parse(entrez_handle, "fasta"):
+                            print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
+                time.sleep(1)  # avoid getting blocked by ncbi
+                success = True
+                break
+            except HTTPError as err:
+                if 500 <= err.code <= 599:
+                    print("Received error from server %s" % err)
+                    print("Attempt %i of 3" % attempt)
+                    time.sleep(10)
+                else:
+                    raise
+        if not success:
+            sys.exit("Entrez efetch download failed!")
+
+        print(f"Downloaded a total of {len(protein_summaries)} protein summaries and their respective sequences.")
 
     dict_protein_uid_acc = {}
     for protein_summary in protein_summaries:
-        dict_protein_uid_acc[protein_summary["Id"]] = protein_summary["AccessionVersion"]
+            dict_protein_uid_acc[protein_summary["Id"]] = protein_summary["AccessionVersion"]
 
-    # download actual fasta records and write out
-    success = False
-    for attempt in range(3):
-        try:
-            with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
-                with gzip.open(args.proteins, "wt") as out_handle:
-                    print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
-                    for record in SeqIO.parse(entrez_handle, "fasta"):
-                        print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
-            time.sleep(1)  # avoid getting blocked by ncbi
-            success = True
-            break
-        except HTTPError as err:
-            if 500 <= err.code <= 599:
-                print("Received error from server %s" % err)
-                print("Attempt %i of 3" % attempt)
-                time.sleep(10)
-            else:
-                raise
-    if not success:
-        sys.exit("Entrez efetch download failed!")
+    if len(proteinIds) != len(dict_protein_uid_acc.keys()):
+        sys.exit(f"Unmatched size of downloaded protein ids ({len(dict_protein_uid_acc.keys())}) and input protein ids ({len(proteinIds)})")
 
     ####################################################################################################
     # 6) write out 'entities_proteins.entrez.tsv'
