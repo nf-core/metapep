@@ -83,7 +83,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        tests: ["test_all", "test_mouse", "test_taxa_only"] # add further test profiles here, will be run in parallel (but only with one nextflow version)
+        tests: ["test_all", "test_mouse", "test_taxa_only", "test_taxa_specific_assembly"] # add further test profiles here, will be run in parallel (but only with one nextflow version)
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v2
