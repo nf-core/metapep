@@ -136,7 +136,7 @@ To further assist in reproducbility, you can use share and re-use [parameter fil
 If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
 :::
 
-If the pipeline input contains microbiomes of type `taxa` it may not generate the same results, as for each taxid the largest assembly is chosen, wihch might change. Therefore, using a specific assembly_id as explained in the section `Input type taxa` is highly recommended.
+If the pipeline input contains microbiomes of type `taxa` it may not generate the same results, as for each taxid the largest assembly is chosen, which might change. Therefore, using a specific assembly_id as explained in the section `Input type taxa` is highly recommended. If only a taxid is used for input the pipeline generates a linking file for taxid and assembly id (`./outdir/entrez_data/taxa_assembly.tsv`) which can be used for following pipeline runs.
 
 ## Core Nextflow arguments
 
