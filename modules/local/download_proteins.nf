@@ -17,7 +17,7 @@ process DOWNLOAD_PROTEINS {
     path    "taxa_assemblies.tsv"               , emit:  ch_entrez_assemblies
     path    "entities_proteins.entrez.tsv"      , emit:  ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
     path    "microbiomes_entities.entrez.tsv"   , emit:  ch_entrez_microbiomes_entities  // entity_name, microbiome_id, entity_weight
-    path    "download_proteins.log"                             , emit:  log
+    path    "download_proteins.log"             , emit:  log
     path    "versions.yml"                      , emit:  versions
 
     script:
