@@ -378,7 +378,7 @@ def main(args=None):
 
     dict_protein_uid_acc = {}
     for protein_summary in protein_summaries:
-            dict_protein_uid_acc[protein_summary["Id"]] = protein_summary["AccessionVersion"]
+        dict_protein_uid_acc[protein_summary["Id"]] = protein_summary["AccessionVersion"]
 
     if len(proteinIds) != len(dict_protein_uid_acc.keys()):
         sys.exit(f"Unmatched size of downloaded protein ids ({len(dict_protein_uid_acc.keys())}) and input protein ids ({len(proteinIds)})")
