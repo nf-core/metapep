@@ -113,8 +113,6 @@ workflow METAPEP {
             DOWNLOAD_PROTEINS.out.ch_entrez_proteins.ifEmpty([]),
             DOWNLOAD_PROTEINS.out.ch_entrez_entities_proteins.ifEmpty([]),
             DOWNLOAD_PROTEINS.out.ch_entrez_microbiomes_entities.ifEmpty([]),
-            PROCESS_INPUT.out.ch_proteins_input.collect { meta, file -> file }.ifEmpty([]),
-            PROCESS_INPUT.out.ch_proteins_input.collect { meta, file -> meta }.ifEmpty([])
         )
         ch_versions = ch_versions.mix(GENERATE_PROTEIN_AND_ENTITY_IDS.out.versions)
 

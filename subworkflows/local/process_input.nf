@@ -68,16 +68,6 @@ workflow PROCESS_INPUT {
             .set { ch_taxa_input }
         ch_taxa_input.dump(tag:"taxa")
 
-        // PROTEINS
-        ch_microbiomes_branch.proteins
-            .map { row ->
-                    def meta = [:]
-                    meta.id = row.microbiome_id
-                    return [ meta, row.microbiome_path ]
-                }
-            .set { ch_proteins_input }
-        ch_proteins_input.dump(tag:"proteins")
-
         // ASSEMBLY
         // Using the microbiome_bare_id to handle co-assembled input
         // microbiome_bare_id will be identical to microbiome_id if not co-assembled
@@ -175,7 +165,6 @@ workflow PROCESS_INPUT {
     emit:
     peptide_lengths         = peptide_lengths.collect()
     ch_taxa_input
-    ch_proteins_input
     ch_nucl_input
     ch_weights
     ch_microbiomes          = CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
