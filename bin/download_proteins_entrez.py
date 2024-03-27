@@ -321,7 +321,8 @@ def main(args=None):
     retmax = 9999
     if len(proteinIds) > retmax:
         for n_chunk in range(1, int(len(proteinIds)/retmax)+1):
-            prot_id_chunks.append(proteinIds[n_chunk*retmax-retmax:retmax])
+            chunk_start = n_chunk*retmax-retmax
+            prot_id_chunks.append(proteinIds[chunk_start:chunk_start+retmax])
         prot_id_chunks.append(proteinIds[(n_chunk+1)*retmax-retmax:])
     else:
         prot_id_chunks.append(proteinIds)
