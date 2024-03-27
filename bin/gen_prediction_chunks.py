@@ -69,6 +69,13 @@ def parse_args():
         default=False,
         action="store_true",
     )
+    parser.add_argument(
+        "-mcn",
+        "--maximum_chunk_number",
+        help="Maximum number of generated chunks (resulting prediction processes). Default: 1000",
+        type=int,
+        default=1000,
+    )
 
     return parser.parse_args()
 
@@ -80,19 +87,24 @@ def write_chunks(data, alleles, remainder=False, pbar=None):
     indicating the allele name."""
     global cur_chunk
 
-    if remainder and len(data) > args.max_chunk_size:
+    max_chunk_size = args.max_chunk_size
+
+    if remainder and len(data) > max_chunk_size:
         print("ERROR: Something went wrong!", file=sys.stderr)
         sys.exit(1)
 
+    if len(data)/max_chunk_size > args.maximum_chunk_number:
+        max_chunk_size = len(data)/args.maximum_chunk_number
+
     allele_name = alleles[alleles["allele_id"] == data.iloc[0].allele_id]["allele_name"].iloc[0]
     written = pd.Index([])
-    for start in range(0, len(data), args.max_chunk_size):
+    for start in range(0, len(data), max_chunk_size):
         # if not handling remainder: only write out full chunks here
-        if remainder or len(data) - start >= args.max_chunk_size:
+        if remainder or len(data) - start >= max_chunk_size:
             with open(os.path.join(args.outdir, "peptides_" + str(cur_chunk).rjust(5, "0") + ".txt"), "w") as outfile:
                 print(f"#{allele_name}#{data.iloc[0].allele_id}", file=outfile)
-                write = data.iloc[start : start + args.max_chunk_size]
-                written = written.append(data.index[start : start + args.max_chunk_size])
+                write = data.iloc[start : start + max_chunk_size]
+                written = written.append(data.index[start : start + max_chunk_size])
                 if pbar:
                     pbar.update(len(write))
                 write[["peptide_id", "peptide_sequence"]].to_csv(outfile, sep="\t", index=False)
@@ -101,7 +113,6 @@ def write_chunks(data, alleles, remainder=False, pbar=None):
     # delete chunks that were written out already
     data.drop(written, inplace=True)
     return data
-
 
 ####################################################################################################
 
