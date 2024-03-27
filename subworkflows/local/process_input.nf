@@ -69,9 +69,9 @@ workflow PROCESS_INPUT {
         ch_taxa_input.dump(tag:"taxa")
 
         // ASSEMBLY
-            // Using the microbiome_bare_id to handle co-assembled input
-            // microbiome_bare_id will be identical to microbiome_id if not co-assembled
-            // The change in ID prevents redundant processes in protein prediction
+        // Using the microbiome_bare_id to handle co-assembled input
+        // microbiome_bare_id will be identical to microbiome_id if not co-assembled
+        // The change in ID prevents redundant processes in protein prediction
         ch_microbiomes_branch.assembly
             .map { row ->
                     def meta = [:]
