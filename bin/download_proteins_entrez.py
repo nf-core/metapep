@@ -13,11 +13,6 @@ from urllib.error import HTTPError
 
 from Bio import Entrez, SeqIO
 
-# TODO
-# clean code
-# double check!
-
-
 def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -89,7 +84,7 @@ def get_assembly_length(assemblyId):
         sys.exit("Entrez efetch download failed!")
 
     root = ET.fromstring("<root>" + str(assembly_stats["DocumentSummarySet"]["DocumentSummary"][0]["Meta"]) + "</root>")
-    return root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text
+    return int(root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text)
 
 
 def main(args=None):
@@ -212,7 +207,13 @@ def main(args=None):
     if not success:
         sys.exit("Entrez elink download failed!")
 
+    ####################################################################################################
     # 2) for each taxon -> select one assembly (largest for now) and merge with input assembly ids
+    #    Selecting the "largest" assembly is not reproducible, there are taxon_ids (e.g. 83333
+    #    (E.coli K12)) which contains many duplicate assembly lengths. This results in different
+    #    numbers of downloaded proteins for each assembly, in combination with other assemblies
+    #    (as the overlap may be different between assemblies even though having the same size)
+
     print("get assembly lengths and select largest assembly for each taxon ...")
     dict_taxId_assemblyId = {}
     for tax_record in assembly_results:
@@ -232,8 +233,9 @@ def main(args=None):
     for taxId in dict_taxId_assemblyId.keys():
         print(taxId, dict_taxId_assemblyId[taxId], sep="\t", file=args.taxa_assemblies, flush=True)
 
+    ####################################################################################################
     # 3) (selected) assembly -> nucleotide sequences
-    # (maybe split here)
+
     assemblyIds = dict_taxId_assemblyId.values()
     print("# selected assemblies: ", len(assemblyIds))
     print("for each assembly get nucloetide sequence IDs...")
@@ -268,6 +270,7 @@ def main(args=None):
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
 
+    ####################################################################################################
     # 4) nucelotide sequences -> proteins
     print("for each nucleotide sequence get proteins ...")
 
@@ -309,63 +312,85 @@ def main(args=None):
     print("# proteins (unique): ", len(proteinIds))
     # -> # proteins with refseq source (<= # IPG proteins)
 
+    ####################################################################################################
     # 5) download protein FASTAs, convert to TSV
     print("    download proteins ...")
-    # (or if mem problem: assembly-wise)
-    # TODO check if max. number of item that can be returned by efetch (retmax)!? compare numbers!
 
+    # Chunking into retmax (maximum defined by E-Utilities 9999)
+    prot_id_chunks = []
+    retmax = 9999
+    if len(proteinIds) > retmax:
+        for n_chunk in range(1, int(len(proteinIds)/retmax)+1):
+            chunk_start = n_chunk*retmax-retmax
+            prot_id_chunks.append(proteinIds[chunk_start:chunk_start+retmax])
+        prot_id_chunks.append(proteinIds[(n_chunk+1)*retmax-retmax:])
+    else:
+        prot_id_chunks.append(proteinIds)
+
+    print(f"Generated {len(prot_id_chunks)} chunks and start processing:")
+
+    protein_summaries = []
     # first retrieve mapping for protein UIDs and accession versions
-    success = False
-    for attempt in range(3):
-        try:
-            with Entrez.esummary(
-                db="protein", id=",".join(proteinIds)
-            ) as entrez_handle:  # esummary doesn't work on python lists somehow
-                protein_summaries = Entrez.read(entrez_handle)
-            time.sleep(1)  # avoid getting blocked by ncbi
-            success = True
-            break
-        except HTTPError as err:
-            if 500 <= err.code <= 599:
-                print("Received error from server %s" % err)
-                print("Attempt %i of 3" % attempt)
-                time.sleep(10)
-            else:
-                raise
-    if not success:
-        sys.exit("Entrez esummary download failed!")
+    for prot_id_chunk in prot_id_chunks:
+        print(f"Process chunk with {len(prot_id_chunk)} protein_ids:")
+        success = False
+        for attempt in range(3):
+            try:
+                with Entrez.esummary(
+                    db="protein", id=",".join(prot_id_chunk)
+                ) as entrez_handle:  # esummary doesn't work on python lists somehow
+                    protein_summaries.extend(Entrez.read(entrez_handle))
+                time.sleep(1)  # avoid getting blocked by ncbi
+                success = True
+                break
+            except HTTPError as err:
+                if 500 <= err.code <= 599:
+                    print("Received error from server %s" % err)
+                    print("Attempt %i of 3" % attempt)
+                    time.sleep(10)
+                else:
+                    raise
+        if not success:
+            sys.exit("Entrez esummary download failed!")
+
+        # download actual fasta records and write out
+        success = False
+        for attempt in range(3):
+            try:
+                with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=prot_id_chunk) as entrez_handle:
+                    with gzip.open(args.proteins, "wt") as out_handle:
+                        print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
+                        for record in SeqIO.parse(entrez_handle, "fasta"):
+                            print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
+                time.sleep(1)  # avoid getting blocked by ncbi
+                success = True
+                break
+            except HTTPError as err:
+                if 500 <= err.code <= 599:
+                    print("Received error from server %s" % err)
+                    print("Attempt %i of 3" % attempt)
+                    time.sleep(10)
+                else:
+                    raise
+        if not success:
+            sys.exit("Entrez efetch download failed!")
+
+        print(f"Downloaded a total of {len(protein_summaries)} protein summaries and their respective sequences.")
 
     dict_protein_uid_acc = {}
     for protein_summary in protein_summaries:
         dict_protein_uid_acc[protein_summary["Id"]] = protein_summary["AccessionVersion"]
 
-    # download actual fasta records and write out
-    success = False
-    for attempt in range(3):
-        try:
-            with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=proteinIds) as entrez_handle:
-                with gzip.open(args.proteins, "wt") as out_handle:
-                    print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
-                    for record in SeqIO.parse(entrez_handle, "fasta"):
-                        print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
-            time.sleep(1)  # avoid getting blocked by ncbi
-            success = True
-            break
-        except HTTPError as err:
-            if 500 <= err.code <= 599:
-                print("Received error from server %s" % err)
-                print("Attempt %i of 3" % attempt)
-                time.sleep(10)
-            else:
-                raise
-    if not success:
-        sys.exit("Entrez efetch download failed!")
+    if len(proteinIds) != len(dict_protein_uid_acc.keys()):
+        sys.exit(f"Unmatched size of downloaded protein ids ({len(dict_protein_uid_acc.keys())}) and input protein ids ({len(proteinIds)})")
 
+    ####################################################################################################
     # 6) write out 'entities_proteins.entrez.tsv'
     print("protein_tmp_id", "entity_name", sep="\t", file=args.entities_proteins)
     dict_assemblyId_taxId = {v: k for k, v in dict_taxId_assemblyId.items()}
     if len(dict_assemblyId_taxId) != len(dict_taxId_assemblyId):
         sys.exit("Creation of dict_assemblyId_taxId failed!")
+
     for proteinId in proteinIds:
         accVersion = dict_protein_uid_acc[proteinId]
         # write out protein_tmp_id, entity_name (taxon_id)
@@ -377,7 +402,6 @@ def main(args=None):
     # in contrast, for assemblies UIDs are written out
 
     print("Done!")
-
 
 if __name__ == "__main__":
     sys.exit(main())
