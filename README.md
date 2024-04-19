@@ -66,13 +66,12 @@ For more details about the output files and reports, please refer to the
 
 ## Credits
 
-nf-core/metapep was originally written by Sabrina Krakau and Leon Kuchenbecker.
+nf-core/metapep was written by [Léon Kuchenbecker](https://github.com/lkuchenb) at the [Kohlbacher lab](https://kohlbacherlab.org), [Sabrina Krakau](https://github.com/skrakau) and [Till Englert](https://github.com/tillenglert) at the [QBiC](http://qbic.life/).
 
 We thank the following people for their extensive assistance in the development of this pipeline:
 
-- Antonia Schuster
-- Daniel Straub
-- Till Englert
+- [Antonia Schuster](https://github.com/AntoniaSchuster)
+- [Daniel Straub](https://github.com/d4straub)
 
 ## Contributions and Support
 
