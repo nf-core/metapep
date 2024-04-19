@@ -94,6 +94,7 @@ def write_chunks(data, alleles, remainder=False, pbar=None):
         sys.exit(1)
 
     if len(data)/max_chunk_size > args.maximum_chunk_number:
+        print("WARN: Chunk size is too small and too many chunks are generated. Chunksize is increased to match the maximum number of chunks.")
         max_chunk_size = len(data)/args.maximum_chunk_number
 
     allele_name = alleles[alleles["allele_id"] == data.iloc[0].allele_id]["allele_name"].iloc[0]
