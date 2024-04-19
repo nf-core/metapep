@@ -1,0 +1,22 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+    tag "test_mhcnuggets_2"
+    tag "pipeline"
+
+    test("test mhcnuggets hla type 2 prediction") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}
