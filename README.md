@@ -69,6 +69,7 @@ For more details about the output files and reports, please refer to the
 nf-core/metapep was originally written by Sabrina Krakau and Leon Kuchenbecker.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
+
 - Antonia Schuster
 - Daniel Straub
 - Till Englert
