@@ -80,7 +80,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def write_chunks(data, alleles, remainder=False, pbar=None):
+def write_chunks(data, alleles, max_task_per_allele, remainder=False, pbar=None):
     """Takes data in form of a table of peptide_id, peptide_sequence and
     identical allele_name values. The data is partitioned into chunks and
     written into individual output files, prepended with a comment line (#)
@@ -90,9 +90,9 @@ def write_chunks(data, alleles, remainder=False, pbar=None):
     max_chunk_size = args.max_chunk_size
 
     # Dynamically increase the chunk size dependent on the maximum number of allowed processes.
-    if len(data)/max_chunk_size > args.maximum_chunk_number:
+    if len(data)/max_chunk_size > max_task_per_allele:
         print("WARN: Chunk size is too small and too many chunks are generated. Chunksize is increased to match the maximum number of chunks.")
-        max_chunk_size = int(len(data)/args.maximum_chunk_number)+1 # Make sure that all peptides end up in chunks
+        max_chunk_size = int(len(data)/max_task_per_allele)+1 # Make sure that all peptides end up in chunks
 
     if remainder and len(data) > max_chunk_size:
         print("ERROR: Something went wrong!", file=sys.stderr)
@@ -196,6 +196,10 @@ try:
     cur_chunk = 0
     requests = 0
     keep = pd.DataFrame()
+
+    # Define how many chunks may be created per allele
+    max_task_per_allele = int(args.maximum_chunk_number/len(alleles["allele_id"])) # cut instead of round to ensure being lower than maximum
+
     # Process peptides chunk-wise, write out into files with max_chunk_size or keep for next chunk if remaining requests, i.e. < max_chunk_size for one allele
     with pd.read_csv(args.peptides, sep="\t", index_col="peptide_id", chunksize=args.proc_chunk_size) as reader:
         for c, peptides in enumerate(reader):
@@ -228,7 +232,7 @@ try:
             keep = (
                 pd.concat([keep, to_predict], ignore_index=True)
                 .groupby("allele_id", group_keys=False)
-                .apply(lambda x: write_chunks(x, alleles))
+                .apply(lambda x: write_chunks(x, alleles, max_task_per_allele))
             )
             # use group_keys=False to avoid generation of extra index with "allele_id"
 
@@ -236,7 +240,7 @@ try:
             keep.info(verbose=False, memory_usage=print_mem)
 
     # Write out remaining peptides
-    keep.groupby("allele_id", group_keys=False).apply(lambda x: write_chunks(x, alleles, remainder=True))
+    keep.groupby("allele_id", group_keys=False).apply(lambda x: write_chunks(x, alleles, max_task_per_allele, remainder=True))
 
     # We're happy if we got here
     print(f"All done. Written {requests} peptide prediction requests into {cur_chunk} chunks.")
