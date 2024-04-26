@@ -10,8 +10,8 @@ nextflow_pipeline {
         when {
             params {
                 outdir = "$outputDir"
-                ncbi_email = "$NCBI_EMAIL"
-                ncbi_key = "$NCBI_KEY"
+                ncbi_email = "\$NCBI_EMAIL"
+                ncbi_key = "\$NCBI_KEY"
             }
         }
 

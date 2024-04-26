@@ -108,6 +108,9 @@ jobs:
 
   profile_download:
     name: nf-test with profiles needing entrez downloads
+    # Only run on PRs from branches of nf-core/metapep repository or on push if this is the nf-core dev branch (merged PRs)
+    # (GitHub secrets are not accessible for workflows from forks)
+    if: ${{ github.event.pull_request.head.repo.full_name == 'nf-core/metapep' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}
     needs: define_nxf_versions
     runs-on: ubuntu-latest
     strategy:
