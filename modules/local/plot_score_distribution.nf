@@ -2,7 +2,7 @@ process PLOT_SCORE_DISTRIBUTION {
     label 'cache_lenient'
     label 'process_medium_memory'
 
-    conda "bioconda::bioconductor-alphabeta:1.8.0"
+    conda "bioconda::bioconductor-alphabeta=1.8.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' :
         'biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
