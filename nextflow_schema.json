@@ -333,6 +333,12 @@
                     "description": "Maximum chunk size (#epitope predictions) for processing of downstream visualisations.",
                     "fa_icon": "fas fa-cogs"
                 },
+                "max_task_num": {
+                    "type": "integer",
+                    "default": 1000,
+                    "description": "Maximum number of tasks submitted by `PREDICT_EPITOPES` process",
+                    "fa_icon": "fas fa-cogs"
+                },
                 "pred_buffer_files": {
                     "type": "integer",
                     "default": 1000,

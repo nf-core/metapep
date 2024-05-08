@@ -162,6 +162,15 @@ workflow PROCESS_INPUT {
             .set { ch_weights }
             ch_weights.dump(tag:"weights")
 
+    CHECK_SAMPLESHEET_CREATE_TABLES.out.alleles
+        .countLines()
+        .map{
+            it ->
+                if (it.toInteger()-1 > params.max_task_num) {
+                    error "Number of chosen alleles is larger than the number of maximum tasks submitted by the peptide epitope prediction process. For each allele at least 1 task needs to be executed."
+                }
+            }
+
     emit:
     peptide_lengths         = peptide_lengths.collect()
     ch_taxa_input
