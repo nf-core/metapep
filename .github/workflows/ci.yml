@@ -99,13 +99,11 @@ jobs:
         NXF_VER:
           - "23.04.0"
           - "latest-everything"
-        tags:
+        profile:
           - "test_all"
           - "test_mouse"
           - "test_taxa_only"
           - "test_taxa_specific_assembly"
-        profile:
-          - "docker"
 
     steps:
       - name: Check out pipeline code
