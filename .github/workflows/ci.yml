@@ -13,7 +13,7 @@ env:
   NFTEST_VER: "0.8.4"
 
 concurrency:
-  group: "{% raw %}${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}{% endraw %}"
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -74,7 +74,7 @@ jobs:
     name: nf-test with profiles needing entrez downloads
     # Only run on PRs from branches of nf-core/metapep repository or on push if this is the nf-core dev branch (merged PRs)
     # (GitHub secrets are not accessible for workflows from forks)
-    if: "{% raw %}${{ github.event.pull_request.head.repo.full_name == 'nf-core/metapep' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}{% endraw %}"
+    if: "${{ github.event.pull_request.head.repo.full_name == 'nf-core/metapep' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
