@@ -87,7 +87,7 @@ jobs:
         with:
           report_paths: "*.xml"
 
-  profile_download:
+  test_profile_download:
     name: nf-test with profiles needing entrez downloads
     # Only run on PRs from branches of nf-core/metapep repository or on push if this is the nf-core dev branch (merged PRs)
     # (GitHub secrets are not accessible for workflows from forks)
