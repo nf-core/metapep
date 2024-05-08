@@ -2,4 +2,3 @@ repository_type: pipeline
 lint:
   files_exist:
     - conf/igenomes.config
-  actions_ci: False

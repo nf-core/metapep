@@ -3,47 +3,30 @@ name: nf-core CI
 on:
   push:
     branches:
-      - "dev"
+      - dev
   pull_request:
-    branches:
-      - "dev"
-      - "master"
   release:
-    types:
-      - "published"
+    types: [published]
 
 env:
   NXF_ANSI_LOG: false
   NFTEST_VER: "0.8.4"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: "{% raw %}${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}{% endraw %}"
   cancel-in-progress: true
 
 jobs:
-  define_nxf_versions:
-    name: Choose nextflow versions to test against depending on target branch
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.nxf_versions.outputs.matrix }}
-    steps:
-      - id: nxf_versions
-        run: |
-          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "dev" && "${{ matrix.NXF_VER }}" != "latest-everything" ]]; then
-            echo matrix='["latest-everything"]' | tee -a $GITHUB_OUTPUT
-          else
-            echo matrix='["latest-everything", "23.04.0"]' | tee -a $GITHUB_OUTPUT
-          fi
-
   test_profile_standard:
     name: nf-test with standard profiles
-    needs: define_nxf_versions
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        NXF_VER: ${{ fromJson(needs.define_nxf_versions.outputs.matrix) }}
-        tags:
+        NXF_VER:
+          - "23.04.0"
+          - "latest-everything"
+        profile:
           - "test"
           - "test_model_information"
           - "test_mouse_all_pep_lengths"
@@ -53,8 +36,6 @@ jobs:
           - "test_mhcflurry"
           - "test_mhcnuggets_1"
           - "test_mhcnuggets_2"
-        profile:
-          - "docker"
 
     steps:
       - name: Check out pipeline code
@@ -92,7 +73,7 @@ jobs:
 
       - name: Run nf-test
         run: |
-          nf-test test --tag ${{ matrix.tags }} --profile ${{ matrix.tags }},${{ matrix.profile }} --junitxml=test.xml
+          nf-test test --tag ${{ matrix.profile }} --profile ${{ matrix.profile }},docker --junitxml=test.xml
 
       - name: Output log on failure
         if: failure()
@@ -110,13 +91,14 @@ jobs:
     name: nf-test with profiles needing entrez downloads
     # Only run on PRs from branches of nf-core/metapep repository or on push if this is the nf-core dev branch (merged PRs)
     # (GitHub secrets are not accessible for workflows from forks)
-    if: ${{ github.event.pull_request.head.repo.full_name == 'nf-core/metapep' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}
-    needs: define_nxf_versions
+    if: "{% raw %}${{ github.event.pull_request.head.repo.full_name == 'nf-core/metapep' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}{% endraw %}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        NXF_VER: ${{ fromJson(needs.define_nxf_versions.outputs.matrix) }}
+        NXF_VER:
+          - "23.04.0"
+          - "latest-everything"
         tags:
           - "test_all"
           - "test_mouse"
@@ -164,7 +146,7 @@ jobs:
           NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
           NCBI_KEY: ${{ secrets.NCBI_KEY }}
         run: |
-          nf-test test --tag ${{ matrix.tags }} --profile ${{ matrix.tags }},${{ matrix.profile }} --junitxml=test.xml
+          nf-test test --tag ${{ matrix.profile }} --profile ${{ matrix.profile }},docker --junitxml=test.xml
 
       - name: Output log on failure
         if: failure()
