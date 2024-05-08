@@ -25,6 +25,7 @@ process SPLIT_PRED_TASKS {
     path "versions.yml",    emit:   versions
 
     script:
+    def max_chunk_num         = params.max_task_num
     def pred_chunk_size       = params.prediction_chunk_size
     def proc_chunk_size       = params.prediction_chunk_size * params.pred_chunk_size_scaling
     def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
@@ -35,6 +36,7 @@ process SPLIT_PRED_TASKS {
                             --microbiomes-entities-occ "$microbiomes_entities" \\
                             --conditions "$conditions" \\
                             --condition-allele-map "$conditions_alleles" \\
+                            --maximum_chunk_number $max_chunk_num \\
                             --max-chunk-size $pred_chunk_size \\
                             --proc-chunk-size $proc_chunk_size \\
                             $mem_log_level \\
