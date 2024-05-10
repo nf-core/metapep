@@ -10,54 +10,53 @@
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 5 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
-
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
-
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
-```
-
 ### Full samplesheet
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
-
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+A final samplesheet file may look something like the one below.
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+condition,type,microbiome_path,alleles,weights_path
+cond_1,taxa,testdata/taxids.txt,A*01:01,
+cond_2,taxa,testdata/taxids.tiny.txt,A*01:01 B*07:02,
+cond_3,taxa,testdata/taxids.tiny.txt,A*01:01,
+cond_4,assembly,testdata/test_minigut.contigs.fa.gz,A*01:01,testdata/test_minigut.contig_weights.tsv
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| Column            | Description                                                                                                                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `condition`       | The condition name for this entry. Conditions have to be unique and describe a combination of a microbiome, alleles and weights.                                                                           |
+| `type`            | Input type, can be one of "assembly", "bins" or "taxa".                                                                                                                                                    |
+| `microbiome_path` | Full path to microbiome file, the format of which can vary with type: fasta, folder, compressed folder or tsv file for taxon ids (taxon_id ["\\t" assembly_ids "\\t" abundance]).                          |
+| `alleles`         | List of alleles to predict epitopes for.                                                                                                                                                                   |
+| `weights_path`    | Full path to a tab-separated file contataining weights. Currently allowed are contig weights for input types assembly and bins. Please use "contig_name" or "bin_basename" and "weight" as column headers. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+
+### Input type taxa
+
+The input type taxa allows the user to specify a taxid on strain level, for which all proteins are downloaded. The microbiome path corresponds to a tsv file containing one column for taxon_id and optionally specific assembly_ids and/or the abundance of a specific strain (see below). If only the taxid(s) (and optionally abundance) is provided, the pipeline will automatically download the largest assembly of the given taxid(s). If a specific assembly_id is provided it will download proteins of the given assembly_id. The input allows for a mixed assignment of specific assembly_ids and unspecific taxon_ids, but this is only recommended for specific use cases.
+
+As the pipeline is only generating reproducible results for this type of input if a specific assembly_id is chosen, it is highly recommended to use this option.
+If taxids without assembly ids were chosen as input, the pipeline results can be reproduced in following runs using the `./outdir/entrez_data/taxa_assemblies.tsv` reference file. If additional abundances were given for each taxon_id, the `input.csv` and `taxa_assemblies.tsv` files can be merged by matching the taxon_id column.
+
+| Column        | Description                                                           |
+| ------------- | --------------------------------------------------------------------- |
+| `taxon_id`    | Chosen Taxids for the microbiome condition (Must be on strain level). |
+| `assembly_id` | Specific assembly id for a strain level taxid.                        |
+| `abundance`   | Abundance of strain level taxid and/or assembly id.                   |
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run nf-core/metapep --input ./samplesheet.csv --outdir ./results --genome GRCh37 -profile docker
+nextflow run nf-core/metapep --input ./samplesheet.csv --outdir ./results -profile docker
 ```
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
@@ -90,11 +89,29 @@ with `params.yaml` containing:
 ```yaml
 input: './samplesheet.csv'
 outdir: './results/'
-genome: 'GRCh37'
+pred_method: 'syfpeithi'
 <...>
 ```
 
 You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-co.re/launch).
+
+### Memory considerations
+
+The pipeline needs to handle large amounts of data, depending on the size and number of microbiomes the user has defined in the input. To handle these data the pipeline mainly uses python scripts and the python module pandas. As the data needs to be compared memory consumption is currently peaking at around 150 GB for the full-size test, but can easily be higher depending on the input.
+
+If the memory is still an issue one can try to reduce the chunk sizes for high memory consuming processes. The parameters are: `--chunk_size <INTEGER>` and the scaling factor `--chunk_size_scaling <INTEGER>` which are used for the preprocessing of the peptides prior to the epitope prediction in `SPLIT_PRED_TASKS` and the downstream processes `MERGE_PREDICTIONS`, `PREPARE_ENTITY_BINDING_RATIOS` and `PREPARE_SCORE_DISTRIBUTION`. For for the epitope prediction process `PREDICT_EPITOPES` the chunk size equals the unscaled parameter `--chunk_size <INTEGER>`.
+
+### Supported allele models
+
+The pipeline predicts epitopes for specific peptide lengths and for specific alleles of MHC class I or class II. As the prediction is performed by external tools, the user is restricted to the corresponding combinations the external tools are offering. Therefore, the metapep pipeline comes with a functionality to output all supported alleles and supported lengths of the supported external tools, which is invoked by:
+
+```bash
+nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models
+```
+
+More on the output can be found at https://nf-co.re/metapep/dev/output#supported-allele-models
+
+Moreover, the pipeline checks if a supported prediction model (combination of allele and peptide length) is available if a PSSMs method like SYFPEITHI is chosen and reduces the peptide lengths to a common denominator for further analysis if models are not available.
 
 ### Updating the pipeline
 
@@ -117,6 +134,8 @@ To further assist in reproducbility, you can use share and re-use [parameter fil
 :::tip
 If you wish to share such profile (such as upload as supplementary material for academic publications), make sure to NOT include cluster specific paths to files, nor institutional specific profiles.
 :::
+
+If the pipeline input contains microbiomes of type `taxa` it may not generate the same results, as for each taxid the largest assembly is chosen, which might change. Therefore, using a specific assembly_id as explained in the section `Input type taxa` is highly recommended. If only a taxid is used for input the pipeline generates a linking file for taxid and assembly id (`./outdir/entrez_data/taxa_assembly.tsv`) which can be used for following pipeline runs.
 
 ## Core Nextflow arguments
 
@@ -143,7 +162,10 @@ If `-profile` is not specified, the pipeline will run locally and expect all sof
 
 - `test`
   - A profile with a complete configuration for automated testing
-  - Includes links to test data so needs no other parameters
+  - Includes links to test data but needs your own NCBI credentials
+- `test_assembly_only`
+  - A small test profile, whith complete configuration for automated testing
+  - Includes links to test data and needs no other parameters
 - `docker`
   - A generic configuration profile to be used with [Docker](https://docker.com/)
 - `singularity`

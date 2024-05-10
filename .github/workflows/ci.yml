@@ -17,11 +17,12 @@ concurrency:
 
 jobs:
   test:
-    name: Run pipeline with test data
+    name: Run pipeline with assembly test data
     # Only run on push if this is the nf-core dev branch (merged PRs)
     if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}"
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         NXF_VER:
           - "23.04.0"
@@ -39,8 +40,62 @@ jobs:
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
 
       - name: Run pipeline with test data
-        # TODO nf-core: You can customise CI pipeline run tests as required
-        # For example: adding multiple test runs with different parameters
-        # Remember that you can parallelise this by using strategy.matrix
         run: |
           nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+
+  profile:
+    name: Run additional profile tests
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: ${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tests: [
+            "test_model_information",
+            "test_mouse_all_pep_lengths",
+            "test_assembly_only",
+            "test_bins_only",
+            "test_coassembly",
+            "test_mhcflurry",
+            "test_mhcnuggets_1",
+            "test_mhcnuggets_2",
+          ] # add further test profiles here, will be run in parallel (but only with one nextflow version)
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v2
+
+      - name: Install Nextflow
+        run: |
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: Run pipeline with profile ${{ matrix.tests }}
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile ${{ matrix.tests }},docker  --outdir ./results
+
+  all_profiles:
+    name: Run all additional profile tests that require ncbi credentials
+    # Only run on PRs from branches of nf-core/metapep repository or on push if this is the nf-core dev branch (merged PRs)
+    # (GitHub secrets are not accessible for workflows from forks)
+    if: ${{ github.event.pull_request.head.repo.full_name == 'nf-core/metapep' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        tests: ["test_all", "test_mouse", "test_taxa_only", "test_taxa_specific_assembly"] # add further test profiles here, will be run in parallel (but only with one nextflow version)
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v2
+
+      - name: Install Nextflow
+        run: |
+          wget -qO- get.nextflow.io | bash
+          sudo mv nextflow /usr/local/bin/
+
+      - name: Run pipeline with profile ${{ matrix.tests }}
+        env:
+          NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
+          NCBI_KEY: ${{ secrets.NCBI_KEY }}
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -profile ${{ matrix.tests }},docker --ncbi_email "$NCBI_EMAIL" --ncbi_key "$NCBI_KEY"  --outdir ./results

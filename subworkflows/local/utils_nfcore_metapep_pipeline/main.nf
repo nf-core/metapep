@@ -80,25 +80,7 @@ workflow PIPELINE_INITIALISATION {
     //
     // Create channel from input file provided through params.input
     //
-    Channel
-        .fromSamplesheet("input")
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
-                } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
-                }
-        }
-        .groupTuple()
-        .map {
-            validateInputSamplesheet(it)
-        }
-        .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
-        }
-        .set { ch_samplesheet }
+    ch_samplesheet = params.show_supported_models ? Channel.empty() : Channel.fromPath(input, checkIfExists: true)
 
     emit:
     samplesheet = ch_samplesheet
@@ -155,46 +137,9 @@ workflow PIPELINE_COMPLETION {
 // Check and validate pipeline parameters
 //
 def validateInputParameters() {
-    genomeExistsError()
-}
-
-//
-// Validate channels from input samplesheet
-//
-def validateInputSamplesheet(input) {
-    def (metas, fastqs) = input[1..2]
-
-    // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
-    def endedness_ok = metas.collect{ it.single_end }.unique().size == 1
-    if (!endedness_ok) {
-        error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
-    }
-
-    return [ metas[0], fastqs ]
-}
-//
-// Get attribute from genome config file e.g. fasta
-//
-def getGenomeAttribute(attribute) {
-    if (params.genomes && params.genome && params.genomes.containsKey(params.genome)) {
-        if (params.genomes[ params.genome ].containsKey(attribute)) {
-            return params.genomes[ params.genome ][ attribute ]
-        }
-    }
-    return null
-}
-
-//
-// Exit pipeline if incorrect --genome key provided
-//
-def genomeExistsError() {
-    if (params.genomes && params.genome && !params.genomes.containsKey(params.genome)) {
-        def error_string = "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n" +
-            "  Genome '${params.genome}' not found in any config files provided to the pipeline.\n" +
-            "  Currently, the available genome keys are:\n" +
-            "  ${params.genomes.keySet().join(", ")}\n" +
-            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        error(error_string)
+    // Exit if peptide length parameters are exchanged
+    if (params.min_pep_len > params.max_pep_len) {
+        error "The minimum peptide length needs to be smaller or equal than the maximum. See 'https://nf-co.re/metapep/dev/parameters' for more information."
     }
 }
 
@@ -202,13 +147,21 @@ def genomeExistsError() {
 // Generate methods description for MultiQC
 //
 def toolCitationText() {
-    // TODO nf-core: Optionally add in-text citation tools to this list.
-    // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "Tool (Foo et al. 2023)" : "",
-    // Uncomment function in methodsDescriptionText to render in MultiQC report
     def citation_text = [
             "Tools used in the workflow included:",
-            "FastQC (Andrews 2010),",
-            "MultiQC (Ewels et al. 2016)",
+            "Entrez (Maglott et al. 2005),",
+            "Prodigal (Hyatt et al. 2010),",
+            "Python (Python Core Team 2022),",
+            "R (R Core Team 2022),",
+            "Pandas (The pandas development team 2022),",
+            "Epytope (FRED2) (Schubert et al. 2016),",
+            params["pred_method"]=="syfpeithi" ? "SYFPEITHI (Rammensee et al. 1999)" : "",
+            params["pred_method"]=="mhcflurry" ? "MHCFlurry (O'Donnell et al. 2020)" : "",
+            params["pred_method"]=="mhcnuggets-class-1" ? "Shao (Rammensee et al. 2020)" : "",
+            params["pred_method"]=="mhcnuggets-class-2" ? "Shao (Rammensee et al. 2020)" : "",
+            "and",
+            "MultiQC (Ewels et al. 2016).",
+            "For a more detailed list check the references and tool versions",
             "."
         ].join(' ').trim()
 
@@ -216,13 +169,22 @@ def toolCitationText() {
 }
 
 def toolBibliographyText() {
-    // TODO nf-core: Optionally add bibliographic entries to this list.
-    // Can use ternary operators to dynamically construct based conditions, e.g. params["run_xyz"] ? "<li>Author (2023) Pub name, Journal, DOI</li>" : "",
-    // Uncomment function in methodsDescriptionText to render in MultiQC report
     def reference_text = [
-            "<li>Andrews S, (2010) FastQC, URL: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/).</li>",
-            "<li>Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics , 32(19), 3047–3048. doi: /10.1093/bioinformatics/btw354</li>"
-        ].join(' ').trim()
+            "<li>Di Tommaso, P., Chatzou, M., Floden, E. W., Barja, P. P., Palumbo, E., & Notredame, C. (2017). Nextflow enables reproducible computational workflows. Nature Biotechnology, 35(4), 316-319. doi: <a href='https://doi.org/10.1038/nbt.3820'>10.1038/nbt.3820</a></li>",
+            "<li>Ewels, P., Magnusson, M., Lundin, S., & Käller, M. (2016). MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics , 32(19), 3047–3048. doi: <a href='https://doi.org/10.1093/bioinformatics/btw354'>/10.1093/bioinformatics/btw354</li>",
+            "<li>Ewels, P. A., Peltzer, A., Fillinger, S., Patel, H., Alneberg, J., Wilm, A., Garcia, M. U., Di Tommaso, P., & Nahnsen, S. (2020). The nf-core framework for community-curated bioinformatics pipelines. Nature Biotechnology, 38(3), 276-278. doi: <a href='https://doi.org/10.1038/s41587-020-0439-x'>10.1038/s41587-020-0439-x</a></li>",
+            "<li>Grüning, B., Dale, R., Sjödin, A., Chapman, B. A., Rowe, J., Tomkins-Tinch, C. H., Valieris, R., Köster, J., & Bioconda Team. (2018). Bioconda: sustainable and comprehensive software distribution for the life sciences. Nature Methods, 15(7), 475–476. doi: <a href='https://doi.org/10.1038/s41592-018-0046-7'>10.1038/s41592-018-0046-7</a></li>",
+            "<li>Hyatt, D., Chen, GL., LoCascio, P. F., Land M. L., Larimer F. W., Hauser L. J. (2010). Prodigal: prokaryotic gene recognition and translation initiation site identification. BMC Bioinformatics 11, 119. doi: <a href='https://doi.org/10.1186/1471-2105-11-119'>10.1186/1471-2105-11-119</a></li>",
+            "<li>Maglott D, Ostell J, Pruitt KD, Tatusova T. (2005) Entrez Gene: gene-centered information at NCBI. Nucleic Acids Res. 2005 Jan 1;33(Database issue):D54-8. Update in: Nucleic Acids Res. 2007 Jan;35(Database issue):D26-31. doi: <a href='https://doi.org/10.1093/nar/gki031'>10.1093/nar/gki031</a>.</li>",
+            "<li>O'Donnell T. J., Rubinsteyn A., Laserson U., (2020). MHCflurry 2.0: Improved Pan-Allele Prediction of MHC Class I-Presented Peptides by Incorporating Antigen Processing. Cell Systems 11, 42-48. doi: <a href='https://doi.org/10.1016/j.cels.2020.06.010'>10.1016/j.cels.2020.06.010</a>.</li>",
+            "<li>Python Core Team (2022). Python: A dynamic, open source programming language. Python Software Foundation. <a href='https://www.python.org/'>https://www.python.org/</a>.</li>",
+            "<li>Rammensee H., Bachmann J., Emmerich N. P., Bachor O. A., Stevanović S. (1999). SYFPEITHI: database for MHC ligands and peptide motifs. Immunogenetics 1999 Nov;50(3-4):213-9. doi: <a href='https://doi.org/10.1007/s002510050595'>10.1007/s002510050595</a>.</li>",
+            "<li>R Core Team (2022). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. <a href='https://www.R-project.org/'>https://www.R-project.org/</a>.</li>",
+            "<li>Schubert, B., Walzer, M., Brachvogel, H-P., Sozolek, A., Mohr, C., and Kohlbacher, O. (2016). FRED 2 - An Immunoinformatics Framework for Python. Bioinformatics 2016. doi: <a href='https://doi.org/10.1093/bioinformatics/btw113'>10.1093/bioinformatics/btw113</a>.</li>",
+            "<li>Shao X. M., Bhattacharya R., Huang J., Sivakumar I. K. A., Tokheim C., Zheng L., Hirsch D., Kaminow B., Omdahl A., Bonsack M., Riemer A. B., Velculescu V. E., Anagnostou V., Pagel K. A., Karchin R. (2020). High-Throughput Prediction of MHC Class I and II Neoantigens with MHCnuggets. Cancer Immunol Res. 2020 Mar;8(3):396-408. doi: <a href='https://doi.org/10.1158/2326-6066.cir-19-0464'>10.1158/2326-6066.cir-19-0464</a>.</li>",
+            "<li>The pandas development team. (2022). pandas-dev/pandas: Pandas (v1.5.2). Zenodo. doi: <a href='https://doi.org/10.5281/zenodo.7344967'>10.5281/zenodo.7344967</a>.</li>",
+            "<li>da Veiga Leprevost, F., Grüning, B. A., Alves Aflitos, S., Röst, H. L., Uszkoreit, J., Barsnes, H., Vaudel, M., Moreno, P., Gatto, L., Weber, J., Bai, M., Jimenez, R. C., Sachsenberg, T., Pfeuffer, J., Vera Alvarez, R., Griss, J., Nesvizhskii, A. I., & Perez-Riverol, Y. (2017). BioContainers: an open-source and community-driven framework for software standardization. Bioinformatics (Oxford, England), 33(16), 2580–2582. doi: <a href='https://doi.org/10.1093/bioinformatics/btx192'>10.1093/bioinformatics/btx192</a></li>"
+    ].join(' ').trim()
 
     return reference_text
 }
@@ -246,12 +208,8 @@ def methodsDescriptionText(mqc_methods_yaml) {
     meta["nodoi_text"] = meta.manifest_map.doi ? "" : "<li>If available, make sure to update the text to include the Zenodo DOI of version of the pipeline used. </li>"
 
     // Tool references
-    meta["tool_citations"] = ""
-    meta["tool_bibliography"] = ""
-
-    // TODO nf-core: Only uncomment below if logic in toolCitationText/toolBibliographyText has been filled!
-    // meta["tool_citations"] = toolCitationText().replaceAll(", \\.", ".").replaceAll("\\. \\.", ".").replaceAll(", \\.", ".")
-    // meta["tool_bibliography"] = toolBibliographyText()
+    meta["tool_citations"] = toolCitationText().replaceAll(", \\.", ".").replaceAll("\\. \\.", ".").replaceAll(", \\.", ".")
+    meta["tool_bibliography"] = toolBibliographyText()
 
 
     def methods_text = mqc_methods_yaml.text
