@@ -1,5 +1,4 @@
 process PLOT_SCORE_DISTRIBUTION {
-    label 'cache_lenient'
     label 'process_medium_memory'
 
     conda "bioconda::bioconductor-alphabeta=1.8.0"
