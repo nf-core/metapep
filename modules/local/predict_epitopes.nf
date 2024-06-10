@@ -1,7 +1,6 @@
 process PREDICT_EPITOPES {
     label 'process_low'
     label 'process_long'
-    label 'cache_lenient'
     label 'error_retry'
 
     conda "bioconda::epytope=3.3.1"

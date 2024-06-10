@@ -1,5 +1,4 @@
 process PLOT_ENTITY_BINDING_RATIOS {
-    label 'cache_lenient'
     label 'process_medium_memory'
 
     conda "conda-forge::r-ggplot2=3.4.2 conda-forge::r-data.table=1.14.8 conda-forge::r-dplyr=1.1.2 conda-forge::r-stringr=1.5.0 conda-forge::r-ggpubr=0.6.0 conda-forge::r-optparse=1.7.3"
