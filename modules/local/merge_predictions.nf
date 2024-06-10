@@ -1,6 +1,5 @@
 process MERGE_PREDICTIONS {
     label "process_long"
-    label 'cache_lenient'
 
     conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
