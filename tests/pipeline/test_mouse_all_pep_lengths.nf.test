@@ -1,0 +1,22 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+    tag "test_mouse_all_pep_lengths"
+    tag "pipeline"
+
+    test("test mouse assembly allowing all peptide lengths") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

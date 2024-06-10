@@ -1,0 +1,24 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+    tag "test_taxa_specific_assembly"
+    tag "pipeline"
+
+    test("test taxa input with assembly id") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+                ncbi_email = "\$NCBI_EMAIL"
+                ncbi_key = "\$NCBI_KEY"
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}

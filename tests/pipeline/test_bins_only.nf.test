@@ -1,0 +1,22 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+    tag "test_bins_only"
+    tag "pipeline"
+
+    test("test bin input") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assert workflow.success
+        }
+
+    }
+
+}
