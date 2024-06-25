@@ -40,7 +40,14 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 
 ### Input type taxa
 
-The input type taxa allows the user to specify a taxid on strain level, for which all proteins are downloaded. The microbiome path corresponds to a tsv file containing one column for taxon_id and optionally specific assembly_ids and/or the abundance of a specific strain (see below). If only the taxid(s) (and optionally abundance) is provided, the pipeline will automatically download the largest assembly of the given taxid(s). If a specific assembly_id is provided it will download proteins of the given assembly_id. The input allows for a mixed assignment of specific assembly_ids and unspecific taxon_ids, but this is only recommended for specific use cases.
+The input type taxa allows the user to specify a taxid on strain level, for which all proteins are downloaded. To be able to download data from Entrez in an automatic pipeline a registered account needs to be specified, and the login email alongside an API key needs to be available to nextflow to use the download taxa path of nf-core/metapep. To set the environment secrets available to nextflow follow these steps:
+
+1. Follow the tutorial to get an login email+API key from NCBI: [Tutorial](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)
+2. Run the following commands within the running environment of your nextflow pipeline:
+  `nextflow secrets set NCBI_EMAIL <YOUR LOGIN EMAIL>`
+  `nextflow secrets set NCBI_KEY <YOUR API KEY`
+
+The microbiome path corresponds to a tsv file containing one column for taxon_id and optionally specific assembly_ids and/or the abundance of a specific strain (see below). If only the taxid(s) (and optionally abundance) is provided, the pipeline will automatically download the largest assembly of the given taxid(s). If a specific assembly_id is provided it will download proteins of the given assembly_id. The input allows for a mixed assignment of specific assembly_ids and unspecific taxon_ids, but this is only recommended for specific use cases.
 
 As the pipeline is only generating reproducible results for this type of input if a specific assembly_id is chosen, it is highly recommended to use this option.
 If taxids without assembly ids were chosen as input, the pipeline results can be reproduced in following runs using the `./outdir/entrez_data/taxa_assemblies.tsv` reference file. If additional abundances were given for each taxon_id, the `input.csv` and `taxa_assemblies.tsv` files can be merged by matching the taxon_id column.
