@@ -44,8 +44,8 @@ The input type taxa allows the user to specify a taxid on strain level, for whic
 
 1. Follow the tutorial to get an login email+API key from NCBI: [Tutorial](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)
 2. Run the following commands within the running environment of your nextflow pipeline:
-  `nextflow secrets set NCBI_EMAIL <YOUR LOGIN EMAIL>`
-  `nextflow secrets set NCBI_KEY <YOUR API KEY`
+   `nextflow secrets set NCBI_EMAIL <YOUR LOGIN EMAIL>`
+   `nextflow secrets set NCBI_KEY <YOUR API KEY`
 
 The microbiome path corresponds to a tsv file containing one column for taxon_id and optionally specific assembly_ids and/or the abundance of a specific strain (see below). If only the taxid(s) (and optionally abundance) is provided, the pipeline will automatically download the largest assembly of the given taxid(s). If a specific assembly_id is provided it will download proteins of the given assembly_id. The input allows for a mixed assignment of specific assembly_ids and unspecific taxon_ids, but this is only recommended for specific use cases.
 
