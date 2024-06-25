@@ -106,6 +106,9 @@ jobs:
           sudo mv nf-test /usr/local/bin/
 
       - name: Run nf-test
+        env:
+          NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
+          NCBI_KEY: ${{ secrets.NCBI_KEY }}
         run: |
           nextflow secrets set NCBI_EMAIL ${{ secrets.NCBI_EMAIL }}
           nextflow secrets set NCBI_KEY ${{ secrets.NCBI_KEY }}
