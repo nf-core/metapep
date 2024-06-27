@@ -12,8 +12,8 @@
             "microbiomes.tsv:md5,3d597aec25752f7ca83436b31bfaa128",
             "peptides.tsv.gz:md5,a10b663a9d6704a93262e6513daa29a5",
             "predictions.tsv.gz:md5,fea5ec6926a79d562fe7995db16b4af0",
-            "proteins_peptides.tsv:md5,fea5ec6926a79d562fe7995db16b4af0"
-            "proteins.tsv.gz:md5,9f0e09e2a40531e1a355ad4dbf00e5ce"
+            "proteins_peptides.tsv:md5,fea5ec6926a79d562fe7995db16b4af0",
+            "proteins.tsv.gz:md5,9f0e09e2a40531e1a355ad4dbf00e5ce",
             "stats.txt:md5,d138e30d814db5203a789b7eddd04732"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
