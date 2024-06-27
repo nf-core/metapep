@@ -1,8 +1,8 @@
 {
     "db_tables": {
         "content": [
-            "alleles.tsv:md5,6c6a520ecca870b438232fb3f757c1e9",
-            "conditions_alleles.tsv:md5,769c299e94c7df654a5a14da2771c95d",
+            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
+            "conditions_alleles.tsv:md5,9db7e0afc739b23c430877e336b0143f",
             "conditions.tsv:md5,a6fe5daaf11a90b61c83c9934969c52c",
             "entities_proteins.tsv:md5,3f2946abda456ffd970aca5a7a4eddf6",
             "entities.tsv:md5,52312b19a8f3e5c4412afa130179c145",
@@ -21,5 +21,4 @@
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     }
-
 }
