@@ -10,10 +10,7 @@
             "microbiomes_entities.nucl.tsv:md5,aa0d4cc3546508c8e5b81bc9b4b16e39",
             "microbiomes_entities.tsv:md5,4bfaae801ade70ad1d48228eba43f70c",
             "microbiomes.tsv:md5,70871c8b3023f5a8412c05f4a69dda2f",
-            "peptides.tsv.gz:md5,4f44a27316c2cfc763977e0b89e3453a",
-            "predictions.tsv.gz:md5,2798c4882d16a1bfe5542c697c9d8356",
             "proteins_peptides.tsv:md5,c567d00465c3b421ab177d3b0fbfff1c",
-            "proteins.tsv.gz:md5,2ab1b850b56d8da42b52bd290cbef78b",
             "stats.txt:md5,896155e0f043f30bd71c38c8ee7b466c"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
@@ -24,14 +21,6 @@
             "microbiomes_entities.entrez.tsv:md5,77463a684452d34795b6eda52cfad072",
             "proteins.entrez.tsv.gz:md5,871d154a9c2a57f619e659b17c9c605f",
             "taxa_assemblies.tsv:md5,51adfe18b31377105764a5477bd85b06"
-        ],
-        "timestamp": "2024-06-26T08:14:54+0000"
-    },
-    "figures": {
-        "content": [
-            "entity_binding_ratios.A_01_01.pdf:md5,2829906b7b1bf62f1c9ba47c9af15afe",
-            "entity_binding_ratios.with_points.A_01_01.pdf:md5,06b47761fbb14ebcbde3674fbb1bf7ba",
-            "prediction_score_distribution.A_01_01.pdf:md5,a8de3e9a3dc1f1e5ea7361838d35900f"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },
