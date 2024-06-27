@@ -1,0 +1,34 @@
+{
+    "db_tables": {
+        "content": [
+            "alleles.tsv:md5,314847ac5a69fe93ce75c6db0c2496d8",
+            "conditions_alleles.tsv:md5,e865774e32935a69306461ff47428aa8",
+            "conditions.tsv:md5,a6fe5daaf11a90b61c83c9934969c52c",
+            "entities_proteins.tsv:md5,cecff3ce2ac524fdac72635655da6e52",
+            "entities.tsv:md5,1b26a72cb5f731ba04ed53b6e69237b7",
+            "microbiomes_entities.no_weights.tsv:md5,55eae24113e41d074d4b2e91912d7be6",
+            "microbiomes_entities.nucl.tsv:md5,f5a3ff3cc1f8100f56238b9fab405e66",
+            "microbiomes_entities.tsv:md5,2f5498195df08c86eacba2ae76096902",
+            "microbiomes.tsv:md5,2130005595bdc7ffc770d8304fd9a936",
+            "proteins_peptides.tsv:md5,bece4df05028af8d221e569755fadb46",
+            "stats.txt:md5,6e5ecca241fb1cd3fea7ea66c4b81e2a"
+        ],
+        "timestamp": "2024-06-26T08:14:54+0000"
+    },
+    "entrez_data": {
+        "content": [
+            "entities_proteins.entrez.tsv:md5,5da05df62f1c30844681a8be358ab1a6",
+            "microbiomes_entities.entrez.tsv:md5,77463a684452d34795b6eda52cfad072",
+            "proteins.entrez.tsv.gz:md5,66df2aa7ca2bfa0791c3181f39841bd2",
+            "taxa_assemblies.tsv:md5,51adfe18b31377105764a5477bd85b06"
+        ],
+        "timestamp": "2024-06-26T08:14:54+0000"
+    },
+    "logs": {
+        "content": [
+            "download_proteins.log:md5,488e1962cf079d466188481d526495f2",
+            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+        ],
+        "timestamp": "2024-06-26T08:14:54+0000"
+    }
+}
