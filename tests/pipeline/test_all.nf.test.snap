@@ -31,7 +31,7 @@
         "content": [
             "entity_binding_ratios.A_01_01.pdf:md5,2829906b7b1bf62f1c9ba47c9af15afe",
             "entity_binding_ratios.with_points.A_01_01.pdf:md5,06b47761fbb14ebcbde3674fbb1bf7ba",
-            "prediction_score_distribution.A_01_01.pdf:md5,a8de3e9a3dc1f1e5ea7361838d35900f",
+            "prediction_score_distribution.A_01_01.pdf:md5,a8de3e9a3dc1f1e5ea7361838d35900f"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },
@@ -39,7 +39,7 @@
         "content": [
             "download_proteins.log:md5,488e1962cf079d466188481d526495f2",
             "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
-            "SUCCEEDED_unify_peptide_lengths.log:md5,1eac3f81a041486989c9c54e1505a45b",
+            "SUCCEEDED_unify_peptide_lengths.log:md5,1eac3f81a041486989c9c54e1505a45b"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     }

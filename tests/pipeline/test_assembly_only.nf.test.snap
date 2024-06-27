@@ -22,14 +22,14 @@
         "content": [
             "entity_binding_ratios.B_07_02.pdf:md5,3a32d36e49b554583442dfc2ce5b986c",
             "entity_binding_ratios.with_points.B_07_02.pdf:md5,807252d4ceb1e22ff1e646d52a1175ab",
-            "prediction_score_distribution.B_07_02.pdf:md5,76be1c9bc9a884624d32ca37f5570a4e",
+            "prediction_score_distribution.B_07_02.pdf:md5,76be1c9bc9a884624d32ca37f5570a4e"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },
     "logs": {
         "content": [
             "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
-            "SUCCEEDED_unify_peptide_lengths.log:md5,1eac3f81a041486989c9c54e1505a45b",
+            "SUCCEEDED_unify_peptide_lengths.log:md5,1eac3f81a041486989c9c54e1505a45b"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     }
