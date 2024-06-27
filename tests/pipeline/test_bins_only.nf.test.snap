@@ -1,0 +1,24 @@
+{
+    "db_tables": {
+        "content": [
+            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
+            "conditions_alleles.tsv:md5,9db7e0afc739b23c430877e336b0143f",
+            "conditions.tsv:md5,5b04349198a406fc16760c7e8808bb23",
+            "entities_proteins.tsv:md5,20e495ff06ccacb0f81dbd65e556fc83",
+            "entities.tsv:md5,7a472316b8e96e9b12d7ca3ff6a88d39",
+            "microbiomes_entities.no_weights.tsv:md5,bf3ff9d0390b49c6ecafd89c93909b67",
+            "microbiomes_entities.nucl.tsv:md5,84b6b907695caaddc959682504749832",
+            "microbiomes_entities.tsv:md5,2f40573eb52f3d823aad2f09a639eee2",
+            "microbiomes.tsv:md5,3f58c3029d21a59316861c28af4361d1",
+            "proteins_peptides.tsv:md5,4a41affbbc888802cf9202ec1c2ab8a4",
+            "stats.txt:md5,62d598a845aff61f2be843daa250f485"
+        ],
+        "timestamp": "2024-06-26T08:14:54+0000"
+    },
+    "logs": {
+        "content": [
+            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+        ],
+        "timestamp": "2024-06-26T08:14:54+0000"
+    }
+}
