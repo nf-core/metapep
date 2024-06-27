@@ -14,7 +14,35 @@ nextflow_pipeline {
         }
 
         then {
-            assert workflow.success
+            assertAll(
+                { assert workflow.success },
+
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml").exists() },
+
+                { assert snapshot(path("$outputDir/db_tables/alleles.tsv"),
+                                path("$outputDir/db_tables/conditions_alleles.tsv"),
+                                path("$outputDir/db_tables/conditions.tsv"),
+                                path("$outputDir/db_tables/entities_proteins.tsv"),
+                                path("$outputDir/db_tables/entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.no_weights.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.nucl.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes.tsv"),
+                                path("$outputDir/db_tables/proteins_peptides.tsv"),
+                                path("$outputDir/db_tables/stats.txt")).match("db_tables") },
+                { assert new File("$outputDir/db_tables/peptides.tsv.gz").exists() },
+                { assert new File("$outputDir/db_tables/predictions.tsv.gz").exists() },
+                { assert new File("$outputDir/db_tables/proteins.tsv.gz").exists() },
+
+                { assert new File("$outputDir/figures/entity_binding_ratios.A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.A_01_01.pdf").exists() },
+
+                { assert snapshot(path("$outputDir/logs/prediction_warnings.log")).match("logs") },
+
+                { assert new File("$outputDir/prodigal/proteins.pred_0.tsv.gz").exists() }
+            )
         }
 
     }
