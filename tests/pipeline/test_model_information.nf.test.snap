@@ -1,0 +1,15 @@
+{
+    "model_information": {
+        "content": [
+            "mhcflurry.v1.4.3.supported_alleles.txt:md5,1085d0010de0212a5d50d1639ccb8a0a",
+            "mhcflurry.v1.4.3.supported_lengths.txt:md5,5cff92e8752af1f00ee27f91f6ce6560",
+            "mhcnuggets-class-1.v2.3.2.supported_alleles.txt:md5,a322904c2327898c4a2e4b1824ef2efb",
+            "mhcnuggets-class-1.v2.3.2.supported_lengths.txt:md5,24ef44781f5012a27121050365845185",
+            "mhcnuggets-class-2.v2.3.2.supported_alleles.txt:md5,1f0230520650459480b5e41e280609d5",
+            "mhcnuggets-class-2.v2.3.2.supported_lengths.txt:md5,05340a7f5c43c23908f16ab5929b3481",
+            "syfpeithi.v1.0.supported_alleles.txt:md5,e007149d8f41dafc1290791c5f726194",
+            "syfpeithi.v1.0.supported_lengths.txt:md5,09d2bfbc74ac9aa5bb1a650f02b848df"
+        ],
+        "timestamp": "2024-06-26T08:14:54+0000"
+    }
+}
