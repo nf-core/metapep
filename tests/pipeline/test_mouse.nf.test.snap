@@ -1,17 +1,13 @@
 {
     "db_tables": {
         "content": [
-            "alleles.tsv:md5,314847ac5a69fe93ce75c6db0c2496d8",
-            "conditions_alleles.tsv:md5,e865774e32935a69306461ff47428aa8",
+            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
+            "conditions_alleles.tsv:md5,9db7e0afc739b23c430877e336b0143f",
             "conditions.tsv:md5,a6fe5daaf11a90b61c83c9934969c52c",
-            "entities_proteins.tsv:md5,cecff3ce2ac524fdac72635655da6e52",
-            "entities.tsv:md5,1b26a72cb5f731ba04ed53b6e69237b7",
-            "microbiomes_entities.no_weights.tsv:md5,55eae24113e41d074d4b2e91912d7be6",
-            "microbiomes_entities.nucl.tsv:md5,f5a3ff3cc1f8100f56238b9fab405e66",
-            "microbiomes_entities.tsv:md5,2f5498195df08c86eacba2ae76096902",
-            "microbiomes.tsv:md5,2130005595bdc7ffc770d8304fd9a936",
-            "proteins_peptides.tsv:md5,bece4df05028af8d221e569755fadb46",
-            "stats.txt:md5,6e5ecca241fb1cd3fea7ea66c4b81e2a"
+            "entities.tsv:md5,c766a12bbb1d4ef4707be7077f774191",
+            "microbiomes_entities.nucl.tsv:md5,84b6b907695caaddc959682504749832",
+            "microbiomes.tsv:md5,05bafa72c953e6cb0bd72c296d6fe707",
+            "stats.txt:md5,c10c27a1ba080ff59dcb5b62467129b2"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },
@@ -23,7 +19,6 @@
     },
     "logs": {
         "content": [
-            "download_proteins.log:md5,488e1962cf079d466188481d526495f2",
             "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
