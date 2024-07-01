@@ -8,6 +8,9 @@ process DOWNLOAD_PROTEINS {
         'https://depot.galaxyproject.org/singularity/biopython:1.78' :
         'biocontainers/biopython:1.78' }"
 
+    secret "NCBI_EMAIL"
+    secret "NCBI_KEY"
+
     input:
     val    microbiome_ids
     path   microbiome_files
@@ -21,14 +24,12 @@ process DOWNLOAD_PROTEINS {
     path    "versions.yml"                      , emit:  versions
 
     script:
-    def key = params.ncbi_key
-    def email = params.ncbi_email
     def microbiome_ids = microbiome_ids.join(' ')
     """
     # provide new home dir to avoid permission errors with Docker and other artefacts
     export HOME="\${PWD}/HOME"
-    download_proteins_entrez.py --email $email \\
-                                --key $key \\
+    download_proteins_entrez.py --email \$NCBI_EMAIL \\
+                                --key \$NCBI_KEY \\
                                 -t $microbiome_files \\
                                 -m $microbiome_ids \\
                                 -p proteins.entrez.tsv.gz \\
