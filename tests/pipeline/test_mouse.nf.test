@@ -46,7 +46,7 @@ nextflow_pipeline {
 
                 { assert snapshot(path("$outputDir/logs/prediction_warnings.log")).match("logs") },
                 { assert new File("$outputDir/logs/download_proteins.log").exists() },
-                { assert new File("$outputDir/logs/WARNING_unify_peptide_lengths.log.log").exists() }
+                { assert new File("$outputDir/logs/WARNING_unify_peptide_lengths.log").exists() }
 
                 { assert new File("$outputDir/prodigal/proteins.pred_1.tsv.gz").exists() }
             )
