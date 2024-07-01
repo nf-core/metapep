@@ -23,7 +23,6 @@
     },
     "logs": {
         "content": [
-            "download_proteins.log:md5,3541b1a634ac76fc4617d474d7373a78",
             "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"

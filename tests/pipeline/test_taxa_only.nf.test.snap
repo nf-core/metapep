@@ -13,13 +13,12 @@
     },
     "entrez_data": {
         "content": [
-            "microbiomes_entities.entrez.tsv:md5,d74ec125c02485cae58a08a334bf4844",
+            "microbiomes_entities.entrez.tsv:md5,d74ec125c02485cae58a08a334bf4844"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },
     "logs": {
         "content": [
-            "download_proteins.log:md5,488e1962cf079d466188481d526495f2",
             "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
