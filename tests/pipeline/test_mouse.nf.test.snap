@@ -17,10 +17,7 @@
     },
     "entrez_data": {
         "content": [
-            "entities_proteins.entrez.tsv:md5,5da05df62f1c30844681a8be358ab1a6",
-            "microbiomes_entities.entrez.tsv:md5,77463a684452d34795b6eda52cfad072",
-            "proteins.entrez.tsv.gz:md5,66df2aa7ca2bfa0791c3181f39841bd2",
-            "taxa_assemblies.tsv:md5,51adfe18b31377105764a5477bd85b06"
+            "microbiomes_entities.entrez.tsv:md5,77463a684452d34795b6eda52cfad072"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },

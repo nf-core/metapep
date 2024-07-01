@@ -2,33 +2,25 @@
     "db_tables": {
         "content": [
             "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
-            "conditions_alleles.tsv:md5,0e992c19471bb56c9b6e6a6f71302742",
-            "conditions.tsv:md5,87707cd0dee14b0ca4face090ba9dce9",
-            "entities_proteins.tsv:md5,c1ad58f2dfdfbc278e5bcd19239efbe8",
-            "entities.tsv:md5,8ae4f7ebc592712f45dea1ceaf5a18c0",
-            "microbiomes_entities.no_weights.tsv:md5,977da228f562b386b0f84fc718cc22e9",
-            "microbiomes_entities.nucl.tsv:md5,aa0d4cc3546508c8e5b81bc9b4b16e39",
-            "microbiomes_entities.tsv:md5,4bfaae801ade70ad1d48228eba43f70c",
-            "microbiomes.tsv:md5,70871c8b3023f5a8412c05f4a69dda2f",
-            "proteins_peptides.tsv:md5,c567d00465c3b421ab177d3b0fbfff1c",
-            "stats.txt:md5,896155e0f043f30bd71c38c8ee7b466c"
+            "conditions_alleles.tsv:md5,9db7e0afc739b23c430877e336b0143f",
+            "conditions.tsv:md5,a6fe5daaf11a90b61c83c9934969c52c",
+            "entities.tsv:md5,c766a12bbb1d4ef4707be7077f774191",
+            "microbiomes_entities.nucl.tsv:md5,84b6b907695caaddc959682504749832",
+            "microbiomes.tsv:md5,05bafa72c953e6cb0bd72c296d6fe707",
+            "stats.txt:md5,c10c27a1ba080ff59dcb5b62467129b2"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },
     "entrez_data": {
         "content": [
-            "entities_proteins.entrez.tsv:md5,5da05df62f1c30844681a8be358ab1a6",
-            "microbiomes_entities.entrez.tsv:md5,77463a684452d34795b6eda52cfad072",
-            "proteins.entrez.tsv.gz:md5,871d154a9c2a57f619e659b17c9c605f",
-            "taxa_assemblies.tsv:md5,51adfe18b31377105764a5477bd85b06"
+            "microbiomes_entities.entrez.tsv:md5,77463a684452d34795b6eda52cfad072"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     },
     "logs": {
         "content": [
             "download_proteins.log:md5,488e1962cf079d466188481d526495f2",
-            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
-            "SUCCEEDED_unify_peptide_lengths.log:md5,1eac3f81a041486989c9c54e1505a45b"
+            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
     }
