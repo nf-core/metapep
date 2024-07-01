@@ -40,7 +40,7 @@ An [example samplesheet](../assets/samplesheet.csv) has been provided with the p
 
 ### Input type taxa
 
-The input type taxa allows the user to specify a taxid on strain level, for which all proteins are downloaded. To be able to download data from Entrez in an automatic pipeline a registered account needs to be specified, and the login email alongside an API key needs to be available to nextflow to use the download taxa path of nf-core/metapep. To set the environment secrets available to nextflow follow these steps:
+The input type taxa allows the user to specify a taxid on strain level, for which all proteins are downloaded. To enable the pipeline to download data from Entrez a registered NCBI account is needed, and the login email alongside an API key needs to be provided. To set the environment secrets available to Nextflow follow these steps:
 
 1. Follow the tutorial to get an login email+API key from NCBI: [Tutorial](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/)
 2. Run the following commands within the running environment of your nextflow pipeline:
