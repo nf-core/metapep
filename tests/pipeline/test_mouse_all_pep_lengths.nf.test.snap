@@ -10,7 +10,9 @@
             "microbiomes_entities.nucl.tsv:md5,3888070b634251c0ae3e9fd4857140d7",
             "microbiomes_entities.tsv:md5,ed8996c0b489a36f0d88caf68eafe68e",
             "microbiomes.tsv:md5,3d597aec25752f7ca83436b31bfaa128",
-            "proteins_peptides.tsv:md5,6ae79b31efbc4fd045e68d6f8fedae16",
+            "proteins_peptides.tsv:md5,8e869d3583e301e1079cdec28f923d2e",
+            "peptides.tsv.gz:md5,d3120ff2e6c4599883e958605ea7089a",
+            "proteins.tsv.gz:md5,104b786dfa89e183a46e29f1f37f17de",
             "stats.txt:md5,2675aa8f40b92d9df9c1537d77e8ade1"
         ],
         "timestamp": "2024-06-26T08:14:54+0000"
