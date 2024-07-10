@@ -68,7 +68,7 @@ def main():
     samplesheet = pd.read_csv(args.input)
 
     # Retrieve unique list of alleles
-    alleles_s = {allele for allele_list in samplesheet["alleles"] for allele in allele_list.split(" ")}
+    alleles_s = sorted({allele for allele_list in samplesheet["alleles"] for allele in allele_list.split(" ")})
     log_str += f"Found the following alleles: {', '.join(alleles_s)}\n\n"
     # Parse alleles to epytope convention
     predictor = EpitopePredictorFactory(args.method)

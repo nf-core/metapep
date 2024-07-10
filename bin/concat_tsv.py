@@ -2,6 +2,8 @@
 
 import argparse
 import sys
+from gzip import GzipFile
+from io import TextIOWrapper
 
 import pandas as pd
 
@@ -28,35 +30,39 @@ def parse_args(args=None):
     return parser.parse_args()
 
 
+# Peptide Predictions remain unsorted, otherwise full dataframe needs to be loaded to memory, which would be computational very intensive.
+
 def main(args=None):
     args = parse_args(args)
 
-    first_header = pd.DataFrame().columns
-    for i, filename in enumerate(args.input):
-        print("Processing file: ", filename, flush=True)
+    with TextIOWrapper(GzipFile(args.output, 'w', mtime=0), encoding='utf-8') as outfile:
 
-        # Read input file chunk-wise
-        with pd.read_csv(filename, sep="\t", chunksize=args.chunk_size) as reader:
-            for j, tsv_chunk in enumerate(reader):
-                print(" Chunk: ", j, flush=True)
-                if i == 0 and j == 0:
-                    first_header = tsv_chunk.columns
-                    print("Header: ", first_header.tolist(), flush=True)
-                    tsv_chunk.to_csv(args.output, mode="w", sep="\t", index=False, header=True)
-                else:
-                    if j == 0:
-                        # Check if header of subsequent input files match header of first input file
-                        # (column order must be the same)
-                        if tsv_chunk.columns.tolist() != first_header.tolist():
-                            print(
-                                "ERROR - header of input file",
-                                filename,
-                                "does not match the header of the first input file!",
-                                file=sys.stderr,
-                            )
-                            sys.exit(1)
+        first_header = pd.DataFrame().columns
+        for i, filename in enumerate(args.input):
+            print("Processing file: ", filename, flush=True)
 
-                    tsv_chunk.to_csv(args.output, mode="a", sep="\t", index=False, header=False)
+            # Read input file chunk-wise
+            with pd.read_csv(filename, sep="\t", chunksize=args.chunk_size) as reader:
+                for j, tsv_chunk in enumerate(reader):
+                    print(" Chunk: ", j, flush=True)
+                    if i == 0 and j == 0:
+                        first_header = tsv_chunk.columns
+                        print("Header: ", first_header.tolist(), flush=True)
+                        tsv_chunk.to_csv(outfile, mode="w", sep="\t", index=False, header=True)
+                    else:
+                        if j == 0:
+                            # Check if header of subsequent input files match header of first input file
+                            # (column order must be the same)
+                            if tsv_chunk.columns.tolist() != first_header.tolist():
+                                print(
+                                    "ERROR - header of input file",
+                                    filename,
+                                    "does not match the header of the first input file!",
+                                    file=sys.stderr,
+                                )
+                                sys.exit(1)
+
+                        tsv_chunk.to_csv(outfile, mode="a", sep="\t", index=False, header=False)
 
 
 if __name__ == "__main__":
