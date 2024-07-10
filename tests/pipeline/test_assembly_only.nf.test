@@ -30,17 +30,17 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/microbiomes_entities.tsv"),
                                 path("$outputDir/db_tables/microbiomes.tsv"),
                                 path("$outputDir/db_tables/proteins_peptides.tsv"),
+                                path("$outputDir/db_tables/peptides.tsv.gz"),
+                                path("$outputDir/db_tables/proteins.tsv.gz"),
                                 path("$outputDir/db_tables/stats.txt")).match("db_tables") },
-                { assert new File("$outputDir/db_tables/peptides.tsv.gz").exists() },
                 { assert new File("$outputDir/db_tables/predictions.tsv.gz").exists() },
-                { assert new File("$outputDir/db_tables/proteins.tsv.gz").exists() },
 
                 { assert new File("$outputDir/figures/entity_binding_ratios.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/entity_binding_ratios.with_points.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/prediction_score_distribution.A_01_01.pdf").exists() },
 
-                { assert snapshot(path("$outputDir/logs/prediction_warnings.log")).match("logs") },
-                { assert new File("$outputDir/logs/SUCCEEDED_unify_peptide_lengths.log").exists() },
+                { assert snapshot(path("$outputDir/logs/prediction_warnings.log"),
+                                path("$outputDir/logs/SUCCEEDED_unify_peptide_lengths.log")).match("logs") },
 
                 { assert new File("$outputDir/prodigal/proteins.pred_0.tsv.gz").exists() }
             )
