@@ -6,7 +6,8 @@
 # proteins from 'proteins' input type: not known if unique or not, handle separately for now (in case of unique ids this causes unnecessary redundancy; could add parameter for this in future)
 
 import argparse
-import gzip
+from gzip import GzipFile
+from io import TextIOWrapper
 import sys
 
 import pandas as pd
@@ -92,7 +93,7 @@ def main(args=None):
     entities_proteins_columns = ["entity_id", "protein_id"]
     entities_columns = ["entity_id", "entity_name"]
     microbiomes_entities_columns = ["microbiome_id", "entity_id"]
-    with gzip.open(args.out_proteins, "wt") as outfile_proteins, open(
+    with TextIOWrapper(GzipFile(args.out_proteins, 'w', mtime=0), encoding='utf-8') as outfile_proteins, open(
         args.out_entities_proteins, "w"
     ) as outfile_entities_proteins, open(args.out_entities, "w") as outfile_entities, open(
         args.out_microbiomes_entities, "w"
@@ -170,6 +171,7 @@ def main(args=None):
 
                     # Write proteins
                     proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
+                    proteins = proteins.sort_values(by="protein_orig_id").drop("protein_id", axis=1).reset_index(drop=True).reset_index(names="protein_id")
                     proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", header=False, index=False)
                     # Write entities_proteins
                     proteins.merge(entities)[["entity_id", "protein_id"]].drop_duplicates().to_csv(
@@ -210,12 +212,14 @@ def main(args=None):
             next_entity_id += len(entities)
 
             # Write proteins
-            proteins.rename(columns={"protein_tmp_id": "protein_orig_id"})[proteins_columns].to_csv(
+            proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
+            proteins = proteins.sort_values(by="protein_orig_id").drop("protein_id", axis=1).reset_index(drop=True).reset_index(names="protein_id")
+            proteins[proteins_columns].to_csv(
                 outfile_proteins, sep="\t", header=False, index=False
             )
 
             entities_microbiomes_proteins = (
-                entities_proteins.merge(proteins)
+                entities_proteins.merge(proteins.rename(columns={"protein_orig_id":"protein_tmp_id"}))
                 .merge(entities)
                 .merge(microbiomes_entities)[["entity_id", "protein_id", "microbiome_id", "entity_weight"]]
             )
@@ -230,7 +234,6 @@ def main(args=None):
             entities_microbiomes_proteins[microbiomes_entities_columns].drop_duplicates().to_csv(
                 outfile_microbiomes_entities, sep="\t", header=False, index=False
             )
-
 
 if __name__ == "__main__":
     sys.exit(main())

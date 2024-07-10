@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import argparse
-import gzip
+from gzip import GzipFile
+from io import TextIOWrapper
 import sys
 
 import pandas as pd
@@ -126,7 +127,7 @@ def main(args=None):
 
     ####################
     # generate peptides
-    with gzip.open(args.peptides, "wt") as pep_handle:
+    with TextIOWrapper(GzipFile(args.peptides, 'w', mtime=0), encoding='utf-8') as pep_handle:
         print_header = True
         id_counter = 0
 
