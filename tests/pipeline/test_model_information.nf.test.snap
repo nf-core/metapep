@@ -10,6 +10,10 @@
             "syfpeithi.v1.0.supported_alleles.txt:md5,e007149d8f41dafc1290791c5f726194",
             "syfpeithi.v1.0.supported_lengths.txt:md5,09d2bfbc74ac9aa5bb1a650f02b848df"
         ],
-        "timestamp": "2024-06-26T08:14:54+0000"
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2024-07-10T15:13:19.924993689"
     }
 }

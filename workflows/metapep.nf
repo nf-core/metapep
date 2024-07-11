@@ -216,8 +216,8 @@ workflow METAPEP {
         ch_merge_predictions_input_warn = MERGE_PREDICTIONS_BUFFER.out.ch_prediction_warnings_merged_buffer.mix(ch_predictions_unbuffered.warnings)
 
         MERGE_PREDICTIONS (
-            ch_merge_predictions_input_pred.collect(),
-            ch_merge_predictions_input_warn.collect()
+            ch_merge_predictions_input_pred.collect(sort: { it.baseName }),
+            ch_merge_predictions_input_warn.collect(sort: { it.baseName })
         )
         ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
 

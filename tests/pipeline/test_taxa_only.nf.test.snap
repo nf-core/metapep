@@ -1,26 +1,46 @@
 {
+    "entrez_data": {
+        "content": [
+            "microbiomes_entities.entrez.tsv:md5,d74ec125c02485cae58a08a334bf4844"
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2024-06-26T08:14:54+0000"
+    },
     "db_tables": {
         "content": [
             "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
             "conditions_alleles.tsv:md5,9db7e0afc739b23c430877e336b0143f",
             "conditions.tsv:md5,a6fe5daaf11a90b61c83c9934969c52c",
+            "entities_proteins.tsv:md5,04ffe2b3aab37d78a4330bbea6f95821",
             "entities.tsv:md5,c766a12bbb1d4ef4707be7077f774191",
+            "microbiomes_entities.no_weights.tsv:md5,4ca0afaa5fb1a3f4960c775ad24ae363",
             "microbiomes_entities.nucl.tsv:md5,84b6b907695caaddc959682504749832",
+            "microbiomes_entities.tsv:md5,986a063182a36d0515e1d1b31f0e49fa",
             "microbiomes.tsv:md5,05bafa72c953e6cb0bd72c296d6fe707",
+            "proteins_peptides.tsv:md5,22f41ed9483a67b2f7644fb5f7b61eda",
+            "peptides.tsv.gz:md5,0e3c1e87feb2aac34de1ba3b246f27ca",
+            "proteins.tsv.gz:md5,6f8d47a842ce55855f0075fd48455397",
+            "predictions.tsv.gz:md5,4f802d81884bcb23545b17a6e8f5cd1d",
             "stats.txt:md5,c10c27a1ba080ff59dcb5b62467129b2"
         ],
-        "timestamp": "2024-06-26T08:14:54+0000"
-    },
-    "entrez_data": {
-        "content": [
-            "microbiomes_entities.entrez.tsv:md5,d74ec125c02485cae58a08a334bf4844"
-        ],
-        "timestamp": "2024-06-26T08:14:54+0000"
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2024-07-10T20:08:12.631077076"
     },
     "logs": {
         "content": [
-            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e"
+            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
+            "SUCCEEDED_unify_peptide_lengths.log:md5,c27fb56e478b975c57c910011935dd55"
         ],
-        "timestamp": "2024-06-26T08:14:54+0000"
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2024-07-10T11:07:57.477692224"
     }
 }
