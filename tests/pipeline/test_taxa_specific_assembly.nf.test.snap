@@ -23,13 +23,14 @@
             "proteins_peptides.tsv:md5,22f41ed9483a67b2f7644fb5f7b61eda",
             "peptides.tsv.gz:md5,0e3c1e87feb2aac34de1ba3b246f27ca",
             "proteins.tsv.gz:md5,6f8d47a842ce55855f0075fd48455397",
+            "predictions.tsv.gz:md5,4f802d81884bcb23545b17a6e8f5cd1d",
             "stats.txt:md5,c10c27a1ba080ff59dcb5b62467129b2"
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2024-07-10T12:07:03.721723802"
+        "timestamp": "2024-07-10T20:13:49.986930974"
     },
     "logs": {
         "content": [
