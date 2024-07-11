@@ -4,7 +4,7 @@
             "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
             "conditions_alleles.tsv:md5,e865774e32935a69306461ff47428aa8",
             "conditions.tsv:md5,a6fe5daaf11a90b61c83c9934969c52c",
-            "entities_proteins.tsv:md5,58bec9a717a9ea802cedf258db60efaa",
+            "entities_proteins.tsv:md5,de17e5ed1488d7c3e36b55d427affdeb",
             "entities.tsv:md5,5aa057079ae45d1e0fd86ebcaa18af0f",
             "microbiomes_entities.no_weights.tsv:md5,4d45837586c7c6dc4a19b41735215b01",
             "microbiomes_entities.nucl.tsv:md5,f5a3ff3cc1f8100f56238b9fab405e66",
@@ -20,7 +20,7 @@
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2024-07-10T18:08:31.711958907"
+        "timestamp": "2024-07-11T10:53:43.770480712"
     },
     "logs": {
         "content": [
