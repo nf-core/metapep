@@ -174,15 +174,15 @@ def main(args=None):
                     proteins = proteins.sort_values(by="protein_orig_id").drop("protein_id", axis=1).reset_index(drop=True).reset_index(names="protein_id")
                     proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", header=False, index=False)
                     # Write entities_proteins
-                    proteins.merge(entities)[["entity_id", "protein_id"]].drop_duplicates().sort_values(by="protein_id").to_csv(
+                    proteins.merge(entities)[["entity_id", "protein_id"]].drop_duplicates().sort_values(by=["entity_id", "protein_id"]).to_csv(
                         outfile_entities_proteins, sep="\t", header=False, index=False
                     )
                     # Write entities
-                    entities[entities_columns].sort_values(by="entity_id").drop_duplicates().to_csv(
+                    entities[entities_columns].sort_values(by=entities_columns).drop_duplicates().to_csv(
                         outfile_entities, sep="\t", header=False, index=False
                     )
                     # Write microbiomes - entities
-                    entities[microbiomes_entities_columns].sort_values(by="entity_id").to_csv(
+                    entities[microbiomes_entities_columns].sort_values(by=microbiomes_entities_columns).to_csv(
                         outfile_microbiomes_entities, sep="\t", index=False, header=False
                     )
 
