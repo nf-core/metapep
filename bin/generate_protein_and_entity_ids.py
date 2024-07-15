@@ -86,24 +86,14 @@ def parse_args(args=None):
 def main(args=None):
     args = parse_args(args)
 
-    next_protein_id = 0
-    next_entity_id = 0
-
     proteins_columns = ["protein_id", "protein_orig_id", "protein_sequence"]
     entities_proteins_columns = ["entity_id", "protein_id"]
     entities_columns = ["entity_id", "entity_name"]
     microbiomes_entities_columns = ["microbiome_id", "entity_id"]
-    with TextIOWrapper(GzipFile(args.out_proteins, 'w', mtime=0), encoding='utf-8') as outfile_proteins, open(
-        args.out_entities_proteins, "w"
-    ) as outfile_entities_proteins, open(args.out_entities, "w") as outfile_entities, open(
-        args.out_microbiomes_entities, "w"
-    ) as outfile_microbiomes_entities:
-        # HEADERS
-        print("\t".join(proteins_columns), file=outfile_proteins)
-        print("\t".join(entities_proteins_columns), file=outfile_entities_proteins)
-        print("\t".join(entities_columns), file=outfile_entities)
-        print("\t".join(microbiomes_entities_columns), file=outfile_microbiomes_entities)
+    with TextIOWrapper(GzipFile(args.out_proteins, 'w', mtime=0), encoding='utf-8') as outfile_proteins:
 
+        entities_dfs = []
+        proteins_dfs = []
         #
         # PREDICTED PROTEINS
         #
@@ -128,8 +118,7 @@ def main(args=None):
             # Read all provided files while checking in each microbiome_bare_id
             # Bins contain multiple files within one filepath (gzipped) corresponding to one microbiome_bare_id
             check_in_microbiome_bare_id = set()
-            entities_dfs = []
-            proteins_dfs = []
+
             for microbiome_bare_id, bin_basename, inpath in zip(
                 args.predicted_proteins_microbiome_ids, args.predicted_proteins_bin_basenames, args.predicted_proteins
             ):
@@ -143,9 +132,6 @@ def main(args=None):
                     else:
                         proteins["entity_name"] = bin_basename
 
-                    proteins["protein_id"] = range(next_protein_id, next_protein_id + len(proteins))
-                    next_protein_id += len(proteins)
-
                     # Check if microbiome is coassembly
                     if len(microbiomes.groupby("microbiome_bare_id").get_group(microbiome_bare_id)) != 1:
                         all_entities = []
@@ -156,45 +142,21 @@ def main(args=None):
                         ]:
                             entities = pd.DataFrame()
                             entities = proteins[["entity_name"]].drop_duplicates()
-                            entities["entity_id"] = range(next_entity_id, next_entity_id + len(entities))
+
                             # Instead of microbiome_bare_id append microbiome_id
                             entities["microbiome_id"] = microbiome_id
                             all_entities.append(entities)
 
-                        next_entity_id += len(entities)
                         entities = pd.concat(all_entities)
 
                     else:
                         entities = proteins[["entity_name"]].drop_duplicates()
-                        entities["entity_id"] = range(next_entity_id, next_entity_id + len(entities))
-                        next_entity_id += len(entities)
                         # If not coassembled microbiome_id = microbiome_bare_id
                         entities["microbiome_id"] = microbiome_bare_id
 
             # Merge all dfs of all microbiomes
                 proteins_dfs.append(proteins)
                 entities_dfs.append(entities)
-            proteins = pd.concat(proteins_dfs)
-            entities = pd.concat(entities_dfs)
-
-            # reassign entity_id to make tables reproducible
-            entities = entities.sort_values(by="entity_name").drop("entity_id", axis=1).reset_index(drop=True).reset_index(names="entity_id")
-            # Write proteins
-            proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
-            proteins = proteins.sort_values(by="protein_orig_id").drop("protein_id", axis=1).reset_index(drop=True).reset_index(names="protein_id")
-            proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", header=False, index=False)
-            # Write entities_proteins
-            proteins.merge(entities)[["entity_id", "protein_id"]].drop_duplicates().sort_values(by=["entity_id", "protein_id"]).to_csv(
-                outfile_entities_proteins, sep="\t", header=False, index=False
-            )
-            # Write entities
-            entities[entities_columns].sort_values(by=entities_columns).drop_duplicates().to_csv(
-                outfile_entities, sep="\t", header=False, index=False
-            )
-            # Write microbiomes - entities
-            entities[microbiomes_entities_columns].sort_values(by=microbiomes_entities_columns).to_csv(
-                outfile_microbiomes_entities, sep="\t", index=False, header=False
-            )
 
         #
         # ENTREZ PROTEINS
@@ -212,39 +174,40 @@ def main(args=None):
                 args.entrez_microbiomes_entities, "\t"
             )  # entity_name, microbiome_id, entity_weight
 
-            # Assign protein_id
-            proteins["protein_id"] = range(next_protein_id, next_protein_id + len(proteins))
-            next_protein_id += len(proteins)
+            # Collect Entities
+            entities = microbiomes_entities[["entity_name", "microbiome_id"]].drop_duplicates()
+            proteins = proteins.merge(entities_proteins)
 
-            # Assign entity_id
-            entities = microbiomes_entities[["entity_name"]].drop_duplicates()
-            entities["entity_id"] = range(next_entity_id, next_entity_id + len(entities))
-            next_entity_id += len(entities)
-            entities = entities.sort_values(by="entity_name").drop("entity_id", axis=1).reset_index(drop=True).reset_index(names="entity_id")
+            entities_dfs.append(entities)
+            proteins_dfs.append(proteins)
 
-            # Write proteins
-            proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
-            proteins = proteins.sort_values(by="protein_orig_id").drop("protein_id", axis=1).reset_index(drop=True).reset_index(names="protein_id")
-            proteins[proteins_columns].to_csv(
-                outfile_proteins, sep="\t", header=False, index=False
-            )
+        proteins = pd.concat(proteins_dfs)
+        entities = pd.concat(entities_dfs)
 
-            entities_microbiomes_proteins = (
-                entities_proteins.merge(proteins.rename(columns={"protein_orig_id":"protein_tmp_id"}))
-                .merge(entities)
-                .merge(microbiomes_entities)[["entity_id", "protein_id", "microbiome_id", "entity_weight"]]
-            )
+        # Collect Entities and sort them
+        entities["entity_name"] = entities["entity_name"].astype(str) # Taxids are read as numeric and cannot be compared to bins/assembly ids
+        entities = entities.sort_values(by="entity_name").reset_index(drop=True).reset_index(names="entity_id")
 
-            # Write entities_proteins: 'entity_id', 'protein_id'
-            entities_microbiomes_proteins[entities_proteins_columns].sort_values(by=["entity_id", "protein_id"]).to_csv(
-                outfile_entities_proteins, sep="\t", header=False, index=False
-            )
-            # Write entities: 'entity_id', 'entity_name'
-            entities[entities_columns].sort_values(by=entities_columns).to_csv(outfile_entities, sep="\t", header=False, index=False)
-            # Write microbiomes - entities: 'microbiome_id', 'entity_id'
-            entities_microbiomes_proteins[microbiomes_entities_columns].sort_values(by=microbiomes_entities_columns).drop_duplicates().to_csv(
-                outfile_microbiomes_entities, sep="\t", header=False, index=False
-            )
+        # Collect Proteins ans sort them
+        proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
+        proteins["entity_name"] = proteins["entity_name"].astype(str) # Taxids are read as numeric and cannot be compared to bins/assembly ids
+        proteins = proteins.sort_values(by="protein_orig_id").reset_index(drop=True).reset_index(names="protein_id")
+
+        # Write Proteins
+        proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", index=False)
+
+        # Write Entities-Proteins
+        proteins.merge(entities)[entities_proteins_columns].drop_duplicates().sort_values(by=entities_proteins_columns).to_csv(
+            args.out_entities_proteins, sep="\t", index=False
+        )
+
+        # Write entities
+        entities[entities_columns].sort_values(by=entities_columns).drop_duplicates().to_csv(args.out_entities, sep="\t", index=False)
+
+        # Write microbiomes - entities
+        entities[microbiomes_entities_columns].sort_values(by=microbiomes_entities_columns).to_csv(
+            args.out_microbiomes_entities, sep="\t", index=False
+        )
 
 if __name__ == "__main__":
     sys.exit(main())
