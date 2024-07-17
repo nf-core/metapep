@@ -174,7 +174,7 @@ def main(args=None):
                 print("\nInfo: results (['protein_id','peptide_sequence','peptide_id','count'])", flush=True)
                 results.info(verbose=False, memory_usage=print_mem)
 
-                results[["protein_id", "peptide_id", "count"]].to_csv(
+                results[["protein_id", "peptide_id", "count"]].sort_values(by=["protein_id", "peptide_id"]).to_csv(
                     args.proteins_peptides, mode="a", sep="\t", index=False, header=print_header
                 )
 
