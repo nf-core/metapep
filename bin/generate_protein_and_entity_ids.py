@@ -181,9 +181,8 @@ def main(args=None):
             entities_dfs.append(entities)
             proteins_dfs.append(proteins)
 
-        proteins = pd.concat(proteins_dfs)
-        entities = pd.concat(entities_dfs)
-
+        proteins = pd.concat(proteins_dfs, ignore_index=True)
+        entities = pd.concat(entities_dfs, ignore_index=True)
 
         # Collect Entities and sort them
         entities["entity_name"] = entities["entity_name"].astype(str) # Taxids are read as numeric and cannot be compared to bins/assembly ids
