@@ -20,27 +20,28 @@
             "microbiomes_entities.nucl.tsv:md5,aa0d4cc3546508c8e5b81bc9b4b16e39",
             "microbiomes_entities.tsv:md5,64b5e7a2c23009f9ab54b5667cd45efb",
             "microbiomes.tsv:md5,70871c8b3023f5a8412c05f4a69dda2f",
-            "proteins_peptides.tsv:md5,47018c9a2a1d0c791c55c179722e5f33",
+            "proteins_peptides.tsv:md5,6c9995501fcb0d7d3ebe10cd37434388",
             "peptides.tsv.gz:md5,36aba6d50b1aad95859a547b06d04fc5",
             "proteins.tsv.gz:md5,5628f70522e8696a90d49ccf989e0d1b",
-            "predictions.tsv.gz:md5,112d625ef89f765a74a7058969a47b53",
+            "predictions.tsv.gz:md5,be37e4c5e92bc234eba8bbf447014fc8",
             "stats.txt:md5,896155e0f043f30bd71c38c8ee7b466c"
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2024-07-17T10:08:50.09874523"
+        "timestamp": "2024-07-17T15:58:35.245534864"
     },
     "logs": {
         "content": [
             "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
-            "SUCCEEDED_unify_peptide_lengths.log:md5,c27fb56e478b975c57c910011935dd55"
+            "SUCCEEDED_unify_peptide_lengths.log:md5,c27fb56e478b975c57c910011935dd55",
+            "download_proteins.log:md5,488e1962cf079d466188481d526495f2"
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2024-07-10T11:53:04.064515848"
+        "timestamp": "2024-07-17T15:58:41.467969153"
     }
 }

@@ -147,7 +147,7 @@ def main(args=None):
     # Process TaxIDs
 
     print("Processing the following taxonomy IDs:")
-    print(taxIds)
+    print(sorted(taxIds))
 
     ####################################################################################################
     # 0) Check if the taxids link to a strain level organism

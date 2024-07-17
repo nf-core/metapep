@@ -10,17 +10,17 @@
             "microbiomes_entities.nucl.tsv:md5,3888070b634251c0ae3e9fd4857140d7",
             "microbiomes_entities.tsv:md5,f93b40a413fde8dd0a10712270c1a5f0",
             "microbiomes.tsv:md5,3d597aec25752f7ca83436b31bfaa128",
-            "proteins_peptides.tsv:md5,8e869d3583e301e1079cdec28f923d2e",
+            "proteins_peptides.tsv:md5,a3ac1eb52d33bb90edb6e72dc6e647cf",
             "peptides.tsv.gz:md5,d3120ff2e6c4599883e958605ea7089a",
             "proteins.tsv.gz:md5,104b786dfa89e183a46e29f1f37f17de",
-            "predictions.tsv.gz:md5,73c9928688cd67eecca5d3ef6e833f83",
+            "predictions.tsv.gz:md5,ea3808c0499852f8d01c362902c4f7f7",
             "stats.txt:md5,2675aa8f40b92d9df9c1537d77e8ade1"
         ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2024-07-17T07:29:45.528438318"
+        "timestamp": "2024-07-17T14:59:04.077949267"
     },
     "logs": {
         "content": [
