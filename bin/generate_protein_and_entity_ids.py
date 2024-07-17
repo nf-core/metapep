@@ -184,17 +184,19 @@ def main(args=None):
         proteins = pd.concat(proteins_dfs)
         entities = pd.concat(entities_dfs)
 
+
         # Collect Entities and sort them
         entities["entity_name"] = entities["entity_name"].astype(str) # Taxids are read as numeric and cannot be compared to bins/assembly ids
-        entities = entities.sort_values(by="entity_name").reset_index(drop=True).reset_index(names="entity_id")
+        entities["entity_id"] = entities.sort_values(by="entity_name").groupby("entity_name").ngroup()
 
         # Collect Proteins ans sort them
         proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
         proteins["entity_name"] = proteins["entity_name"].astype(str) # Taxids are read as numeric and cannot be compared to bins/assembly ids
-        proteins = proteins.sort_values(by="protein_orig_id").reset_index(drop=True).reset_index(names="protein_id")
+        proteins["protein_id"] = proteins.sort_values(by="protein_orig_id").groupby("protein_orig_id").ngroup()
+
 
         # Write Proteins
-        proteins[proteins_columns].to_csv(outfile_proteins, sep="\t", index=False)
+        proteins[proteins_columns].drop_duplicates().sort_values(by="protein_id").to_csv(outfile_proteins, sep="\t", index=False)
 
         # Write Entities-Proteins
         proteins.merge(entities)[entities_proteins_columns].drop_duplicates().sort_values(by=entities_proteins_columns).to_csv(
