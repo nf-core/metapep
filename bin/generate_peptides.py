@@ -158,8 +158,7 @@ def main(args=None):
                 results = results.groupby(["protein_id", "peptide_sequence"]).size().reset_index(name="count")
                 # -> protein_id, peptide_sequence, count
                 results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
-                # prepare df for joining
-                results.set_index("peptide_sequence", inplace=True)
+
                 results = results.sort_values(by="peptide_sequence")
                 pep_ids = results.groupby("peptide_sequence").ngroup()
                 results["peptide_id"] = pep_ids + id_counter
