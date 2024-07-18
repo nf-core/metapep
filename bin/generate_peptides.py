@@ -160,21 +160,20 @@ def main(args=None):
                 results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
                 # prepare df for joining
                 results.set_index("peptide_sequence", inplace=True)
-                results.sort_index(inplace=True)
+                results = results.sort_values(by="peptide_sequence")
+                pep_ids = results.groupby("peptide_sequence").ngroup()
+                results["peptide_id"] = pep_ids + id_counter
+                id_counter = id_counter + max(pep_ids)
 
-                unique_peptides = pd.DataFrame(index=results.index.drop_duplicates())
-                unique_peptides["peptide_id"] = range(id_counter, id_counter + len(unique_peptides))
-                id_counter += len(unique_peptides)
                 # -> peptide_sequence, peptide_id
-                unique_peptides.to_csv(pep_handle, mode="a", sep="\t", index=True, header=print_header)
+                results[["peptide_sequence","peptide_id"]].drop_duplicates().sort_values(by=["peptide_sequence","peptide_id"]).to_csv(pep_handle, mode="a", sep="\t", index=True, header=print_header)
 
-                results = results.join(unique_peptides)
                 # -> protein_id, peptide_sequence, count, peptide_id
 
                 print("\nInfo: results (['protein_id','peptide_sequence','peptide_id','count'])", flush=True)
                 results.info(verbose=False, memory_usage=print_mem)
 
-                results[["protein_id", "peptide_id", "count"]].sort_values(by=["protein_id", "peptide_id"]).to_csv(
+                results[["protein_id", "peptide_id", "count"]].drop_duplicates().sort_values(by=["protein_id", "peptide_id"]).to_csv(
                     args.proteins_peptides, mode="a", sep="\t", index=False, header=print_header
                 )
 

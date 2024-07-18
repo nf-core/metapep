@@ -186,12 +186,14 @@ def main(args=None):
 
         # Collect Entities and sort them
         entities["entity_name"] = entities["entity_name"].astype(str) # Taxids are read as numeric and cannot be compared to bins/assembly ids
-        entities["entity_id"] = entities.sort_values(by="entity_name").groupby("entity_name").ngroup()
+        entities = entities.sort_values(by="entity_name")
+        entities["entity_id"] = entities.groupby("entity_name").ngroup()
 
         # Collect Proteins ans sort them
         proteins.rename(columns={"protein_tmp_id": "protein_orig_id"}, inplace=True)
         proteins["entity_name"] = proteins["entity_name"].astype(str) # Taxids are read as numeric and cannot be compared to bins/assembly ids
-        proteins["protein_id"] = proteins.sort_values(by="protein_orig_id").groupby("protein_orig_id").ngroup()
+        proteins = proteins.sort_values(by="protein_orig_id")
+        proteins["protein_id"] = proteins.groupby("protein_orig_id").ngroup()
 
 
         # Write Proteins
