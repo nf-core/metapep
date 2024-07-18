@@ -45,7 +45,7 @@ nextflow_pipeline {
                 { assert new File("$outputDir/figures/prediction_score_distribution.H2-Db.pdf").exists() },
 
                 { assert snapshot(path("$outputDir/logs/prediction_warnings.log"),
-                                path("$outputDir/logs/SUCCEEDED_unify_peptide_lengths.log"),
+                                path("$outputDir/logs/WARNING_unify_peptide_lengths.log"),
                                 path("$outputDir/logs/download_proteins.log")).match("logs") },
 
                 { assert new File("$outputDir/prodigal/proteins.pred_1.tsv.gz").exists() }
