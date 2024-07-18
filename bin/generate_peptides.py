@@ -165,7 +165,7 @@ def main(args=None):
                 id_counter = id_counter + len(pep_ids)
 
                 # -> peptide_sequence, peptide_id
-                results[["peptide_id", "peptide_sequence"]].drop_duplicates().sort_values(by=["peptide_sequence","peptide_id"]).to_csv(pep_handle, mode="a", sep="\t", index=True, header=print_header)
+                results[["peptide_id", "peptide_sequence"]].drop_duplicates().sort_values(by=["peptide_sequence","peptide_id"]).to_csv(pep_handle, mode="a", sep="\t", index=False, header=print_header)
 
                 # -> protein_id, peptide_sequence, count, peptide_id
 
