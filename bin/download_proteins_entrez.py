@@ -142,7 +142,7 @@ def main(args=None):
                     + "It needs to be a tsv file containing 'taxon_id' and/or optionally 'assembly_id' and 'abundance."
                 )
 
-    taxIds = list(set(taxIds))
+    taxIds = sorted(list(set(taxIds)))
     ####################################################################################################
     # Process TaxIDs
 
