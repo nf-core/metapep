@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from gzip import GzipFile
-from io import TextIOWrapper
+import gzip
 import sys
 
 import pandas as pd
@@ -127,7 +126,7 @@ def main(args=None):
 
     ####################
     # generate peptides
-    with TextIOWrapper(GzipFile(args.peptides, 'w', mtime=0), encoding='utf-8') as pep_handle:
+    with gzip.open(args.peptides, "wt") as pep_handle:
         print_header = True
         id_counter = 0
 
@@ -158,21 +157,23 @@ def main(args=None):
                 results = results.groupby(["protein_id", "peptide_sequence"]).size().reset_index(name="count")
                 # -> protein_id, peptide_sequence, count
                 results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
+                # prepare df for joining
+                results.set_index("peptide_sequence", inplace=True)
+                results.sort_index(inplace=True, kind="stable")
 
-                results = results.sort_values(by="peptide_sequence")
-                pep_ids = results.groupby("peptide_sequence").ngroup()
-                results["peptide_id"] = pep_ids + id_counter
-                id_counter = id_counter + len(pep_ids)
-
+                unique_peptides = pd.DataFrame(index=results.index.drop_duplicates())
+                unique_peptides["peptide_id"] = range(id_counter, id_counter + len(unique_peptides))
+                id_counter += len(unique_peptides)
                 # -> peptide_sequence, peptide_id
-                results[["peptide_id", "peptide_sequence"]].drop_duplicates().sort_values(by=["peptide_sequence","peptide_id"]).to_csv(pep_handle, mode="a", sep="\t", index=False, header=print_header)
+                unique_peptides.to_csv(pep_handle, mode="a", sep="\t", index=True, header=print_header)
 
+                results = results.join(unique_peptides)
                 # -> protein_id, peptide_sequence, count, peptide_id
 
                 print("\nInfo: results (['protein_id','peptide_sequence','peptide_id','count'])", flush=True)
                 results.info(verbose=False, memory_usage=print_mem)
 
-                results[["protein_id", "peptide_id", "count"]].drop_duplicates().sort_values(by=["protein_id", "peptide_id"]).to_csv(
+                results[["protein_id", "peptide_id", "count"]].to_csv(
                     args.proteins_peptides, mode="a", sep="\t", index=False, header=print_header
                 )
 
