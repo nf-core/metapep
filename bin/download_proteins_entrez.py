@@ -142,7 +142,7 @@ def main(args=None):
                     + "It needs to be a tsv file containing 'taxon_id' and/or optionally 'assembly_id' and 'abundance."
                 )
 
-    taxIds = list(set(taxIds))
+    taxIds = sorted(list(set(taxIds)))
     ####################################################################################################
     # Process TaxIDs
 
@@ -307,7 +307,7 @@ def main(args=None):
     # some proteins, such as 487413233, occur within multiple sequences of the assembly!
     # -> assembly only listed once!
 
-    proteinIds = list(dict_proteinId_assemblyIds.keys())
+    proteinIds = sorted(list(dict_proteinId_assemblyIds.keys()))
 
     print("# proteins (unique): ", len(proteinIds))
     # -> # proteins with refseq source (<= # IPG proteins)
@@ -394,7 +394,7 @@ def main(args=None):
     for proteinId in proteinIds:
         accVersion = dict_protein_uid_acc[proteinId]
         # write out protein_tmp_id, entity_name (taxon_id)
-        for assemblyId in dict_proteinId_assemblyIds[proteinId]:
+        for assemblyId in sorted(dict_proteinId_assemblyIds[proteinId]):
             taxId = dict_assemblyId_taxId[assemblyId]
             print(accVersion, taxId, sep="\t", file=args.entities_proteins, flush=True)
 
