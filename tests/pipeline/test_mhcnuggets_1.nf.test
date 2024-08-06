@@ -35,6 +35,9 @@ nextflow_pipeline {
                 { assert new File("$outputDir/figures/entity_binding_ratios.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/entity_binding_ratios.with_points.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/prediction_score_distribution.A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.B_07_02.pdf").exists() },
                 { assert snapshot(path("$outputDir/logs/prediction_warnings.log")).match("logs") },
                 { assert new File("$outputDir/prodigal/proteins.pred_0.tsv.gz").exists() }
             )
