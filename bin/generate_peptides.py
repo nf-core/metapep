@@ -159,7 +159,7 @@ def main(args=None):
                 results["count"] = pd.to_numeric(results["count"], downcast="unsigned")
                 # prepare df for joining
                 results.set_index("peptide_sequence", inplace=True)
-                results.sort_index(inplace=True)
+                results.sort_index(inplace=True, kind="stable")
 
                 unique_peptides = pd.DataFrame(index=results.index.drop_duplicates())
                 unique_peptides["peptide_id"] = range(id_counter, id_counter + len(unique_peptides))
