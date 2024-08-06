@@ -14,9 +14,13 @@ parser.add_argument(
 )
 args = parser.parse_args()
 
+records_out = []
 with gzip.open(args.input, "rt") as handle:
     for record in SeqIO.parse(handle, "fasta"):
         if args.remove_asterisk and record.seq[-1] == "*":
-            print(f"{record.id}\t{record.seq[:-1]}")
+            records_out.append([str(record.id),"\t",str(record.seq[:-1]),"\n"])
         else:
-            print(f"{record.id}\t{record.seq}")
+            records_out.append([str(record.id),"\t",str(record.seq),"\n"])
+# Two dimensional array to enable sorting
+records_out = sorted(records_out, key=lambda x: x[0])
+print("".join(["".join(rec) for rec in records_out]))

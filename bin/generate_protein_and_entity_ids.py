@@ -150,7 +150,7 @@ def main(args=None):
                         # (i.e. microbiome_bare_id) and assign the corresponding microbiome_id to the entities
                         for microbiome_id in microbiomes.groupby("microbiome_bare_id").get_group(microbiome_bare_id)[
                             "microbiome_id"
-                        ]:
+                        ].sort_values():
                             entities = pd.DataFrame()
                             entities = proteins[["entity_name"]].drop_duplicates()
                             entities["entity_id"] = range(next_entity_id, next_entity_id + len(entities))

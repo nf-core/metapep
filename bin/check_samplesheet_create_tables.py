@@ -242,7 +242,7 @@ def process_samplesheet(args):
                 + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
             )
 
-    alleles = pd.DataFrame({"allele_name": list(unique_alleles)})
+    alleles = pd.DataFrame({"allele_name": sorted(list(unique_alleles))})
     alleles["allele_id"] = range(len(alleles))
     alleles[["allele_id", "allele_name"]].to_csv(args.alleles, sep="\t", index=False)
 
