@@ -7,7 +7,7 @@ process PLOT_SCORE_DISTRIBUTION {
         'biocontainers/bioconductor-alphabeta:1.8.0--r41hdfd78af_0' }"
 
     input:
-    path prep_scores
+    each path(prep_scores)
     path alleles
     path conditions
 

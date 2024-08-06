@@ -9,7 +9,7 @@ process PLOT_ENTITY_BINDING_RATIOS {
     publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
 
     input:
-    path prep_entity_binding_ratios
+    each path(prep_entity_binding_ratios)
     path alleles
 
     output:
