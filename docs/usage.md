@@ -116,7 +116,7 @@ The pipeline predicts epitopes for specific peptide lengths and for specific all
 nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models
 ```
 
-More on the output can be found at https://nf-co.re/metapep/dev/output#supported-allele-models
+More on the output can be found at https://nf-co.re/metapep/output#supported-allele-models
 
 Moreover, the pipeline checks if a supported prediction model (combination of allele and peptide length) is available if a PSSMs method like SYFPEITHI is chosen and reduces the peptide lengths to a common denominator for further analysis if models are not available.
 

@@ -3,9 +3,9 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0dev - [2022-01-20]
+## v1.0.0 - [2022-01-20]
 
-First release of [nf-core/metapep](https://nf-co.re/metapep/dev), created based on [nf-core](https://nf-co.re) standards and [nf-core/tools](https://nf-co.re/tools) template version 1.13.1.
+First release of [nf-core/metapep](https://nf-co.re/metapep), created based on [nf-core](https://nf-co.re) standards and [nf-core/tools](https://nf-co.re/tools) template version 1.14.1.
 
 ### `Added`
 
