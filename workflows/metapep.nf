@@ -283,9 +283,7 @@ workflow METAPEP {
         Channel.empty()
     ch_multiqc_logo          = params.multiqc_logo ?
         Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
-    ch_metapep_logo          = Channel.fromPath(
-        "$projectDir/assets/nf-core-metapep_logo_light.png", checkIfExists: true)
+        Channel.fromPath("$projectDir/assets/nf-core-metapep_logo_light.png")
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
@@ -309,7 +307,6 @@ workflow METAPEP {
 
     MULTIQC (
         ch_multiqc_files.collect(),
-        ch_metapep_logo.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()
