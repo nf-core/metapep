@@ -5,7 +5,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v1.0.0 - [2022-01-20]
 
-First release of [nf-core/metapep](https://nf-co.re/metapep), created based on [nf-core](https://nf-co.re) standards and [nf-core/tools](https://nf-co.re/tools) template version 1.14.1.
+First release of [nf-core/metapep](https://nf-co.re/metapep), based on [nf-core](https://nf-co.re) standards and [nf-core/tools](https://nf-co.re/tools) template version 1.14.1.
 
 ### `Added`
 
