@@ -251,27 +251,19 @@
             "description": "Define pipeline options.",
             "help_text": "These options modify the behaviour of tools used in the pipeline",
             "properties": {
-                "ncbi_key": {
-                    "type": "string",
-                    "description": "Required for downloading proteins from ncbi.",
-                    "fa_icon": "fas fa-id-card"
-                },
-                "ncbi_email": {
-                    "type": "string",
-                    "description": "Required for downloading proteins from ncbi.",
-                    "fa_icon": "fas fa-id-card"
-                },
                 "min_pep_len": {
                     "type": "integer",
                     "default": 9,
                     "description": "Minimum length of produced peptides.",
-                    "fa_icon": "fas fa-cogs"
+                    "fa_icon": "fas fa-cogs",
+                    "minimum": 1
                 },
                 "max_pep_len": {
                     "type": "integer",
                     "default": 11,
                     "description": "Maximum length of produced peptides.",
-                    "fa_icon": "fas fa-cogs"
+                    "fa_icon": "fas fa-cogs",
+                    "minimum": 2
                 },
                 "allow_inconsistent_pep_lengths": {
                     "type": "boolean",
@@ -325,33 +317,38 @@
                     "type": "integer",
                     "default": 4000000,
                     "description": "Maximum chunk size (#peptides) for epitope prediction jobs.",
-                    "fa_icon": "fas fa-cogs"
+                    "fa_icon": "fas fa-cogs",
+                    "minimum": 1
                 },
                 "pred_chunk_size_scaling": {
                     "type": "integer",
                     "default": 10,
                     "description": "Scaling factor for `prediction_chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
                     "hidden": true,
-                    "fa_icon": "fas fa-cogs"
+                    "fa_icon": "fas fa-cogs",
+                    "minimum": 1
                 },
                 "downstream_chunk_size": {
                     "type": "integer",
                     "default": 7500000,
                     "description": "Maximum chunk size (#epitope predictions) for processing of downstream visualisations.",
-                    "fa_icon": "fas fa-cogs"
+                    "fa_icon": "fas fa-cogs",
+                    "minimum": 1
                 },
                 "max_task_num": {
                     "type": "integer",
                     "default": 1000,
                     "description": "Maximum number of tasks submitted by `PREDICT_EPITOPES` process",
-                    "fa_icon": "fas fa-cogs"
+                    "fa_icon": "fas fa-cogs",
+                    "minimum": 1
                 },
                 "pred_buffer_files": {
                     "type": "integer",
                     "default": 1000,
                     "description": "Number of files, which are merged in `MERGE_PREDICTION_BUFFER`",
                     "hidden": true,
-                    "fa_icon": "fas fa-cogs"
+                    "fa_icon": "fas fa-cogs",
+                    "minimum": 1
                 },
                 "hide_pvalue": {
                     "type": "boolean",
