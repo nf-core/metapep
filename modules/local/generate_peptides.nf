@@ -31,9 +31,9 @@ process GENERATE_PEPTIDES {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
-        biopython: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('biopython').version)")
-        numpy: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('numpy').version)")
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        biopython: \$(python -c "import Bio; print(Bio.__version__)")
+        numpy: \$(python -c "import numpy; print(numpy.__version__)")
     END_VERSIONS
     """
 }

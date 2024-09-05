@@ -82,7 +82,7 @@ process PREDICT_EPITOPES {
     "${task.process}":
         python: \$(python --version 2>&1 | sed 's/Python //g')
         epytope: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('epytope').version)")
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
         mhcflurry: \$mhcflurry_version
         mhcnuggets: \$mhcnuggets_version
         syfpeithi: \$syfpeithi_version
