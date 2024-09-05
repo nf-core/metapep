@@ -6,8 +6,6 @@ process PLOT_ENTITY_BINDING_RATIOS {
         'https://depot.galaxyproject.org/singularity/mulled-v2-0be74e7b0c2e289bc8098b1491baf4f181012b1c:a1635746bc2c13635cbea8c29bd5a2837bdd7cd5-0' :
         'biocontainers/mulled-v2-0be74e7b0c2e289bc8098b1491baf4f181012b1c:a1635746bc2c13635cbea8c29bd5a2837bdd7cd5-0' }"
 
-    publishDir "${params.outdir}/figures", mode: params.publish_dir_mode
-
     input:
     each path(prep_entity_binding_ratios)
     path alleles
