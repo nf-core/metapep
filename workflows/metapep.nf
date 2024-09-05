@@ -34,7 +34,7 @@ include { PLOT_SCORE_DISTRIBUTION           } from '../modules/local/plot_score_
 include { PREPARE_ENTITY_BINDING_RATIOS     } from '../modules/local/prepare_entity_binding_ratios'
 include { PLOT_ENTITY_BINDING_RATIOS        } from '../modules/local/plot_entity_binding_ratios'
 
-include { PROCESS_INPUT } from '../subworkflows/local/process_input'
+include { PROCESS_INPUT                     } from '../subworkflows/local/process_input'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

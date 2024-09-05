@@ -17,7 +17,7 @@ nextflow.enable.dsl = 2
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { METAPEP  }                from './workflows/metapep'
+include { METAPEP                 } from './workflows/metapep'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_metapep_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_metapep_pipeline'
 
