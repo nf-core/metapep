@@ -139,7 +139,7 @@ def main(args=None):
         num_binder = len(conditions_peptides[conditions_peptides["best_prediction_score"]>=args.binder_threshold])
 
         # collect all info into table row per condition
-        row_temp = {"Condition name":condition_name, "Unique proteins":unique_protein_count, "Total peptides":total_peptide_count, "Unique peptides":unique_peptide_count, "# Binder (best allele)": num_binder}
+        row_temp = {"Condition name":condition_name, "Unique proteins":unique_protein_count, "Total peptides":total_peptide_count, "Unique peptides":unique_peptide_count, "# Binder (any allele)": num_binder}
         for col in predictions.columns:
             allele = allele_names[int(col.split('_')[-1])]
             row_temp[f"# Binders for allele {allele}"] = sum(conditions_peptides[col]>=args.binder_threshold)
@@ -152,7 +152,7 @@ def main(args=None):
     all_conditions_unique_peptide_counts = len(protein_peptide_occs["peptide_id"].drop_duplicates())
     all_conditions_unique_binder_counts = sum(best_scored_peptides>=args.binder_threshold)
 
-    row_temp = {"Condition name":"total", "Unique proteins":all_conditions_unique_protein_count, "Total peptides":all_conditions_total_peptide_counts, "Unique peptides":all_conditions_unique_peptide_counts, "# Binder (best allele)": all_conditions_unique_binder_counts}
+    row_temp = {"Condition name":"total", "Unique proteins":all_conditions_unique_protein_count, "Total peptides":all_conditions_total_peptide_counts, "Unique peptides":all_conditions_unique_peptide_counts, "# Binder (any allele)": all_conditions_unique_binder_counts}
     for col in predictions.columns:
         allele = allele_names[int(col.split('_')[-1])]
         row_temp[f"# Binders for allele {allele}"] = sum(predictions[col]>=args.binder_threshold)
