@@ -31,7 +31,7 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/peptides.tsv.gz"),
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
                                 path("$outputDir/db_tables/predictions.tsv.gz"),
-                                path("$outputDir/db_tables/stats.txt")).match("db_tables") },
+                                path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
                 { assert snapshot(path("$outputDir/entrez_data/microbiomes_entities.entrez.tsv")).match("entrez_data") },
                 { assert new File("$outputDir/entrez_data/entities_proteins.entrez.tsv").exists() },
                 { assert new File("$outputDir/entrez_data/proteins.entrez.tsv.gz").exists() },

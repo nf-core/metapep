@@ -31,7 +31,7 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/peptides.tsv.gz"),
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
                                 path("$outputDir/db_tables/predictions.tsv.gz"),
-                                path("$outputDir/db_tables/stats.txt")).match("db_tables") },
+                                path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
                 { assert new File("$outputDir/figures/entity_binding_ratios.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/entity_binding_ratios.with_points.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/prediction_score_distribution.A_01_01.pdf").exists() },
