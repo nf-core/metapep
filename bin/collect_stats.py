@@ -93,29 +93,29 @@ def main(args=None):
     predictions["peptide_id"] = pd.to_numeric(predictions["peptide_id"], downcast="unsigned")
     predictions["allele_id"] = pd.to_numeric(predictions["allele_id"], downcast="unsigned")
     predictions["prediction_score"] = pd.to_numeric(predictions["prediction_score"], downcast="float")
+    predictions = predictions[predictions["prediction_score"]>=args.binder_threshold]
 
     alleles = pd.read_csv(args.alleles, usecols=["allele_id", "allele_name"], sep="\t").set_index("allele_id")
     allele_names = alleles["allele_name"].to_dict()
 
     predictions = pd.concat([df.set_index("peptide_id").rename(columns={"prediction_score":f"prediction_score_allele_{allele_id}"}).drop("allele_id", axis=1) for allele_id, df in predictions.groupby("allele_id")], join="outer", axis=1)
-    best_scored_peptides = predictions.agg("max", axis=1).rename("best_prediction_score")
 
     stat_table = []
 
     # Process data condition-wise to reduce memory usage
     for condition_name in conditions["condition_name"]:
 
+        # TODO solve same entity between conditions -> duplication of data within merge
         conditions_proteins = (
             conditions[conditions.condition_name == condition_name]
             .merge(microbiomes_entities_occs)
             .drop(columns="microbiome_id")
             .merge(entities_proteins_occs)
             .drop(columns="entity_id")
-            .drop_duplicates()
         )
 
         # condition_name, unique_proteins
-        unique_protein_count = len(conditions_proteins[["condition_name", "protein_id"]])
+        unique_protein_count = len(conditions_proteins[["condition_name", "protein_id"]].drop_duplicates())
 
         # condition_name, peptide_id, condition_peptide_count
         conditions_peptides = (
@@ -132,33 +132,35 @@ def main(args=None):
         # condition_name, unique_peptide_count
         unique_peptide_count = len(conditions_peptides)
 
-        # peptide_id, condition_name, condition_peptide_count, highest_prediction_score, prediction_score_allele_0, prediction_score_allele_1,...prediction_score_allele_n
-        conditions_peptides = conditions_peptides.set_index("peptide_id").join(best_scored_peptides).join(predictions)
+        # peptide_id, prediction_score_allele_0, prediction_score_allele_1,...prediction_score_allele_n
+        conditions_peptides = conditions_peptides.set_index("peptide_id").drop(["condition_name","condition_peptide_count"], axis=1).join(predictions, how="inner")
 
         # number of best prediction allele binder
-        num_binder = len(conditions_peptides[conditions_peptides["best_prediction_score"]>=args.binder_threshold])
+        num_binder = len(conditions_peptides)
 
         # collect all info into table row per condition
         row_temp = {"Condition name":condition_name, "Unique proteins":unique_protein_count, "Total peptides":total_peptide_count, "Unique peptides":unique_peptide_count, "# Binder (any allele)": num_binder}
-        for col in predictions.columns:
+        for col in conditions_peptides.columns:
             allele = allele_names[int(col.split('_')[-1])]
-            row_temp[f"# Binders for allele {allele}"] = sum(conditions_peptides[col]>=args.binder_threshold)
+            row_temp[f"# Binders for allele {allele}"] = len(conditions_peptides[col].dropna())
 
         stat_table.append(row_temp)
 
+    stat_table = pd.DataFrame(stat_table)
+
     # collect info across all conditions
     all_conditions_unique_protein_count = len(protein_peptide_occs["protein_id"].drop_duplicates())
-    all_conditions_total_peptide_counts = sum(protein_peptide_occs.groupby("peptide_id")["count"].sum())
+    all_conditions_total_peptide_counts = stat_table["Total peptides"].sum()
     all_conditions_unique_peptide_counts = len(protein_peptide_occs["peptide_id"].drop_duplicates())
-    all_conditions_unique_binder_counts = sum(best_scored_peptides>=args.binder_threshold)
+    all_conditions_unique_binder_counts = len(predictions)
 
-    row_temp = {"Condition name":"total", "Unique proteins":all_conditions_unique_protein_count, "Total peptides":all_conditions_total_peptide_counts, "Unique peptides":all_conditions_unique_peptide_counts, "# Binder (any allele)": all_conditions_unique_binder_counts}
-    for col in predictions.columns:
+    row_total = {"Condition name":"total", "Unique proteins":all_conditions_unique_protein_count, "Total peptides":all_conditions_total_peptide_counts, "Unique peptides":all_conditions_unique_peptide_counts, "# Binder (any allele)": all_conditions_unique_binder_counts}
+    for col in conditions_peptides.columns:
         allele = allele_names[int(col.split('_')[-1])]
-        row_temp[f"# Binders for allele {allele}"] = sum(predictions[col]>=args.binder_threshold)
+        row_total[f"# Binders for allele {allele}"] = len(conditions_peptides[col].dropna())
 
-    stat_table.append(row_temp)
-    pd.DataFrame(stat_table).to_csv(args.outfile, sep="\t", index=False)
+    stat_table = stat_table.append(row_total, ignore_index=True)
+    stat_table.to_csv(args.outfile, sep="\t", index=False)
 
 if __name__ == "__main__":
     sys.exit(main())
