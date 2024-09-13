@@ -105,7 +105,6 @@ def main(args=None):
     # Process data condition-wise to reduce memory usage
     for condition_name in conditions["condition_name"]:
 
-        # TODO solve same entity between conditions -> duplication of data within merge
         conditions_proteins = (
             conditions[conditions.condition_name == condition_name]
             .merge(microbiomes_entities_occs)
