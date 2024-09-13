@@ -221,7 +221,7 @@ def main(args=None):
             )
 
             # Write entities_proteins: 'entity_id', 'protein_id'
-            entities_microbiomes_proteins[entities_proteins_columns].to_csv(
+            entities_microbiomes_proteins[entities_proteins_columns].drop_duplicates().to_csv(
                 outfile_entities_proteins, sep="\t", header=False, index=False
             )
             # Write entities: 'entity_id', 'entity_name'
