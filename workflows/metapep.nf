@@ -309,7 +309,10 @@ workflow METAPEP {
             sort: true
         )
     )
+
+    if (!params.show_supported_models) {
     ch_multiqc_files = ch_multiqc_files.mix(COLLECT_STATS.out.ch_stats)
+    }
 
     MULTIQC (
         ch_multiqc_files.collect(),
