@@ -145,10 +145,12 @@ def main(args=None):
         # condition_name, unique_peptide_count
         unique_peptide_count = len(conditions_peptides)
 
-        # peptide_id, allele_id (with selected binders for allele in condition)
+        # Filter predictions for alleles within condition
         alleles_of_current_cond = conditions_alleles[conditions_alleles["condition_id"] == condition_id]["allele_id"].to_list()
-        predictions_condition_binders = predictions[predictions["allele_id"].isin(alleles_of_current_cond)]
-        conditions_peptides = conditions_peptides.set_index("peptide_id").drop(["condition_name","condition_peptide_count"], axis=1).join(predictions_condition_binders.set_index("peptide_id"), how="inner")
+        binders_in_curr_cond = predictions[predictions["allele_id"].isin(alleles_of_current_cond)]
+
+        # peptide_id, allele_id (with selected binders for allele in condition)
+        conditions_peptides = conditions_peptides.set_index("peptide_id").drop(["condition_name","condition_peptide_count"], axis=1).join(binders_in_curr_cond.set_index("peptide_id"), how="inner")
 
         # number of binder
         num_binder = len(conditions_peptides)
