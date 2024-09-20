@@ -37,11 +37,19 @@ def parse_args(args=None):
         "--conditions",
         help="Path to the conditions input file",
         type=str,
-        required=True)
+        required=True
+    )
     parser.add_argument(
         "-a",
         "--alleles",
         help="Path to the allele input file",
+        type=str,
+        required=True
+    )
+    parser.add_argument(
+        "-ca",
+        "--conditions_alleles",
+        help="Path to the condition_allele input file",
         type=str,
         required=True)
     parser.add_argument(
@@ -49,7 +57,8 @@ def parse_args(args=None):
         "--predictions",
         help="Path to the predictions input file",
         type=str,
-        required=True)
+        required=True
+    )
     parser.add_argument(
         "-bt",
         "--binder_threshold",
@@ -86,8 +95,10 @@ def main(args=None):
     )
     microbiomes_entities_occs["entity_id"] = pd.to_numeric(microbiomes_entities_occs["entity_id"], downcast="unsigned")
 
-    conditions = pd.read_csv(args.conditions, usecols=["condition_name", "microbiome_id"], sep="\t")
+    conditions = pd.read_csv(args.conditions, usecols=["condition_id", "condition_name", "microbiome_id"], sep="\t")
+    conditions["condition_id"] = pd.to_numeric(conditions["condition_id"], downcast="unsigned")
     conditions["microbiome_id"] = pd.to_numeric(conditions["microbiome_id"], downcast="unsigned")
+    conditions = conditions.set_index("condition_id")
 
     predictions = pd.read_csv(args.predictions, usecols=["peptide_id", "prediction_score", "allele_id"], sep="\t")
     predictions["peptide_id"] = pd.to_numeric(predictions["peptide_id"], downcast="unsigned")
@@ -95,15 +106,17 @@ def main(args=None):
     predictions["prediction_score"] = pd.to_numeric(predictions["prediction_score"], downcast="float")
     predictions = predictions[predictions["prediction_score"]>=args.binder_threshold]
 
+    conditions_alleles = pd.read_csv(args.conditions_alleles, usecols=["condition_id", "allele_id"], sep="\t")
+    conditions_alleles["condition_id"] = pd.to_numeric(conditions_alleles["condition_id"], downcast="unsigned")
+    conditions_alleles["allele_id"] = pd.to_numeric(conditions_alleles["allele_id"], downcast="unsigned")
+
     alleles = pd.read_csv(args.alleles, usecols=["allele_id", "allele_name"], sep="\t").set_index("allele_id")
     allele_names = alleles["allele_name"].to_dict()
-
-    predictions = pd.concat([df.set_index("peptide_id").rename(columns={"prediction_score":f"prediction_score_allele_{allele_id}"}).drop("allele_id", axis=1) for allele_id, df in predictions.groupby("allele_id")], join="outer", axis=1)
 
     stat_table = []
 
     # Process data condition-wise to reduce memory usage
-    for condition_name in conditions["condition_name"]:
+    for condition_id, condition_name in conditions["condition_name"].items():
 
         conditions_proteins = (
             conditions[conditions.condition_name == condition_name]
@@ -131,17 +144,21 @@ def main(args=None):
         # condition_name, unique_peptide_count
         unique_peptide_count = len(conditions_peptides)
 
-        # peptide_id, prediction_score_allele_0, prediction_score_allele_1,...prediction_score_allele_n
-        conditions_peptides = conditions_peptides.set_index("peptide_id").drop(["condition_name","condition_peptide_count"], axis=1).join(predictions, how="inner")
+        # peptide_id, allele_id (with selected binders for allele in condition)
+        alleles_of_current_cond = conditions_alleles[conditions_alleles["condition_id"] == condition_id]["allele_id"].to_list()
+        predictions_condition_binders = predictions[predictions["allele_id"].isin(alleles_of_current_cond)]
+        conditions_peptides = conditions_peptides.set_index("peptide_id").drop(["condition_name","condition_peptide_count"], axis=1).join(predictions_condition_binders.set_index("peptide_id"), how="inner")
 
-        # number of best prediction allele binder
+        # number of binder
         num_binder = len(conditions_peptides)
 
         # collect all info into table row per condition
         row_temp = {"Condition name":condition_name, "Unique proteins":unique_protein_count, "Total peptides":total_peptide_count, "Unique peptides":unique_peptide_count, "# Binder (any allele)": num_binder}
-        for col in conditions_peptides.columns:
-            allele = allele_names[int(col.split('_')[-1])]
-            row_temp[f"# Binders for allele {allele}"] = len(conditions_peptides[col].dropna())
+
+        # Iterate over all alleles to get number of binders per allele per condition
+        for allele_id, allele_name in allele_names.items():
+            num_binders_per_allele = len(conditions_peptides[conditions_peptides["allele_id"]==allele_id])
+            row_temp[f"# Binders for allele {allele_name}"] = num_binders_per_allele
 
         stat_table.append(row_temp)
 
@@ -151,12 +168,14 @@ def main(args=None):
     all_conditions_unique_protein_count = len(protein_peptide_occs["protein_id"].drop_duplicates())
     all_conditions_total_peptide_counts = stat_table["Total peptides"].sum()
     all_conditions_unique_peptide_counts = len(protein_peptide_occs["peptide_id"].drop_duplicates())
-    all_conditions_unique_binder_counts = len(predictions)
+    all_conditions_unique_binder_counts = len(predictions["peptide_id"].unique())
 
     row_total = {"Condition name":"total", "Unique proteins":all_conditions_unique_protein_count, "Total peptides":all_conditions_total_peptide_counts, "Unique peptides":all_conditions_unique_peptide_counts, "# Binder (any allele)": all_conditions_unique_binder_counts}
-    for col in conditions_peptides.columns:
-        allele = allele_names[int(col.split('_')[-1])]
-        row_total[f"# Binders for allele {allele}"] = len(conditions_peptides[col].dropna())
+
+    # Iterate over all alleles to get number of binders per allele in total
+    for allele_id, allele_name in allele_names.items():
+        num_binders_per_allele = len(predictions[predictions["allele_id"]==allele_id])
+        row_total[f"# Binders for allele {allele_name}"] = num_binders_per_allele
 
     stat_table = stat_table.append(row_total, ignore_index=True)
     stat_table.to_csv(args.outfile, sep="\t", index=False)

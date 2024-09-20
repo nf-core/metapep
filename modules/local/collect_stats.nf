@@ -13,6 +13,7 @@ process COLLECT_STATS {
     path(microbiomes_entities)
     path(conditions          )
     path(alleles             )
+    path(conditions_alleles  )
     path(predictions         )
 
     output:
@@ -28,6 +29,7 @@ process COLLECT_STATS {
                     --microbiomes-entities-occ "$microbiomes_entities"  \\
                     --conditions "$conditions"                          \\
                     --alleles "$alleles"                                \\
+                    --conditions_alleles "$conditions_alleles"          \\
                     --predictions "$predictions"                        \\
                     --binder_threshold "$score_threshold"               \\
                     --outfile "stats.tsv"

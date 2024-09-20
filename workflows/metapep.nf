@@ -219,6 +219,7 @@ workflow METAPEP {
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
             PROCESS_INPUT.out.ch_conditions,
             PROCESS_INPUT.out.ch_alleles,
+            PROCESS_INPUT.out.ch_conditions_alleles,
             MERGE_PREDICTIONS.out.ch_predictions
         )
         ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
