@@ -105,6 +105,7 @@ def main(args=None):
     predictions["allele_id"] = pd.to_numeric(predictions["allele_id"], downcast="unsigned")
     predictions["prediction_score"] = pd.to_numeric(predictions["prediction_score"], downcast="float")
     predictions = predictions[predictions["prediction_score"]>=args.binder_threshold]
+    predictions = predictions.drop("prediction_score", axis=1)
 
     conditions_alleles = pd.read_csv(args.conditions_alleles, usecols=["condition_id", "allele_id"], sep="\t")
     conditions_alleles["condition_id"] = pd.to_numeric(conditions_alleles["condition_id"], downcast="unsigned")
