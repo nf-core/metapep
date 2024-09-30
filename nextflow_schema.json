@@ -10,7 +10,7 @@
             "type": "object",
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
-            "required": ["input", "outdir"],
+            "required": ["outdir"],
             "properties": {
                 "input": {
                     "type": "string",
@@ -40,37 +40,6 @@
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
-                }
-            }
-        },
-        "reference_genome_options": {
-            "title": "Reference genome options",
-            "type": "object",
-            "fa_icon": "fas fa-dna",
-            "description": "Reference genome related files and options required for the workflow.",
-            "properties": {
-                "genome": {
-                    "type": "string",
-                    "description": "Name of iGenomes reference.",
-                    "fa_icon": "fas fa-book",
-                    "help_text": "If using a reference genome configured in the pipeline using iGenomes, use this parameter to give the ID for the reference. This is then used to build the full paths for all required reference genome files e.g. `--genome GRCh38`. \n\nSee the [nf-core website docs](https://nf-co.re/usage/reference_genomes) for more details."
-                },
-                "fasta": {
-                    "type": "string",
-                    "format": "file-path",
-                    "exists": true,
-                    "mimetype": "text/plain",
-                    "pattern": "^\\S+\\.fn?a(sta)?(\\.gz)?$",
-                    "description": "Path to FASTA genome file.",
-                    "help_text": "This parameter is *mandatory* if `--genome` is not specified. If you don't have a BWA index available this will be generated for you automatically. Combine with `--save_reference` to save BWA index for future runs.",
-                    "fa_icon": "far fa-file-code"
-                },
-                "igenomes_ignore": {
-                    "type": "boolean",
-                    "description": "Do not load the iGenomes reference config.",
-                    "fa_icon": "fas fa-ban",
-                    "hidden": true,
-                    "help_text": "Do not load `igenomes.config` when running the pipeline. You may choose this option if you observe clashes between custom parameters and those supplied in `igenomes.config`."
                 }
             }
         },
@@ -274,14 +243,127 @@
                     "hidden": true
                 }
             }
+        },
+        "pipeline_options": {
+            "title": "Pipeline options",
+            "type": "object",
+            "fa_icon": "fas fa-file-import",
+            "description": "Define pipeline options.",
+            "help_text": "These options modify the behaviour of tools used in the pipeline",
+            "properties": {
+                "ncbi_key": {
+                    "type": "string",
+                    "description": "Required for downloading proteins from ncbi.",
+                    "fa_icon": "fas fa-id-card"
+                },
+                "ncbi_email": {
+                    "type": "string",
+                    "description": "Required for downloading proteins from ncbi.",
+                    "fa_icon": "fas fa-id-card"
+                },
+                "min_pep_len": {
+                    "type": "integer",
+                    "default": 9,
+                    "description": "Minimum length of produced peptides.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "max_pep_len": {
+                    "type": "integer",
+                    "default": 11,
+                    "description": "Maximum length of produced peptides.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "allow_inconsistent_pep_lengths": {
+                    "type": "boolean",
+                    "description": "Only takes effect for `pred_method 'syfpeithi'`. Allow all peptide lengths within the range of `min_pep_len` to `max_pep_len` without reducing them to the matching allele models.",
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
+                },
+                "pred_method": {
+                    "type": "string",
+                    "default": "syfpeithi",
+                    "description": "Epitope prediction method to use",
+                    "enum": ["syfpeithi", "mhcflurry", "mhcnuggets-class-1", "mhcnuggets-class-2"],
+                    "fa_icon": "fas fa-cogs"
+                },
+                "syfpeithi_score_threshold": {
+                    "type": "number",
+                    "default": 0.5,
+                    "description": "Threshold for binder/non-binder calling when using SYFPEITHI epitope prediction method.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
+                },
+                "mhcflurry_mhcnuggets_score_threshold": {
+                    "type": "number",
+                    "default": 0.426,
+                    "description": "Threshold for binder/non-binder calling when using MHCflurry or MHCnuggets epitope prediction methods. The default value of 0.426 corresponds to an IC50 of \u2264500.",
+                    "minimum": 0,
+                    "maximum": 1,
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
+                },
+                "show_supported_models": {
+                    "type": "boolean",
+                    "description": "Display supported alleles of all prediction methods and exit.",
+                    "fa_icon": "fas fa-question-circle"
+                },
+                "prodigal_mode": {
+                    "type": "string",
+                    "default": "meta",
+                    "description": "Prodigal mode, 'meta' or 'single'.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "memory_usage_log_deep": {
+                    "type": "boolean",
+                    "description": "Enables \"deep\" memory usage output for main DataFrames generated in pandas scripts (\"deep\" ensures accurate usage values, but slightly increases runtime).",
+                    "hidden": true,
+                    "fa_icon": "fas fa-align-justify"
+                },
+                "prediction_chunk_size": {
+                    "type": "integer",
+                    "default": 4000000,
+                    "description": "Maximum chunk size (#peptides) for epitope prediction jobs.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "pred_chunk_size_scaling": {
+                    "type": "integer",
+                    "default": 10,
+                    "description": "Scaling factor for `prediction_chunk_size` parameter for usage in python scripts to reduce memory usage when handling DataFrames.",
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
+                },
+                "downstream_chunk_size": {
+                    "type": "integer",
+                    "default": 7500000,
+                    "description": "Maximum chunk size (#epitope predictions) for processing of downstream visualisations.",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "max_task_num": {
+                    "type": "integer",
+                    "default": 1000,
+                    "description": "Maximum number of tasks submitted by `PREDICT_EPITOPES` process",
+                    "fa_icon": "fas fa-cogs"
+                },
+                "pred_buffer_files": {
+                    "type": "integer",
+                    "default": 1000,
+                    "description": "Number of files, which are merged in `MERGE_PREDICTION_BUFFER`",
+                    "hidden": true,
+                    "fa_icon": "fas fa-cogs"
+                },
+                "hide_pvalue": {
+                    "type": "boolean",
+                    "description": "Do not display mean comparison p-values in boxplots.",
+                    "fa_icon": "fas fa-cogs"
+                }
+            }
         }
     },
     "allOf": [
         {
             "$ref": "#/definitions/input_output_options"
-        },
-        {
-            "$ref": "#/definitions/reference_genome_options"
         },
         {
             "$ref": "#/definitions/institutional_config_options"
@@ -291,6 +373,9 @@
         },
         {
             "$ref": "#/definitions/generic_options"
+        },
+        {
+            "$ref": "#/definitions/pipeline_options"
         }
     ]
 }
