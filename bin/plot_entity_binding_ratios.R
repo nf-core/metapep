@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+# Written by Sabrina Krakau, Leon Kuchenbecker, and Till Englert under the MIT license
 
 library(optparse)
 library(ggplot2)

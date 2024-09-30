@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Written by Sabrina Krakau, Leon Kuchenbecker, and Till Englert under the MIT license
 
 # This script originates from the nf-core/epitopeprediction pipeline and is modified and refactored for use in nf-core/metapep
 

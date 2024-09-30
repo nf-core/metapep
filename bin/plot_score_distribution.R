@@ -1,4 +1,5 @@
 #!/usr/bin/env Rscript
+# Written by Sabrina Krakau, Leon Kuchenbecker, and Till Englert under the MIT license
 
 library(ggplot2)
 library(data.table)
