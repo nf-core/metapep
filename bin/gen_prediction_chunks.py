@@ -94,7 +94,7 @@ def write_chunks(data, alleles, max_task_per_allele, max_chunk_size, outdir, rem
         max_chunk_size = int(len(data)/max_task_per_allele)+1 # Make sure that all peptides end up in chunks
 
     if remainder and len(data) > max_chunk_size:
-        print("ERROR: Something went wrong!", file=sys.stderr)
+        print("ERROR: Something went wrong! The remainder is larger than the allowed chunk size.", file=sys.stderr)
         sys.exit(1)
 
     allele_name = alleles[alleles["allele_id"] == data.iloc[0].allele_id]["allele_name"].iloc[0]
