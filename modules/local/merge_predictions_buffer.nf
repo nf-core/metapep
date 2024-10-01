@@ -11,9 +11,9 @@ process MERGE_PREDICTIONS_BUFFER {
     path    prediction_warnings
 
     output:
-    path "predictions.buffer_*.tsv",            emit: ch_predictions_merged_buffer
-    path "prediction_warnings.buffer_*.log",    emit: ch_prediction_warnings_merged_buffer
-    path "versions.yml",                        emit: versions
+    path "predictions.buffer_*.tsv"        , emit: ch_predictions_merged_buffer
+    path "prediction_warnings.buffer_*.log", emit: ch_prediction_warnings_merged_buffer
+    path "versions.yml"                    , emit: versions
 
     script:
     def chunk_size = params.prediction_chunk_size * params.pred_chunk_size_scaling

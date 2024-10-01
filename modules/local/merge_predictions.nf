@@ -12,9 +12,9 @@ process MERGE_PREDICTIONS {
     path prediction_warnings
 
     output:
-    path "predictions.tsv.gz",          emit: ch_predictions
-    path "prediction_warnings.log",     emit: ch_prediction_warnings
-    path "versions.yml",                emit: versions
+    path "predictions.tsv.gz"     , emit: ch_predictions
+    path "prediction_warnings.log", emit: ch_prediction_warnings
+    path "versions.yml"           , emit: versions
 
     script:
     def chunk_size = params.prediction_chunk_size * params.pred_chunk_size_scaling

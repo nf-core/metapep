@@ -13,8 +13,8 @@ process FINALIZE_MICROBIOME_ENTITIES {
     path(entities)
 
     output:
-    path    "microbiomes_entities.tsv"  , emit: ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
-    path    "versions.yml"              , emit: versions
+    path    "microbiomes_entities.tsv", emit: ch_microbiomes_entities  // entity_id, microbiome_id, entity_weight
+    path    "versions.yml"            , emit: versions
 
     script:
 

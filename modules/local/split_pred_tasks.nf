@@ -20,14 +20,14 @@ process SPLIT_PRED_TASKS {
     // and thus to enumerate, which (peptide, allele) combinations have to be predicted.
 
     output:
-    path "peptides_*.txt",  emit:   ch_epitope_prediction_chunks
-    path "versions.yml",    emit:   versions
+    path "peptides_*.txt", emit: ch_epitope_prediction_chunks
+    path "versions.yml"  , emit: versions
 
     script:
-    def max_chunk_num         = params.max_task_num
-    def pred_chunk_size       = params.prediction_chunk_size
-    def proc_chunk_size       = params.prediction_chunk_size * params.pred_chunk_size_scaling
-    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
+    def max_chunk_num    = params.max_task_num
+    def pred_chunk_size  = params.prediction_chunk_size
+    def proc_chunk_size  = params.prediction_chunk_size * params.pred_chunk_size_scaling
+    def mem_log_level    = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     gen_prediction_chunks.py --peptides "$peptides" \\
                             --protein-peptide-occ "$proteins_peptides" \\

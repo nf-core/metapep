@@ -14,7 +14,7 @@ process COLLECT_STATS {
     path(conditions          )
 
     output:
-    path "stats.txt",    emit: ch_stats
+    path "stats.txt"   , emit: ch_stats
     path "versions.yml", emit: versions
 
     script:

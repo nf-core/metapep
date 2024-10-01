@@ -11,8 +11,8 @@ process PLOT_ENTITY_BINDING_RATIOS {
     path alleles
 
     output:
-    path "entity_binding_ratios.*.pdf",     emit:   ch_plot_entity_binding_ratios
-    path "versions.yml",                    emit:   versions
+    path "entity_binding_ratios.*.pdf", emit: ch_plot_entity_binding_ratios
+    path "versions.yml"               , emit: versions
 
     script:
     def hide_pvalue = params.hide_pvalue ? "TRUE" : "FALSE"

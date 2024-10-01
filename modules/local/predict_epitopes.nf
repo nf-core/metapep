@@ -12,9 +12,9 @@ process PREDICT_EPITOPES {
     path(peptides)
 
     output:
-    path "*predictions.tsv",            emit:   ch_epitope_predictions
-    path "*pred_warnings.log",          emit:   ch_epitope_prediction_warnings
-    path "versions.yml",                emit:   versions
+    path "*predictions.tsv"  , emit: ch_epitope_predictions
+    path "*pred_warnings.log", emit: ch_epitope_prediction_warnings
+    path "versions.yml"      , emit: versions
 
     script:
     """

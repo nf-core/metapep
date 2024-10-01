@@ -11,8 +11,8 @@ process CREATE_PROTEIN_TSV {
     tuple val(meta), path(protein_fasta)
 
     output:
-    tuple val(meta), path("proteins.pred_${meta.id}*.tsv.gz")   , emit: ch_pred_proteins     // Emit protein tsv
-    path    "versions.yml"                                      , emit: versions
+    tuple val(meta), path("proteins.pred_${meta.id}*.tsv.gz"), emit: ch_pred_proteins     // Emit protein tsv
+    path    "versions.yml"                                   , emit: versions
 
     script:
     name = meta.bin_basename ? "${meta.id}.${meta.bin_basename}" : "${meta.id}"

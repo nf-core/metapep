@@ -11,9 +11,9 @@ process UNIFY_MODEL_LENGTHS {
     path samplesheet_valid
 
     output:
-    path "*_unify_peptide_lengths.log"      , emit: log
-    env unified_peptide_lengths             , emit: unified_pep_lens
-    path "versions.yml"                     , emit: versions
+    path "*_unify_peptide_lengths.log", emit: log
+    env unified_peptide_lengths       , emit: unified_pep_lens
+    path "versions.yml"               , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

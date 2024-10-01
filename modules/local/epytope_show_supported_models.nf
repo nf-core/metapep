@@ -7,7 +7,7 @@ process EPYTOPE_SHOW_SUPPORTED_MODELS {
         'biocontainers/epytope:3.3.1--pyh7cba7a3_0' }"
 
     output:
-    path "*.txt",        emit: txt
+    path "*.txt"       , emit: txt
     path "versions.yml", emit: versions
 
     script:
