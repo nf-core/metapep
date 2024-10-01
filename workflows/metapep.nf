@@ -137,19 +137,6 @@ workflow METAPEP {
         ch_versions = ch_versions.mix(GENERATE_PEPTIDES.out.versions)
 
         //
-        // MODULE: Collect stats
-        //
-
-        // Collects proteins, peptides, unique peptides per conditon
-        COLLECT_STATS (
-            GENERATE_PEPTIDES.out.ch_proteins_peptides,
-            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-            FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-            PROCESS_INPUT.out.ch_conditions
-        )
-        ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
-
-        //
         // MODULE: Split prediction tasks into chunks
         //
 
@@ -222,6 +209,22 @@ workflow METAPEP {
         ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
 
         //
+        // MODULE: Collect stats
+        //
+
+        // Collects proteins, peptides, unique peptides per conditon
+        COLLECT_STATS (
+            GENERATE_PEPTIDES.out.ch_proteins_peptides,
+            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+            FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+            PROCESS_INPUT.out.ch_conditions,
+            PROCESS_INPUT.out.ch_alleles,
+            PROCESS_INPUT.out.ch_conditions_alleles,
+            MERGE_PREDICTIONS.out.ch_predictions
+        )
+        ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
+
+        //
         // MODULE: Plot score distributions
         //
         PREPARE_SCORE_DISTRIBUTION (
@@ -262,6 +265,7 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(PLOT_ENTITY_BINDING_RATIOS.out.versions)
     }
+
     //
     // Collate and save software versions
     //
@@ -304,6 +308,10 @@ workflow METAPEP {
             sort: true
         )
     )
+
+    if (!params.show_supported_models) {
+    ch_multiqc_files = ch_multiqc_files.mix(COLLECT_STATS.out.ch_stats)
+    }
 
     MULTIQC (
         ch_multiqc_files.collect(),

@@ -12,18 +12,27 @@ process COLLECT_STATS {
     path(entities_proteins   )
     path(microbiomes_entities)
     path(conditions          )
+    path(alleles             )
+    path(conditions_alleles  )
+    path(predictions         )
 
     output:
-    path "stats.txt"   , emit: ch_stats
+    path "stats.tsv"   , emit: ch_stats
     path "versions.yml", emit: versions
 
+
+    def score_threshold = params.pred_method != "SYFPEITHI" ? params.mhcflurry_mhcnuggets_score_threshold : params.syfpeithi_score_threshold
     script:
     """
-    collect_stats.py --protein-peptide-occ "$proteins_peptides" \\
-                    --entities-proteins-occ "$entities_proteins" \\
-                    --microbiomes-entities-occ "$microbiomes_entities" \\
-                    --conditions "$conditions" \\
-                    --outfile stats.txt
+    collect_stats.py --protein-peptide-occ "$proteins_peptides"         \\
+                    --entities-proteins-occ "$entities_proteins"        \\
+                    --microbiomes-entities-occ "$microbiomes_entities"  \\
+                    --conditions "$conditions"                          \\
+                    --alleles "$alleles"                                \\
+                    --conditions_alleles "$conditions_alleles"          \\
+                    --predictions "$predictions"                        \\
+                    --binder_threshold "$score_threshold"               \\
+                    --outfile "stats.tsv"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -31,5 +40,4 @@ process COLLECT_STATS {
         pandas: \$(python -c "import pandas; print(pandas.__version__)")
     END_VERSIONS
     """
-
 }
