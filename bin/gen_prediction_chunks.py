@@ -8,7 +8,8 @@ import sys
 import pandas as pd
 
 ####################################################################################################
-
+global cur_chunk
+####################################################################################################
 
 def parse_args():
     """Parses the command line arguments specified by the user."""
@@ -81,14 +82,11 @@ def parse_args():
     return parser.parse_args()
 
 
-def write_chunks(data, alleles, max_task_per_allele, remainder=False, pbar=None):
+def write_chunks(data, alleles, max_task_per_allele, max_chunk_size, outdir, remainder=False, pbar=None):
     """Takes data in form of a table of peptide_id, peptide_sequence and
     identical allele_name values. The data is partitioned into chunks and
     written into individual output files, prepended with a comment line (#)
     indicating the allele name."""
-    global cur_chunk
-
-    max_chunk_size = args.max_chunk_size
 
     # Dynamically increase the chunk size dependent on the maximum number of allowed processes.
     if len(data)/max_chunk_size > max_task_per_allele:
@@ -104,14 +102,14 @@ def write_chunks(data, alleles, max_task_per_allele, remainder=False, pbar=None)
     for start in range(0, len(data), max_chunk_size):
         # if not handling remainder: only write out full chunks here
         if remainder or len(data) - start >= max_chunk_size:
-            with open(os.path.join(args.outdir, "peptides_" + str(cur_chunk).rjust(5, "0") + ".txt"), "w") as outfile:
+            with open(os.path.join(outdir, "peptides_" + str(globals()["cur_chunk"]).rjust(5, "0") + ".txt"), "w") as outfile:
                 print(f"#{allele_name}#{data.iloc[0].allele_id}", file=outfile)
                 write = data.iloc[start : start + max_chunk_size]
                 written = written.append(data.index[start : start + max_chunk_size])
                 if pbar:
                     pbar.update(len(write))
                 write[["peptide_id", "peptide_sequence"]].to_csv(outfile, sep="\t", index=False)
-                cur_chunk = cur_chunk + 1
+                globals()["cur_chunk"] = globals()["cur_chunk"] + 1
 
     # delete chunks that were written out already
     data.drop(written, inplace=True)
@@ -119,7 +117,9 @@ def write_chunks(data, alleles, max_task_per_allele, remainder=False, pbar=None)
 
 ####################################################################################################
 
-try:
+def main():
+
+
     # Parse command line arguments
     args = parse_args()
 
@@ -194,7 +194,7 @@ try:
     print("\nInfo: proteins_allele_info", flush=True)
     proteins_allele_info.info(verbose=False, memory_usage=print_mem)
 
-    cur_chunk = 0
+    globals()["cur_chunk"] = 0
     requests = 0
     keep = pd.DataFrame()
 
@@ -233,7 +233,7 @@ try:
             keep = (
                 pd.concat([keep, to_predict], ignore_index=True)
                 .groupby("allele_id", group_keys=False)
-                .apply(lambda x: write_chunks(x, alleles, max_task_per_allele))
+                .apply(lambda x: write_chunks(x, alleles, max_task_per_allele, max_chunk_size=args.max_chunk_size, outdir=args.outdir))
             )
             # use group_keys=False to avoid generation of extra index with "allele_id"
 
@@ -241,11 +241,10 @@ try:
             keep.info(verbose=False, memory_usage=print_mem)
 
     # Write out remaining peptides
-    keep.groupby("allele_id", group_keys=False).apply(lambda x: write_chunks(x, alleles, max_task_per_allele, remainder=True))
+    keep.groupby("allele_id", group_keys=False).apply(lambda x: write_chunks(x, alleles, max_task_per_allele, remainder=True, max_chunk_size=args.max_chunk_size, outdir=args.outdir))
 
     # We're happy if we got here
-    print(f"All done. Written {requests} peptide prediction requests into {cur_chunk} chunks.")
-    sys.exit(0)
-except KeyboardInterrupt:
-    print("\nUser aborted.", file=sys.stderr)
-    sys.exit(1)
+    print(f"All done. Written {requests} peptide prediction requests into {globals()['cur_chunk']} chunks.")
+
+if __name__ == "__main__":
+    sys.exit(main())
