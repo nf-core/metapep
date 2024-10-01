@@ -12,8 +12,8 @@ process ASSIGN_NUCL_ENTITY_WEIGHTS {
     path weights_files
 
     output:
-    path   "microbiomes_entities.nucl.tsv", emit: ch_nucl_microbiomes_entities  // entity_name, microbiome_id, entity_weight
-    path    "versions.yml"                , emit: versions
+    path "microbiomes_entities.nucl.tsv", emit: ch_nucl_microbiomes_entities  // entity_name, microbiome_id, entity_weight
+    path "versions.yml"                 , emit: versions
 
 
     script:

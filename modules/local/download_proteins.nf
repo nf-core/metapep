@@ -12,16 +12,16 @@ process DOWNLOAD_PROTEINS {
     secret "NCBI_KEY"
 
     input:
-    val    microbiome_ids
-    path   microbiome_files
+    val  microbiome_ids
+    path microbiome_files
 
     output:
-    path    "proteins.entrez.tsv.gz"         , emit: ch_entrez_proteins
-    path    "taxa_assemblies.tsv"            , emit: ch_entrez_assemblies
-    path    "entities_proteins.entrez.tsv"   , emit: ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
-    path    "microbiomes_entities.entrez.tsv", emit: ch_entrez_microbiomes_entities  // entity_name, microbiome_id, entity_weight
-    path    "download_proteins.log"          , emit: log
-    path    "versions.yml"                   , emit: versions
+    path "proteins.entrez.tsv.gz"         , emit: ch_entrez_proteins
+    path "taxa_assemblies.tsv"            , emit: ch_entrez_assemblies
+    path "entities_proteins.entrez.tsv"   , emit: ch_entrez_entities_proteins  // protein_tmp_id (accessionVersion), entity_name (taxon_id)
+    path "microbiomes_entities.entrez.tsv", emit: ch_entrez_microbiomes_entities  // entity_name, microbiome_id, entity_weight
+    path "download_proteins.log"          , emit: log
+    path "versions.yml"                   , emit: versions
 
     script:
     def microbiome_ids = microbiome_ids.join(' ')

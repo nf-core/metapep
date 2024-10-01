@@ -15,11 +15,11 @@ process GENERATE_PROTEIN_AND_ENTITY_IDS {
     path(entrez_microbiomes_entities)
 
     output:
-    path   "proteins.tsv.gz"                    , emit: ch_proteins
-    path   "entities_proteins.tsv"              , emit: ch_entities_proteins
-    path   "entities.tsv"                       , emit: ch_entities
-    path   "microbiomes_entities.no_weights.tsv", emit: ch_microbiomes_entities_noweights  // microbiome_id, entitiy_id  (no weights yet!)
-    path   "versions.yml"                       , emit: versions
+    path "proteins.tsv.gz"                    , emit: ch_proteins
+    path "entities_proteins.tsv"              , emit: ch_entities_proteins
+    path "entities.tsv"                       , emit: ch_entities
+    path "microbiomes_entities.no_weights.tsv", emit: ch_microbiomes_entities_noweights  // microbiome_id, entitiy_id  (no weights yet!)
+    path "versions.yml"                       , emit: versions
 
     script:
         predicted_proteins_microbiome_ids = predicted_proteins_meta.collect { meta -> meta.id }.join(' ')
