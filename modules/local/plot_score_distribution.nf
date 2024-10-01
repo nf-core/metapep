@@ -21,7 +21,6 @@ process PLOT_SCORE_DISTRIBUTION {
     """
     [[ ${prep_scores} =~ prediction_scores.allele_(.*).tsv ]];
     allele_id="\${BASH_REMATCH[1]}"
-    echo \$allele_id
 
     plot_score_distribution.R \\
         $prep_scores \\
