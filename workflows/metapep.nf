@@ -156,13 +156,13 @@ workflow METAPEP {
         // Split prediction tasks (peptide, allele) into chunks of peptides that are to
         // be predicted against the same allele for parallel prediction
         SPLIT_PRED_TASKS (
-        GENERATE_PEPTIDES.out.ch_peptides,
-        GENERATE_PEPTIDES.out.ch_proteins_peptides,
-        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-        PROCESS_INPUT.out.ch_conditions,
-        PROCESS_INPUT.out.ch_conditions_alleles,
-        PROCESS_INPUT.out.ch_alleles
+            GENERATE_PEPTIDES.out.ch_peptides,
+            GENERATE_PEPTIDES.out.ch_proteins_peptides,
+            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+            FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+            PROCESS_INPUT.out.ch_conditions,
+            PROCESS_INPUT.out.ch_conditions_alleles,
+            PROCESS_INPUT.out.ch_alleles
         )
         ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
 
