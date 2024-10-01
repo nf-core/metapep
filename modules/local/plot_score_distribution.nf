@@ -1,4 +1,5 @@
 process PLOT_SCORE_DISTRIBUTION {
+    tag "$prep_scores"
     label 'process_medium_memory'
 
     conda "bioconda::bioconductor-alphabeta=1.8.0"
