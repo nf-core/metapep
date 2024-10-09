@@ -1,0 +1,53 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+    tag "test_taxa_specific_assembly"
+    tag "pipeline"
+
+    test("test taxa input with assembly id") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml").exists() },
+                { assert snapshot(path("$outputDir/db_tables/alleles.tsv"),
+                                path("$outputDir/db_tables/conditions_alleles.tsv"),
+                                path("$outputDir/db_tables/conditions.tsv"),
+                                path("$outputDir/db_tables/entities_proteins.tsv"),
+                                path("$outputDir/db_tables/entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.no_weights.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.nucl.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes.tsv"),
+                                path("$outputDir/db_tables/proteins_peptides.tsv"),
+                                path("$outputDir/db_tables/peptides.tsv.gz"),
+                                path("$outputDir/db_tables/proteins.tsv.gz"),
+                                path("$outputDir/db_tables/predictions.tsv.gz"),
+                                path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
+                { assert snapshot(path("$outputDir/entrez_data/microbiomes_entities.entrez.tsv")).match("entrez_data") },
+                { assert new File("$outputDir/entrez_data/entities_proteins.entrez.tsv").exists() },
+                { assert new File("$outputDir/entrez_data/proteins.entrez.tsv.gz").exists() },
+                { assert new File("$outputDir/entrez_data/taxa_assemblies.tsv").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.B_07_02.pdf").exists() },
+                { assert snapshot(path("$outputDir/logs/prediction_warnings.log"),
+                                path("$outputDir/logs/SUCCEEDED_unify_peptide_lengths.log"),
+                                path("$outputDir/logs/download_proteins.log")).match("logs") },
+            )
+        }
+
+    }
+
+}

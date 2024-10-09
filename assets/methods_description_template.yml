@@ -1,0 +1,25 @@
+id: "nf-core-metapep-methods-description"
+description: "Suggested text and references to use when describing pipeline usage within the methods section of a publication."
+section_name: "nf-core/metapep Methods Description"
+section_href: "https://github.com/nf-core/metapep"
+plot_type: "html"
+
+data: |
+  <h4>Methods</h4>
+  <p>Data was processed using nf-core/metapep v${workflow.manifest.version} ${doi_text} of the nf-core collection of workflows (<a href="https://doi.org/10.1038/s41587-020-0439-x">Ewels <em>et al.</em>, 2020</a>), utilising reproducible software environments from the Bioconda (<a href="https://doi.org/10.1038/s41592-018-0046-7">Grüning <em>et al.</em>, 2018</a>) and Biocontainers (<a href="https://doi.org/10.1093/bioinformatics/btx192">da Veiga Leprevost <em>et al.</em>, 2017</a>) projects. Briefly the pipeline uses prodigal (<a href="https://doi.org/10.1186/1471-2105-11-119">Hyatt, D., Chen, GL., LoCascio, P.F. <em>et al.</em>, 2010</a>) to predict proteins from the genomic input files or  downloads the proteins from the taxid input directly using Entrez (<a href=https://doi.org/10.1093/nar/gki031">Maglott <em>et al.</em>, 2005</a>). Peptides are generated in discrete lengths from proteins and predicted against chosen alleles using either SYFPEITHI (<a href="https://doi.org/10.1007/s002510050595">Rammensee <em>et al.</em>, 1999</a>), MHCFlurry (<a href="https://doi.org/10.1016/j.cels.2020.06.010">O'Donnel <em>et al.</em>, 2020</a>) or MHCnuggets (<a href="https://doi.org/10.1158/2326-6066.cir-19-0464">Shao <em>et al.</em>, 2019</a>), which are embedded in the epytope framework (<a href="https://doi.org/10.1093/bioinformatics/btw113">Schubert <em>et al.</em>, 2016</a>).
+  Resulting epitopeprediction scores distributions and entity binding ratios are plotted using R (<a href="https://www.R-project.org/">R Core Team, 2022</a>). The large amounts of data are handled using a python (<a href="https://www.python.org/">Python Core Team, 2022</a>) framework. All specific software versions and used libraries can be found in the following section and the <a href="https://github.com/nf-core/metapep/blob/master/CITATIONS.md">CITATIONS.md</a> file.</p>
+  <p>The pipeline was executed with Nextflow v${workflow.nextflow.version} (<a href="https://doi.org/10.1038/nbt.3820">Di Tommaso <em>et al.</em>, 2017</a>) with the following command:</p>
+  <pre><code>${workflow.commandLine}</code></pre>
+  <p>${tool_citations}</p>
+  <h4>References</h4>
+  <ul>
+    ${tool_bibliography}
+  </ul>
+  <div class="alert alert-info">
+    <h5>Notes:</h5>
+    <ul>
+      ${nodoi_text}
+      <li>The command above does not include parameters contained in any configs or profiles that may have been used. Ensure the config file is also uploaded with your publication!</li>
+      <li>You should also cite all software used within this run. Check the "Software Versions" of this report to get version information.</li>
+    </ul>
+  </div>
