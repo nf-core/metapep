@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Written by Sabrina Krakau, Leon Kuchenbecker, and Till Englert under the MIT license
 
 # NOTE
 # entrez proteins of all microbiome input files already within one file (proteins.entrez.tsv.gz)

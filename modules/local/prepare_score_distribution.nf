@@ -22,8 +22,8 @@ process PREPARE_SCORE_DISTRIBUTION {
     path "versions.yml"                  , emit: versions
 
     script:
-    def chunk_size            = params.downstream_chunk_size
-    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
+    def chunk_size    = params.downstream_chunk_size
+    def mem_log_level = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     prepare_score_distribution.py --predictions "$predictions" \\
                             --protein-peptide-occ "$proteins_peptides" \\
@@ -39,7 +39,7 @@ process PREPARE_SCORE_DISTRIBUTION {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
     END_VERSIONS
     """
 }

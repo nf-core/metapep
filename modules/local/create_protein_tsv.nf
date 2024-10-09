@@ -11,8 +11,8 @@ process CREATE_PROTEIN_TSV {
     tuple val(meta), path(protein_fasta)
 
     output:
-    tuple val(meta), path("proteins.pred_${meta.id}*.tsv.gz")   , emit: ch_pred_proteins     // Emit protein tsv
-    path    "versions.yml"                                      , emit: versions
+    tuple val(meta), path("proteins.pred_${meta.id}*.tsv.gz"), emit: ch_pred_proteins     // Emit protein tsv
+    path "versions.yml"                                   , emit: versions
 
     script:
     name = meta.bin_basename ? "${meta.id}.${meta.bin_basename}" : "${meta.id}"
@@ -24,7 +24,7 @@ process CREATE_PROTEIN_TSV {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        biopython: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('biopython').version)")
+        biopython: \$(python -c "import Bio; print(Bio.__version__)")
     END_VERSIONS
     """
 }

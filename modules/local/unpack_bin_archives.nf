@@ -11,8 +11,8 @@ process UNPACK_BIN_ARCHIVES {
     tuple val(meta), path(microbiome_path)
 
     output:
-    tuple val(meta), path("unpacked/*")             , emit: ch_microbiomes_bins_archives_unpacked
-    path "versions.yml"                             , emit: versions
+    tuple val(meta), path("unpacked/*"), emit: ch_microbiomes_bins_archives_unpacked
+    path "versions.yml"                , emit: versions
 
     script:
     """

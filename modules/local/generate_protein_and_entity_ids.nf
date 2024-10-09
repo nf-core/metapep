@@ -15,15 +15,15 @@ process GENERATE_PROTEIN_AND_ENTITY_IDS {
     path(entrez_microbiomes_entities)
 
     output:
-    path   "proteins.tsv.gz"                        , emit:   ch_proteins
-    path   "entities_proteins.tsv"                  , emit:   ch_entities_proteins
-    path   "entities.tsv"                           , emit:   ch_entities
-    path   "microbiomes_entities.no_weights.tsv"    , emit:   ch_microbiomes_entities_noweights  // microbiome_id, entitiy_id  (no weights yet!)
-    path   "versions.yml"                           , emit:   versions
+    path "proteins.tsv.gz"                    , emit: ch_proteins
+    path "entities_proteins.tsv"              , emit: ch_entities_proteins
+    path "entities.tsv"                       , emit: ch_entities
+    path "microbiomes_entities.no_weights.tsv", emit: ch_microbiomes_entities_noweights  // microbiome_id, entitiy_id  (no weights yet!)
+    path "versions.yml"                       , emit: versions
 
     script:
-        predicted_proteins_microbiome_ids   = predicted_proteins_meta.collect { meta -> meta.id }.join(' ')
-        predicted_proteins_bin_basenames    = predicted_proteins_meta.collect { meta -> meta.bin_basename ?: "__ISASSEMBLY__" }.join(' ')
+        predicted_proteins_microbiome_ids = predicted_proteins_meta.collect { meta -> meta.id }.join(' ')
+        predicted_proteins_bin_basenames  = predicted_proteins_meta.collect { meta -> meta.bin_basename ?: "__ISASSEMBLY__" }.join(' ')
 
     """
     generate_protein_and_entity_ids.py \
@@ -42,9 +42,9 @@ process GENERATE_PROTEIN_AND_ENTITY_IDS {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
-        biopython: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('biopython').version)")
-        numpy: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('numpy').version)")
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        biopython: \$(python -c "import Bio; print(Bio.__version__)")
+        numpy: \$(python -c "import numpy; print(numpy.__version__)")
     END_VERSIONS
     """
 }

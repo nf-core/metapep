@@ -34,7 +34,7 @@ include { PLOT_SCORE_DISTRIBUTION           } from '../modules/local/plot_score_
 include { PREPARE_ENTITY_BINDING_RATIOS     } from '../modules/local/prepare_entity_binding_ratios'
 include { PLOT_ENTITY_BINDING_RATIOS        } from '../modules/local/plot_entity_binding_ratios'
 
-include { PROCESS_INPUT } from '../subworkflows/local/process_input'
+include { PROCESS_INPUT                     } from '../subworkflows/local/process_input'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,13 +143,13 @@ workflow METAPEP {
         // Split prediction tasks (peptide, allele) into chunks of peptides that are to
         // be predicted against the same allele for parallel prediction
         SPLIT_PRED_TASKS (
-        GENERATE_PEPTIDES.out.ch_peptides,
-        GENERATE_PEPTIDES.out.ch_proteins_peptides,
-        GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
-        FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
-        PROCESS_INPUT.out.ch_conditions,
-        PROCESS_INPUT.out.ch_conditions_alleles,
-        PROCESS_INPUT.out.ch_alleles
+            GENERATE_PEPTIDES.out.ch_peptides,
+            GENERATE_PEPTIDES.out.ch_proteins_peptides,
+            GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
+            FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
+            PROCESS_INPUT.out.ch_conditions,
+            PROCESS_INPUT.out.ch_conditions_alleles,
+            PROCESS_INPUT.out.ch_alleles
         )
         ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
 
@@ -287,9 +287,7 @@ workflow METAPEP {
         Channel.empty()
     ch_multiqc_logo          = params.multiqc_logo ?
         Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
-    ch_metapep_logo          = Channel.fromPath(
-        "$projectDir/assets/nf-core-metapep_logo_light.png", checkIfExists: true)
+        Channel.fromPath("$projectDir/assets/nf-core-metapep_logo_light.png")
 
     summary_params      = paramsSummaryMap(
         workflow, parameters_schema: "nextflow_schema.json")
@@ -317,7 +315,6 @@ workflow METAPEP {
 
     MULTIQC (
         ch_multiqc_files.collect(),
-        ch_metapep_logo.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList()

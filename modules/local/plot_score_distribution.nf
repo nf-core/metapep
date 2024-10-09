@@ -1,4 +1,5 @@
 process PLOT_SCORE_DISTRIBUTION {
+    tag "$prep_scores"
     label 'process_medium_memory'
 
     conda "bioconda::bioconductor-alphabeta=1.8.0"
@@ -12,16 +13,15 @@ process PLOT_SCORE_DISTRIBUTION {
     path conditions
 
     output:
-    path "prediction_score_distribution.*.pdf",     emit:   ch_plot_score_distribution
-    path "versions.yml",                            emit:   versions
+    path "prediction_score_distribution.*.pdf", emit: ch_plot_score_distribution
+    path "versions.yml"                       , emit: versions
 
     script:
     def syfpeithi_threshold = params.syfpeithi_score_threshold
-    def mhcfn_threshold = params.mhcflurry_mhcnuggets_score_threshold
+    def mhcfn_threshold     = params.mhcflurry_mhcnuggets_score_threshold
     """
     [[ ${prep_scores} =~ prediction_scores.allele_(.*).tsv ]];
     allele_id="\${BASH_REMATCH[1]}"
-    echo \$allele_id
 
     plot_score_distribution.R \\
         $prep_scores \\

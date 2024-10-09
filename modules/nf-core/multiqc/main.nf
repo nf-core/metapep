@@ -8,7 +8,6 @@ process MULTIQC {
 
     input:
     path  multiqc_files, stageAs: "?/*"
-    path custom_logo
     path(multiqc_config)
     path(extra_multiqc_config)
     path(multiqc_logo)

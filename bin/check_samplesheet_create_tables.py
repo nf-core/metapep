@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# Written by Sabrina Krakau, Leon Kuchenbecker, and Till Englert under the MIT license
 
 import argparse
 import sys

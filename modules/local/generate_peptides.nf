@@ -13,13 +13,13 @@ process GENERATE_PEPTIDES {
     val(peptide_lengths)
 
     output:
-    path "peptides.tsv.gz",         emit: ch_peptides               // peptide_id, peptide_sequence
-    path "proteins_peptides.tsv",   emit: ch_proteins_peptides      // protein_id, peptide_id, count
-    path "versions.yml",            emit: versions
+    path "peptides.tsv.gz"      , emit: ch_peptides               // peptide_id, peptide_sequence
+    path "proteins_peptides.tsv", emit: ch_proteins_peptides      // protein_id, peptide_id, count
+    path "versions.yml"         , emit: versions
     //file "proteins_lengths.tsv"
 
     script:
-    def mem_log_level         = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
+    def mem_log_level = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
     generate_peptides.py -i $proteins \\
                         -p "peptides.tsv.gz" \\
@@ -31,9 +31,9 @@ process GENERATE_PEPTIDES {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
-        biopython: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('biopython').version)")
-        numpy: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('numpy').version)")
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        biopython: \$(python -c "import Bio; print(Bio.__version__)")
+        numpy: \$(python -c "import numpy; print(numpy.__version__)")
     END_VERSIONS
     """
 }

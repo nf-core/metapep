@@ -17,8 +17,8 @@ process COLLECT_STATS {
     path(predictions         )
 
     output:
-    path "stats.tsv",       emit:   ch_stats
-    path "versions.yml",    emit:   versions
+    path "stats.tsv"   , emit: ch_stats
+    path "versions.yml", emit: versions
 
 
     def score_threshold = params.pred_method != "SYFPEITHI" ? params.mhcflurry_mhcnuggets_score_threshold : params.syfpeithi_score_threshold
@@ -37,7 +37,7 @@ process COLLECT_STATS {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        pandas: \$(python -c "import pkg_resources; print(pkg_resources.get_distribution('pandas').version)")
+        pandas: \$(python -c "import pandas; print(pandas.__version__)")
     END_VERSIONS
     """
 }

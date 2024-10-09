@@ -10,7 +10,7 @@ on:
 
 env:
   NXF_ANSI_LOG: false
-  NFTEST_VER: "0.8.4"
+  NFT_VER: "0.8.4"
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
@@ -50,9 +50,9 @@ jobs:
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
 
       - name: Install nf-test
-        run: |
-          wget -qO- https://code.askimed.com/install/nf-test | bash -s $NFTEST_VER
-          sudo mv nf-test /usr/local/bin/
+        uses: nf-core/setup-nf-test@v1
+        with:
+          version: ${{ env.NFT_VER }}
 
       - name: Run nf-test
         run: |
@@ -101,9 +101,9 @@ jobs:
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
 
       - name: Install nf-test
-        run: |
-          wget -qO- https://code.askimed.com/install/nf-test | bash -s $NFTEST_VER
-          sudo mv nf-test /usr/local/bin/
+        uses: nf-core/setup-nf-test@v1
+        with:
+          version: ${{ env.NFT_VER }}
 
       - name: Run nf-test
         env:
