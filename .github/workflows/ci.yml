@@ -98,7 +98,7 @@ jobs:
 
       - name: Run nf-test
         run: |
-          nf-test test --tag ${{ matrix.test_name }} --profile ${{ matrix.test_name }},${{ matrix.test_name }} --junitxml=test.xml --verbose
+          nf-test test --tag ${{ matrix.test_name }} --profile ${{ matrix.test_name }},${{ matrix.profile }} --junitxml=test.xml --verbose
 
       - name: Output log on failure
         if: failure()
@@ -190,7 +190,7 @@ jobs:
         run: |
           nextflow secrets set NCBI_EMAIL ${{ secrets.NCBI_EMAIL }}
           nextflow secrets set NCBI_KEY ${{ secrets.NCBI_KEY }}
-          nf-test test --tag ${{ matrix.test_name }} --profile ${{ matrix.test_name }},${{ matrix.test_name }} --junitxml=test.xml --verbose
+          nf-test test --tag ${{ matrix.test_name }} --profile ${{ matrix.test_name }},${{ matrix.profile }} --junitxml=test.xml --verbose
 
       - name: Output log on failure
         if: failure()
