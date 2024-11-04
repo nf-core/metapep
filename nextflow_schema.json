@@ -88,6 +88,12 @@
                     "description": "Institutional config URL link.",
                     "hidden": true,
                     "fa_icon": "fas fa-users-cog"
+                },
+                "igenomes_ignore": {
+                    "type": "boolean",
+                    "default": true,
+                    "fa_icon": "fas fa-cog",
+                    "hidden": true
                 }
             }
         },
