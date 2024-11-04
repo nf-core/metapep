@@ -9,3 +9,4 @@ testing*
 .nf-test/
 results_test/*
 .nf-test*
+null/
