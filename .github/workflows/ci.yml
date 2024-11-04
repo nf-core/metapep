@@ -12,6 +12,8 @@ on:
 env:
   NXF_ANSI_LOG: false
   NFT_VER: "0.9.0"
+  NXF_SINGULARITY_CACHEDIR: ${{ github.workspace }}/.singularity
+  NXF_SINGULARITY_LIBRARYDIR: ${{ github.workspace }}/.singularity
 
 concurrency:
   group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
@@ -20,6 +22,8 @@ concurrency:
 jobs:
   test_profile_standard:
     name: nf-test with standard profiles
+    # Only run on push if this is the nf-core dev branch (merged PRs)
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/metapep') }}"
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -28,6 +32,10 @@ jobs:
           - "24.04.2"
           - "latest-everything"
         profile:
+          - "conda"
+          - "docker"
+          - "singularity"
+        test_name:
           - "test"
           - "test_model_information"
           - "test_mouse_all_pep_lengths"
@@ -37,6 +45,14 @@ jobs:
           - "test_mhcflurry"
           - "test_mhcnuggets_1"
           - "test_mhcnuggets_2"
+        isMaster:
+          - ${{ github.base_ref == 'master' }}
+        # Exclude conda and singularity on dev
+        exclude:
+          - isMaster: false
+            profile: "conda"
+          - isMaster: false
+            profile: "singularity"
 
     steps:
       - name: Check out pipeline code
@@ -82,7 +98,7 @@ jobs:
 
       - name: Run nf-test
         run: |
-          nf-test test --tag ${{ matrix.profile }} --profile ${{ matrix.profile }},docker --junitxml=test.xml --verbose
+          nf-test test --tag ${{ matrix.test_name }} --profile ${{ matrix.test_name }},${{ matrix.test_name }} --junitxml=test.xml --verbose
 
       - name: Output log on failure
         if: failure()
@@ -106,24 +122,60 @@ jobs:
       fail-fast: false
       matrix:
         NXF_VER:
-          - "23.04.0"
+          - "24.04.2"
           - "latest-everything"
         profile:
+          - "conda"
+          - "docker"
+          - "singularity"
+        test_name:
           - "test_all"
           - "test_mouse"
           - "test_taxa_only"
           - "test_taxa_specific_assembly"
-
+        isMaster:
+          - ${{ github.base_ref == 'master' }}
+        # Exclude conda and singularity on dev
+        exclude:
+          - isMaster: false
+            profile: "conda"
+          - isMaster: false
+            profile: "singularity"
     steps:
       - name: Check out pipeline code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4
 
-      - name: Install Nextflow
-        uses: nf-core/setup-nextflow@v1
+      - name: Set up Nextflow
+        uses: nf-core/setup-nextflow@v2
         with:
           version: "${{ matrix.NXF_VER }}"
 
-      - name: Disk space cleanup
+      - name: Set up Apptainer
+        if: matrix.profile == 'singularity'
+        uses: eWaterCycle/setup-apptainer@main
+
+      - name: Set up Singularity
+        if: matrix.profile == 'singularity'
+        run: |
+          mkdir -p $NXF_SINGULARITY_CACHEDIR
+          mkdir -p $NXF_SINGULARITY_LIBRARYDIR
+
+      - name: Set up Miniconda
+        if: matrix.profile == 'conda'
+        uses: conda-incubator/setup-miniconda@a4260408e20b96e80095f42ff7f1a15b27dd94ca # v3
+        with:
+          miniconda-version: "latest"
+          auto-update-conda: true
+          conda-solver: libmamba
+          channels: conda-forge,bioconda
+
+      - name: Set up Conda
+        if: matrix.profile == 'conda'
+        run: |
+          echo $(realpath $CONDA)/condabin >> $GITHUB_PATH
+          echo $(realpath python) >> $GITHUB_PATH
+
+      - name: Clean up Disk space
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
 
       - name: Install nf-test
@@ -138,7 +190,7 @@ jobs:
         run: |
           nextflow secrets set NCBI_EMAIL ${{ secrets.NCBI_EMAIL }}
           nextflow secrets set NCBI_KEY ${{ secrets.NCBI_KEY }}
-          nf-test test --tag ${{ matrix.profile }} --profile ${{ matrix.profile }},docker --junitxml=test.xml --verbose
+          nf-test test --tag ${{ matrix.test_name }} --profile ${{ matrix.test_name }},${{ matrix.test_name }} --junitxml=test.xml --verbose
 
       - name: Output log on failure
         if: failure()
