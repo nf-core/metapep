@@ -1,5 +1,23 @@
-repository_type: pipeline
+bump_version: null
 lint:
+  actions_ci: false
   files_exist:
     - conf/igenomes.config
-  actions_ci: false
+  files_unchanged:
+    - .gitignore
+nf_core_version: 3.0.2
+org_path: null
+repository_type: pipeline
+template:
+  author: Sabrina Krakau, Leon Kuchenbecker and Till Englert
+  description: From metagenomes to peptides
+  force: false
+  is_nfcore: true
+  name: metapep
+  org: nf-core
+  outdir: .
+  skip_features:
+    - fastqc
+    - igenomes
+  version: 1.0.0
+update: null
