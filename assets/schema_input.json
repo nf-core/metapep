@@ -14,7 +14,7 @@
             },
             "type": {
                 "type": "string",
-                "pattern": "^(bins)|(assembly)|(taxa)$",
+                "enum": ["bins", "assembly", "taxa"],
                 "errorMessage": "Microbiome type must be provided and needs to be either 'bins', 'assembly' or 'taxa'"
             },
             "microbiome_path": {
