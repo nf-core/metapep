@@ -1,0 +1,48 @@
+nextflow_pipeline {
+
+    name "Test Workflow main.nf"
+    script "main.nf"
+    tag "test_mhcnuggets_2"
+    tag "pipeline"
+
+    test("test mhcnuggets hla type 2 prediction") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml").exists() },
+                { assert snapshot(path("$outputDir/db_tables/alleles.tsv"),
+                                path("$outputDir/db_tables/conditions_alleles.tsv"),
+                                path("$outputDir/db_tables/conditions.tsv"),
+                                path("$outputDir/db_tables/entities_proteins.tsv"),
+                                path("$outputDir/db_tables/entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.no_weights.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.nucl.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes.tsv"),
+                                path("$outputDir/db_tables/proteins_peptides.tsv"),
+                                path("$outputDir/db_tables/peptides.tsv.gz"),
+                                path("$outputDir/db_tables/proteins.tsv.gz"),
+                                path("$outputDir/db_tables/predictions.tsv.gz"),
+                                path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
+                { assert new File("$outputDir/figures/entity_binding_ratios.DPB1_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.DPB1_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.DPB1_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.DQB1_02_02.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.DQB1_02_02.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.DQB1_02_02.pdf").exists() },
+                { assert snapshot(path("$outputDir/logs/prediction_warnings.log")).match("logs") },
+                { assert new File("$outputDir/prodigal/proteins.pred_0.tsv.gz").exists() }
+            )
+        }
+
+    }
+
+}

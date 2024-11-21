@@ -1,0 +1,47 @@
+{
+    "entrez_data": {
+        "content": [
+            "microbiomes_entities.entrez.tsv:md5,77463a684452d34795b6eda52cfad072"
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2024-06-26T08:14:54+0000"
+    },
+    "db_tables": {
+        "content": [
+            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
+            "conditions_alleles.tsv:md5,0e992c19471bb56c9b6e6a6f71302742",
+            "conditions.tsv:md5,87707cd0dee14b0ca4face090ba9dce9",
+            "entities_proteins.tsv:md5,57a704e833a65a1809c369452864e241",
+            "entities.tsv:md5,b7d3d019c258859c93bbc15095d304f1",
+            "microbiomes_entities.no_weights.tsv:md5,977da228f562b386b0f84fc718cc22e9",
+            "microbiomes_entities.nucl.tsv:md5,aa0d4cc3546508c8e5b81bc9b4b16e39",
+            "microbiomes_entities.tsv:md5,03309271d7a983c7b4a5c73418676bbc",
+            "microbiomes.tsv:md5,70871c8b3023f5a8412c05f4a69dda2f",
+            "proteins_peptides.tsv:md5,aff145bbff9f962891db2c2a540242c4",
+            "peptides.tsv.gz:md5,36aba6d50b1aad95859a547b06d04fc5",
+            "proteins.tsv.gz:md5,027823577635c591b58326410b039b32",
+            "predictions.tsv.gz:md5,d3b36995f3b4027d1a14e726a0acc6c2",
+            "stats.tsv:md5,b93b82d597de0043d25d561448067cdd"
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.3"
+        },
+        "timestamp": "2024-09-27T10:49:39.015559975"
+    },
+    "logs": {
+        "content": [
+            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
+            "SUCCEEDED_unify_peptide_lengths.log:md5,c27fb56e478b975c57c910011935dd55",
+            "download_proteins.log:md5,488e1962cf079d466188481d526495f2"
+        ],
+        "meta": {
+            "nf-test": "0.8.4",
+            "nextflow": "24.04.2"
+        },
+        "timestamp": "2024-07-17T15:58:41.467969153"
+    }
+}

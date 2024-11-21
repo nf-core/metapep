@@ -3,7 +3,10 @@ work/
 data/
 results/
 .DS_Store
-tests/
 testing/
 testing*
 *.pyc
+.nf-test/
+results_test/*
+.nf-test*
+null/
