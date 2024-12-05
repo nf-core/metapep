@@ -3,9 +3,21 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.0.0 - nf-core/metapep "Golden Megalodon" - [2022-01-20]
+## v1.1.0 - nf-core/metapep - [DATE]
 
-First release of [nf-core/metapep](https://nf-co.re/metapep), based on [nf-core](https://nf-co.re) standards and [nf-core/tools](https://nf-co.re/tools) template version 1.14.1.
+### `Added`
+
+### `Changed`
+
+### `Fixed`
+
+### `Dependencies`
+
+### `Deprecated`
+
+## v1.0.0 - nf-core/metapep "Golden Megalodon" - [2024-11-22]
+
+First release of [nf-core/metapep](https://nf-co.re/metapep), based on [nf-core](https://nf-co.re) standards and [nf-core/tools](https://nf-co.re/tools) template version 3.0.2
 
 ### `Added`
 
@@ -35,6 +47,6 @@ First release of [nf-core/metapep](https://nf-co.re/metapep), based on [nf-core]
   - `predictions.tsv.gz`
   - `proteins_peptides.tsv`
   - `proteins.tsv.gz`
-  - `stats.txt`
+  - `stats.tsv`
 
 - Additional subworkflow to fetch possible model and peptide lengths for the prediction tools
