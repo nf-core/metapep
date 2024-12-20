@@ -4,7 +4,7 @@ lint:
     - conf/igenomes.config
   files_unchanged:
     - .gitignore
-nf_core_version: 3.1.0
+nf_core_version: 3.1.1
 repository_type: pipeline
 template:
   author: Sabrina Krakau, Leon Kuchenbecker and Till Englert
