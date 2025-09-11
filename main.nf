@@ -18,7 +18,6 @@
 include { METAPEP                 } from './workflows/metapep'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_metapep_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_metapep_pipeline'
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     NAMED WORKFLOWS FOR PIPELINE
