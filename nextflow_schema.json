@@ -195,6 +195,47 @@
             "description": "Define pipeline options.",
             "help_text": "These options modify the behaviour of tools used in the pipeline",
             "properties": {
+                "use_mhc_binding_subwf": {
+  "type": "boolean",
+  "default": false,
+  "description": "Use the nf-core/epitopeprediction MHC binding subworkflow instead of the Epytope process."
+},
+"tools": {
+  "type": "string",
+  "default": "mhcflurry,netmhcpan",
+  "description": "Comma-separated predictors for the subworkflow (no syfpeithi). Allowed: mhcflurry, mhcnuggets, (mhcnuggetsii, netmhcpan, netmhciipan)."
+},
+"supported_alleles_json": {
+  "type": "string",
+  "format": "file-path",
+  "exists": true,
+  "description": "Path to JSON with supported alleles per predictor (from nf-core/epitopeprediction)."
+},
+"netmhc_software_meta_json": {
+  "type": "string",
+  "format": "file-path",
+  "exists": true,
+  "description": "Path to JSON with NetMHC/NetMHCII metadata (from nf-core/epitopeprediction)."
+},
+"netmhcpan_path": {
+  "type": "string",
+  "format": "file-path",
+  "exists": true,
+  "description": "Installation path to NetMHCpan (required if 'netmhcpan' is used)."
+},
+"netmhciipan_path": {
+  "type": "string",
+  "format": "file-path",
+  "exists": true,
+  "description": "Installation path to NetMHCIIpan (required if 'netmhciipan' is used)."
+},
+"netmhc_system": {
+  "type": "string",
+  "enum": ["linux", "darwin"],
+  "default": "linux",
+  "description": "OS for NetMHC binaries."
+},
+
                 "min_pep_len": {
                     "type": "integer",
                     "default": 9,
