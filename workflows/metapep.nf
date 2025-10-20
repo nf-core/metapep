@@ -26,15 +26,15 @@ include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_mi
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
-include { PREDICT_EPITOPES                  } from '../modules/local/predict_epitopes'
-include { MERGE_PREDICTIONS_BUFFER          } from '../modules/local/merge_predictions_buffer'
-include { MERGE_PREDICTIONS                 } from '../modules/local/merge_predictions'
 include { PREPARE_SCORE_DISTRIBUTION        } from '../modules/local/prepare_score_distribution'
 include { PLOT_SCORE_DISTRIBUTION           } from '../modules/local/plot_score_distribution'
 include { PREPARE_ENTITY_BINDING_RATIOS     } from '../modules/local/prepare_entity_binding_ratios'
 include { PLOT_ENTITY_BINDING_RATIOS        } from '../modules/local/plot_entity_binding_ratios'
 
 include { PROCESS_INPUT                     } from '../subworkflows/local/process_input'
+
+// Subworkflow (adapted and modified from nf-core/epitopeprediction)
+include { MHC_BINDING_PREDICTION            } from '../subworkflows/local/mhc_binding_prediction'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -151,60 +151,37 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(SPLIT_PRED_TASKS.out.versions)
 
-        //
-        // MODULE: Epitope prediction
-        //
-        PREDICT_EPITOPES (
-            SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks.flatten()
-        )
-        ch_versions = ch_versions.mix(PREDICT_EPITOPES.out.versions)
+        // ==============================================================
+        //  EPITOPE-PREDICTION: MHC_BINDING_PREDICTION SUBWORKFLOW
+        // ==============================================================
 
-        //
-        // MODULE: Merge prediction results
-        //
+        ch_chunks_expanded = SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks
+    .flatten()
+    .map { chunk_path ->
+      // Header parsing:read first line (#<allele_name>#<allele_id>)
+      def header = file(chunk_path).withReader { r -> r.readLine() ?: '#NA#NA' }
+      def parts  = header.startsWith('#') ? header.substring(1).split('#', 3) : ['NA','NA']
+      def allele_name = parts.size() > 0 ? parts[0] : 'NA'
+      def allele_id   = parts.size() > 1 ? parts[1] : 'NA'
+      def base = file(chunk_path).baseName
 
-        // Count all generated files for prediction for buffering decision
-        // Generates a channel with tuples: [count, prediction_file, warnings_file]
-        // the channel is branched into buffer or unbuffer depending on the file count
-        // therefore one of both channels will be empty
-        SPLIT_PRED_TASKS.out.ch_epitope_prediction_chunks.flatten().count()
-            .combine(PREDICT_EPITOPES.out.ch_epitope_predictions.toSortedList().flatten())
-            .merge(PREDICT_EPITOPES.out.ch_epitope_prediction_warnings.toSortedList().flatten())
-            .branch{count, predictions_file, warnings_file ->
-                buffer: count > params.pred_buffer_files
-                    return [predictions_file, warnings_file]
-                unbuffered: count <= params.pred_buffer_files
-                    return [predictions_file, warnings_file]
-            }.set { ch_pred_merge_input }
+      def meta = [
+        id         : "${base}_allele_${allele_id}",
+        file_id    : base,
+        allele_id  : allele_id,
+        allele_name: allele_name,
+        mhc_class  : 'I'
+      ]
+      tuple(meta, chunk_path)
+    }
 
-        // remap the individual files to individual channels to make the buffering work in later step
-        // unbuffered needs to be remapped to individual channels to make the mixing of merge buffer and merge input work
-        ch_pred_merge_input.buffer.multiMap{predictions_file, warnings_file ->
-            predictions: predictions_file
-            warnings: warnings_file
-        }.set { ch_predictions_mergebuffer_input }
+        MHC_BINDING_PREDICTION(
+            ch_chunks_expanded,
+            PROCESS_INPUT.out.ch_alleles
+            )
 
-        ch_pred_merge_input.unbuffered.multiMap{predictions_file, warnings_file ->
-            predictions: predictions_file
-            warnings: warnings_file
-        }.set { ch_predictions_unbuffered }
-
-        // Process is only used when files exceed the buffer files parameter (default 1000) -> May generates issues for slurm if larger
-        MERGE_PREDICTIONS_BUFFER (
-            ch_predictions_mergebuffer_input.predictions.buffer(size: params.pred_buffer_files, remainder: true),
-            ch_predictions_mergebuffer_input.warnings.buffer(size: params.pred_buffer_files, remainder: true)
-        )
-        ch_versions = ch_versions.mix(MERGE_PREDICTIONS_BUFFER.out.versions)
-
-        // Mix the output of the merge predictions buffer channel and merge predictions channel (one of them will be empty)
-        ch_merge_predictions_input_pred = MERGE_PREDICTIONS_BUFFER.out.ch_predictions_merged_buffer.mix(ch_predictions_unbuffered.predictions)
-        ch_merge_predictions_input_warn = MERGE_PREDICTIONS_BUFFER.out.ch_prediction_warnings_merged_buffer.mix(ch_predictions_unbuffered.warnings)
-
-        MERGE_PREDICTIONS (
-            ch_merge_predictions_input_pred.collect(sort: { it.baseName }),
-            ch_merge_predictions_input_warn.collect(sort: { it.baseName })
-        )
-        ch_versions = ch_versions.mix(MERGE_PREDICTIONS.out.versions)
+        ch_versions = ch_versions.mix(MHC_BINDING_PREDICTION.out.versions)
+        ch_predicted = MHC_BINDING_PREDICTION.out.predictions
 
         //
         // MODULE: Collect stats
@@ -218,7 +195,7 @@ workflow METAPEP {
             PROCESS_INPUT.out.ch_conditions,
             PROCESS_INPUT.out.ch_alleles,
             PROCESS_INPUT.out.ch_conditions_alleles,
-            MERGE_PREDICTIONS.out.ch_predictions
+             ch_predicted
         )
         ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
 
@@ -226,7 +203,7 @@ workflow METAPEP {
         // MODULE: Plot score distributions
         //
         PREPARE_SCORE_DISTRIBUTION (
-            MERGE_PREDICTIONS.out.ch_predictions,
+            ch_predicted,
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
@@ -247,7 +224,7 @@ workflow METAPEP {
         // MODULE: Plot entity binding ratios
         //
         PREPARE_ENTITY_BINDING_RATIOS (
-            MERGE_PREDICTIONS.out.ch_predictions,
+            ch_predicted,
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
