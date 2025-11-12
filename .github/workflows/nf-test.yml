@@ -18,6 +18,8 @@ concurrency:
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NFT_DIFF: "icdiff"
+  NFT_DIFF_ARGS: "-N --cols 200 -L expected -L observed -t"
   NFT_VER: "0.9.2"
   NFT_WORKDIR: "~"
   NXF_ANSI_LOG: false
@@ -83,6 +85,8 @@ jobs:
     env:
       NXF_ANSI_LOG: false
       TOTAL_SHARDS: ${{ needs.nf-test-changes.outputs.total_shards }}
+      NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
+      NCBI_KEY: ${{ secrets.NCBI_KEY }}
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -95,6 +99,10 @@ jobs:
         continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
         env:
           NFT_WORKDIR: ${{ env.NFT_WORKDIR }}
+          NFT_DIFF: ${{ env.NFT_DIFF }}
+          NFT_DIFF_ARGS: ${{ env.NFT_DIFF_ARGS }}
+          NCBI_EMAIL: ${{ secrets.NCBI_EMAIL }}
+          NCBI_KEY: ${{ secrets.NCBI_KEY }}
         with:
           profile: ${{ matrix.profile }}
           shard: ${{ matrix.shard }}

@@ -11,6 +11,8 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 
 ### `Changed`
 
+- Updated template to [nf-core/tools](https://nf-co.re/tools) version 3.3.2
+
 ### `Fixed`
 
 ### `Dependencies`
@@ -35,7 +37,6 @@ First release of [nf-core/metapep](https://nf-co.re/metapep), based on [nf-core]
 
 - Relational datamodel to handle large amounts of data
   Tables defined within model:
-
   - `alleles.tsv`
   - `condition_alleles.tsv`
   - `conditions.tsv`

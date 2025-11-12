@@ -29,6 +29,14 @@ runs:
       with:
         python-version: "3.13"
 
+    - name: Install icdiff
+      run: pip install icdiff
+      shell: bash
+
+    - name: Run icdiff
+      run: icdiff --help
+      shell: bash
+
     - name: Install nf-test
       uses: nf-core/setup-nf-test@v1
       with:
@@ -54,10 +62,20 @@ runs:
         conda-solver: libmamba
         conda-remove-defaults: true
 
+    # Set up Nextflow secrets for NCBI access
+    - name: Set Nextflow secrets
+      if: env.NCBI_EMAIL != '' && env.NCBI_KEY != ''
+      shell: bash
+      run: |
+        nextflow secrets set NCBI_EMAIL "$NCBI_EMAIL"
+        nextflow secrets set NCBI_KEY "$NCBI_KEY"
+
     - name: Run nf-test
       shell: bash
       env:
         NFT_WORKDIR: ${{ env.NFT_WORKDIR }}
+        NFT_DIFF: ${{ env.NFT_DIFF }}
+        NFT_DIFF_ARGS: ${{ env.NFT_DIFF_ARGS }}
       run: |
         nf-test test \
           --profile=+${{ inputs.profile }} \
