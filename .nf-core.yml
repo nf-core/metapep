@@ -1,12 +1,9 @@
-bump_version: null
 lint:
-  actions_ci: false
   files_exist:
     - conf/igenomes.config
   files_unchanged:
     - .gitignore
-nf_core_version: 3.0.2
-org_path: null
+nf_core_version: 3.3.2
 repository_type: pipeline
 template:
   author: Sabrina Krakau, Leon Kuchenbecker and Till Englert
@@ -20,4 +17,3 @@ template:
     - fastqc
     - igenomes
   version: 1.1.0dev
-update: null

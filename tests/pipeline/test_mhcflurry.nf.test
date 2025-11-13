@@ -1,8 +1,8 @@
 nextflow_pipeline {
 
-    name "Test Workflow main.nf"
+    name "Test Workflow METAPEP main.nf - test_mhcflurry"
     script "main.nf"
-    tag "test_mhcflurry"
+    profile "test_mhcflurry"
     tag "pipeline"
 
     test("test mhcflurry prediction") {
@@ -14,10 +14,11 @@ nextflow_pipeline {
         }
 
         then {
+            def lines = path("$outputDir/db_tables/predictions.tsv.gz").linesGzip[1005..1015]
             assertAll(
                 { assert workflow.success },
                 { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
-                { assert new File("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_metapep_software_mqc_versions.yml").exists() },
                 { assert snapshot(path("$outputDir/db_tables/alleles.tsv"),
                                 path("$outputDir/db_tables/conditions_alleles.tsv"),
                                 path("$outputDir/db_tables/conditions.tsv"),
@@ -30,8 +31,19 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/proteins_peptides.tsv"),
                                 path("$outputDir/db_tables/peptides.tsv.gz"),
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
-                                path("$outputDir/db_tables/predictions.tsv.gz"),
                                 path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
+                { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz")},
+                { assert lines[0].toString() =~ /20495\t0.066418084833357[0-9]\t0/ },
+                { assert lines[1].toString() =~ /51999\t0.071117933011717[0-9]\t0/ },
+                { assert lines[2].toString() =~ /26069\t0.101805071036020[0-9]\t0/ },
+                { assert lines[3].toString() =~ /2331\t0.062012556112474[0-9]\t0/ },
+                { assert lines[4].toString() =~ /54247\t0.07249286439683[0-9]\t0/ },
+                { assert lines[5].toString() =~ /79667\t0.071418590843677[0-9]\t0/ },
+                { assert lines[6].toString() =~ /73727\t0.073041683269871[0-9]\t0/ },
+                { assert lines[7].toString() =~ /79669\t0.061867463919851[0-9]\t0/ },
+                { assert lines[8].toString() =~ /33517\t0.075309432629081[0-9]\t0/ },
+                { assert lines[9].toString() =~ /70189\t0.191974134908782[0-9]\t0/ },
+                { assert lines[10].toString() =~ /77008\t0.066274272898832[0-9]\t0/ },
                 { assert new File("$outputDir/figures/entity_binding_ratios.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/entity_binding_ratios.with_points.A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/prediction_score_distribution.A_01_01.pdf").exists() },

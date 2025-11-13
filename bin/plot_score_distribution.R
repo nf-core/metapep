@@ -46,4 +46,3 @@ p <- ggplot(data, aes(x=condition_name, y=prediction_score, weight = weight_sum,
 # (somehow also affects printed quantiles)
 
 ggsave(paste0("prediction_score_distribution.", allele_str, ".pdf"), height=5, width=5)
-

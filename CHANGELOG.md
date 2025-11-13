@@ -3,11 +3,15 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.1.0 - nf-core/metapep - [DATE]
+## v1.1.0dev - [date]
+
+Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/) template.
 
 ### `Added`
 
 ### `Changed`
+
+- Updated template to [nf-core/tools](https://nf-co.re/tools) version 3.3.2
 
 ### `Fixed`
 
@@ -33,7 +37,6 @@ First release of [nf-core/metapep](https://nf-co.re/metapep), based on [nf-core]
 
 - Relational datamodel to handle large amounts of data
   Tables defined within model:
-
   - `alleles.tsv`
   - `condition_alleles.tsv`
   - `conditions.tsv`

@@ -1,8 +1,8 @@
 nextflow_pipeline {
 
-    name "Test Workflow main.nf"
+    name "Test Workflow METAPEP main.nf - test"
     script "main.nf"
-    tag "test"
+    profile "test"
     tag "pipeline"
 
     test("test assembly and bin input") {
@@ -17,7 +17,7 @@ nextflow_pipeline {
             assertAll(
                 { assert workflow.success },
                 { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
-                { assert new File("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_metapep_software_mqc_versions.yml").exists() },
                 { assert snapshot(path("$outputDir/db_tables/alleles.tsv"),
                                 path("$outputDir/db_tables/conditions_alleles.tsv"),
                                 path("$outputDir/db_tables/conditions.tsv"),

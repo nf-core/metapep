@@ -1,0 +1,3 @@
+.DS_Store
+multiqc/**/*.{parquet,log,txt,json,svg,pdf,png,html}
+pipeline_info/*.{html,json,txt,yml}

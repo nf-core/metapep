@@ -64,11 +64,6 @@ workflow PIPELINE_INITIALISATION {
     )
 
     //
-    // Custom validation for pipeline parameters
-    //
-    validateInputParameters()
-
-    //
     // Create channel from input file provided through params.input
     //
     ch_samplesheet = params.show_supported_models ? Channel.empty() : Channel.fromPath(input, checkIfExists: true)
@@ -97,6 +92,7 @@ workflow PIPELINE_COMPLETION {
 
     main:
     summary_params = paramsSummaryMap(workflow, parameters_schema: "nextflow_schema.json")
+    def multiqc_reports = multiqc_report.toList()
 
     //
     // Completion email and summary
@@ -110,7 +106,7 @@ workflow PIPELINE_COMPLETION {
                 plaintext_email,
                 outdir,
                 monochrome_logs,
-                multiqc_report.toList()
+                multiqc_reports.getVal(),
             )
         }
 
@@ -138,6 +134,21 @@ def validateInputParameters() {
     if (params.min_pep_len > params.max_pep_len) {
         error "The minimum peptide length needs to be smaller or equal than the maximum. See 'https://nf-co.re/metapep/dev/parameters' for more information."
     }
+}
+
+//
+// Validate channels from input samplesheet
+//
+def validateInputSamplesheet(input) {
+    def (metas, fastqs) = input[1..2]
+
+    // Check that multiple runs of the same sample are of the same datatype i.e. single-end / paired-end
+    def endedness_ok = metas.collect{ meta -> meta.single_end }.unique().size == 1
+    if (!endedness_ok) {
+        error("Please check input samplesheet -> Multiple runs of a sample must be of the same datatype i.e. single-end or paired-end: ${metas[0].id}")
+    }
+
+    return [ metas[0], fastqs ]
 }
 //
 // Generate methods description for MultiQC
@@ -186,7 +197,7 @@ def toolBibliographyText() {
 }
 
 def methodsDescriptionText(mqc_methods_yaml) {
-    // Convert  to a named map so can be used as with familar NXF ${workflow} variable syntax in the MultiQC YML file
+    // Convert  to a named map so can be used as with familiar NXF ${workflow} variable syntax in the MultiQC YML file
     def meta = [:]
     meta.workflow = workflow.toMap()
     meta["manifest_map"] = workflow.manifest.toMap()
@@ -217,4 +228,3 @@ def methodsDescriptionText(mqc_methods_yaml) {
 
     return description_html.toString()
 }
-

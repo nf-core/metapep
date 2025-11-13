@@ -3,7 +3,6 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { PRODIGAL               } from '../modules/nf-core/prodigal/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
@@ -270,7 +269,7 @@ workflow METAPEP {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name: 'nf_core_'  + 'pipeline_software_' +  'mqc_'  + 'versions.yml',
+            name: 'nf_core_'  +  'metapep_software_'  + 'mqc_'  + 'versions.yml',
             sort: true,
             newLine: true
         ).set { ch_collated_versions }

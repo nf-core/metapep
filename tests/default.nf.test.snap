@@ -17,10 +17,10 @@
             "stats.tsv:md5,0e58a492488a23f273b8993262043f5a"
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.3"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.7"
         },
-        "timestamp": "2024-09-20T11:56:44.908431097"
+        "timestamp": "2025-09-25T18:55:33.654464671"
     },
     "logs": {
         "content": [
@@ -28,9 +28,9 @@
             "SUCCEEDED_unify_peptide_lengths.log:md5,c27fb56e478b975c57c910011935dd55"
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.2"
+            "nf-test": "0.9.2",
+            "nextflow": "25.04.7"
         },
-        "timestamp": "2024-06-26T08:14:54+0000"
+        "timestamp": "2025-09-25T18:55:38.905894093"
     }
 }

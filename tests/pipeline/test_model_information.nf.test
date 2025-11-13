@@ -1,8 +1,8 @@
 nextflow_pipeline {
 
-    name "Test Workflow main.nf"
+    name "Test Workflow METAPEP main.nf - test_model_information"
     script "main.nf"
-    tag "test_model_information"
+    profile "test_model_information"
     tag "pipeline"
 
     test("test model information subbranch") {
@@ -17,7 +17,7 @@ nextflow_pipeline {
             assertAll(
                 { assert workflow.success },
                 { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
-                { assert new File("$outputDir/pipeline_info/nf_core_pipeline_software_mqc_versions.yml").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_metapep_software_mqc_versions.yml").exists() },
                 { assert snapshot(path("$outputDir/model_information/mhcflurry.v1.4.3.supported_alleles.txt"),
                                 path("$outputDir/model_information/mhcflurry.v1.4.3.supported_lengths.txt"),
                                 path("$outputDir/model_information/mhcnuggets-class-1.v2.3.2.supported_alleles.txt"),
