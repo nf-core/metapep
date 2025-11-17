@@ -21,7 +21,7 @@ process COLLECT_STATS {
     path "versions.yml", emit: versions
 
 
-    def score_threshold = params.pred_method != "SYFPEITHI" ? params.mhcflurry_mhcnuggets_score_threshold : params.syfpeithi_score_threshold
+    def score_threshold = params.mhcflurry_mhcnuggets_score_threshold
     script:
     """
     collect_stats.py --protein-peptide-occ "$proteins_peptides"         \\

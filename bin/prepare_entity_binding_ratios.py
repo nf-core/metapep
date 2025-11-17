@@ -59,13 +59,6 @@ def parse_args(args=None):
         default=500000,
     )
     parser.add_argument(
-        "-sst",
-        "--syfpeithi_score_threshold",
-        help=("Threshold for binder/non-binder calling when using SYFPEITHI epitope prediction method. Default: 0.5"),
-        type=float,
-        default=0.5,
-    )
-    parser.add_argument(
         "-mst",
         "--mhcf_mhcn_score_threshold",
         help=(
@@ -85,19 +78,14 @@ def parse_args(args=None):
     return parser.parse_args()
 
 
-def call_binder(score, method, syfpeithi_score_threshold, mhcfn_score_threshold):
+def call_binder(score, method, mhcfn_score_threshold):
     """
     Scoring threshold is based on the nf-core/epitopeprediction pipeline.
-    For SYFPEITHI the scoring threshold is a "half of maximum score". After
-    normalization the highest achievable score is 1. For MHCflurry and
-    MHCnuggets the score is an 0 to 1 scoring base on the
+    For MHCflurry and MHCnuggets the score is an 0 to 1 scoring base on the
     affinity score (IC50) and is calculated by: 1-log_50000(affinity_score)
     in this scale the old threshold of 500 is: 0.426 and the higher the better.
     """
-    if method == "syfpeithi":
-        return score >= syfpeithi_score_threshold
-    else:
-        return score >= mhcfn_score_threshold
+    return score >= mhcfn_score_threshold
 
 
 def main(args=None):
@@ -202,7 +190,6 @@ def main(args=None):
         data["binder"] = data["prediction_score"].apply(
             call_binder,
             method=args.method,
-            syfpeithi_score_threshold=args.syfpeithi_score_threshold,
             mhcfn_score_threshold=args.mhcf_mhcn_score_threshold,
         )
         data.drop(columns="prediction_score", inplace=True)

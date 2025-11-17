@@ -1,62 +1,88 @@
 #!/usr/bin/env python
-# Written by Sabrina Krakau, Leon Kuchenbecker, and Till Englert under the MIT license
-
-# This script originates from the nf-core/epitopeprediction pipeline and is modified and refactored for use in nf-core/metapep
+# Extract supported alleles and lengths from supported_alleles.json
 
 import argparse
+import json
 import sys
-
-from epytope.EpitopePrediction import EpitopePredictorFactory
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        "Write out information about supported models by Epytope for available prediction tool versions."
+        description="Extract supported models information from supported_alleles.json"
     )
     parser.add_argument(
-        "-m",
-        "--pred_methods",
-        help="List of prediction models (sorted like list of --pred_method_versions)",
-        nargs="+",
+        "-j",
+        "--json",
+        help="Path to supported_alleles.json",
         required=True,
     )
-    parser.add_argument(
-        "-v",
-        "--pred_method_versions",
-        help="List of prediction method versions (sorted like --pred_methods)",
-        nargs="+",
-        required=True,
-    )
-
+    
     return parser.parse_args()
 
 
-def convert_allele_back(allele):
-    if str(allele).startswith("H-2-"):
-        # convert internal Epytope representation back to the nf-core/metapep input allele format
-        return allele.replace("H-2-", "H2-")
-    elif allele.startswith("HLA-"):
-        return allele.replace("HLA-", "")
-    else:
-        raise ValueError(
-            "Allele type unknown: " + allele + ". Currently expects allele to start either with 'HLA-' or 'H-2-'."
-        )
+# Tool-specific configurations
+supported = {
+    "mhcflurry": {
+        "version": "2.1.4",
+        "lengths": list(range(5, 16)) # 5-15
+    },
+    "mhcnuggets": {
+        "version": "2.4.1",
+        "lengths": list(range(5, 16)) # 5-15 
+    },
+    "mhcnuggetsii": {
+        "version": "2.4.1",
+        "lengths": list(range(5, 31))  # 9-30
+    },
+    "netmhcpan": {
+        "lengths": list(range(8, 15))  # 8-14
+    },
+    "netmhciipan": {
+        "lengths": list(range(9, 51))  # 9-50
+    }
+}
+
+def load_json(filepath):
+    """Load JSON file"""
+    with open(filepath, 'r') as f:
+        return json.load(f)
 
 def main():
-    args = parse_args()
+    args = parse_args() 
+    # Load supported_alleles.json
+    supported_alleles = load_json(args.json)
 
-    for method, version in zip(args.pred_methods, args.pred_method_versions):
-        if version not in EpitopePredictorFactory.available_methods()[method]:
-            raise ValueError("The specified version " + version + " for " + method + " is not supported by Epytope.")
-
-        predictor = EpitopePredictorFactory(method, version=version)
-        with open(method + ".v" + str(version) + ".supported_alleles.txt", "w") as output:
-            for a in sorted(predictor.supportedAlleles):
-                output.write(convert_allele_back(a) + "\n")
-        with open(method + ".v" + str(version) + ".supported_lengths.txt", "w") as output:
-            for length in sorted(predictor.supportedLength):
+    # Process each tool found in the JSON
+    for method, alleles in supported_alleles.items():
+        if method not in supported:
+            print(f" Skipping unknown method: {method}")
+            continue
+        
+        config = supported[method]
+        version = config.get("version")
+        lengths = config["lengths"]
+        
+        # Write supported alleles
+        if version:
+            alleles_file = f"{method}.v{version}.supported_alleles.txt"
+            lengths_file = f"{method}.v{version}.supported_lengths.txt"
+        else:
+            alleles_file = f"{method}.supported_alleles.txt"
+            lengths_file = f"{method}.supported_lengths.txt"
+        
+        with open(alleles_file, "w") as output:
+            for allele in sorted(alleles):
+                output.write(allele + "\n")
+        
+        print(f" Created {alleles_file} ({len(alleles)} alleles)")
+        
+        # Write supported lengths
+        with open(lengths_file, "w") as output:
+            for length in lengths:
                 output.write(str(length) + "\n")
-
+        
+        print(f" Created {lengths_file} ({len(lengths)} lengths)") 
+    print("All model files created successfully!")
 
 if __name__ == "__main__":
     sys.exit(main())

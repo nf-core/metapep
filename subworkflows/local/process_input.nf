@@ -4,7 +4,7 @@
 
 include { CHECK_SAMPLESHEET_CREATE_TABLES   } from '../../modules/local/check_samplesheet_create_tables'
 include { UNPACK_BIN_ARCHIVES               } from '../../modules/local/unpack_bin_archives'
-include { UNIFY_MODEL_LENGTHS               } from '../../modules/local/unify_model_lengths'
+
 
 workflow PROCESS_INPUT {
     take:
@@ -17,28 +17,10 @@ workflow PROCESS_INPUT {
     CHECK_SAMPLESHEET_CREATE_TABLES ( samplesheet )
     ch_versions = ch_versions.mix(CHECK_SAMPLESHEET_CREATE_TABLES.out.versions)
 
-    // When PSSMs methods are used we can check in epytope if the model exists for the given peptide lengths
-    // Only intersection of allele model lengths are used in further analysis
-    if (params.pred_method == "syfpeithi" && !params.allow_inconsistent_pep_lengths) {
-        UNIFY_MODEL_LENGTHS (CHECK_SAMPLESHEET_CREATE_TABLES.out.samplesheet_valid)
-        peptide_lengths =  UNIFY_MODEL_LENGTHS.out.unified_pep_lens.first().tokenize(",")
 
-        // Throw Error or warning depending on file prefix
-        log_prefix = UNIFY_MODEL_LENGTHS.out.log.first().baseName.tokenize("_").flatten().first()
-        log_prefix.map{it ->
-            if (it == "WARNING"){
-                log.warn "There is no SYFPEITHI model available for at least one allele and the peptide lengths are reduced to the common denominator of the alleles."
-                log.warn "For more information about which peptide lengths were used check '$params.outdir/logs/WARNING_unify_peptide_lengths.log'"
-            } else if (it == "ERROR") {
-                error "No models with matching peptide lengths could be found. Check '$params.outdir/logs/ERROR_unify_peptide_lengths.log' for further details."
-            }
-        }
-        ch_versions = ch_versions.mix(UNIFY_MODEL_LENGTHS.out.versions)
-    } else {
-        // for MHCFlurry and MHCnuggets assing the input lengths
-        peptide_lengths = Channel.fromList( params.min_pep_len..params.max_pep_len )
-    }
-
+    // for MHCFlurry, MHCnuggets and Netmhcpan assing the input lengths
+    peptide_lengths = Channel.fromList( params.min_pep_len..params.max_pep_len )
+    
     CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
         // Read microbiomes table
         .splitCsv(sep:'\t', header:true)

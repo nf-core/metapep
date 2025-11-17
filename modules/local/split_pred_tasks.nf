@@ -21,6 +21,7 @@ process SPLIT_PRED_TASKS {
 
     output:
     path "peptides_*.txt", emit: ch_epitope_prediction_chunks
+    path "peptides_*.tsv", emit: ch_epitope_prediction_chunks_tsv
     path "versions.yml"  , emit: versions
 
     script:
