@@ -209,32 +209,17 @@
                     "fa_icon": "fas fa-cogs",
                     "minimum": 2
                 },
-                "allow_inconsistent_pep_lengths": {
-                    "type": "boolean",
-                    "description": "Only takes effect for `pred_method 'syfpeithi'`. Allow all peptide lengths within the range of `min_pep_len` to `max_pep_len` without reducing them to the matching allele models.",
-                    "hidden": true,
-                    "fa_icon": "fas fa-cogs"
-                },
                 "pred_method": {
                     "type": "string",
-                    "default": "syfpeithi",
+                    "default": "mhcflurry",
                     "description": "Epitope prediction method to use",
-                    "enum": ["syfpeithi", "mhcflurry", "mhcnuggets-class-1", "mhcnuggets-class-2"],
-                    "fa_icon": "fas fa-cogs"
-                },
-                "syfpeithi_score_threshold": {
-                    "type": "number",
-                    "default": 0.5,
-                    "description": "Threshold for binder/non-binder calling when using SYFPEITHI epitope prediction method.",
-                    "minimum": 0,
-                    "maximum": 1,
-                    "hidden": true,
+                    "enum": ["mhcflurry", "mhcnuggets", "mhcnuggetsii", "netmhcpan", "netmhciipan"],
                     "fa_icon": "fas fa-cogs"
                 },
                 "mhcflurry_mhcnuggets_score_threshold": {
                     "type": "number",
                     "default": 0.426,
-                    "description": "Threshold for binder/non-binder calling when using MHCflurry or MHCnuggets epitope prediction methods. The default value of 0.426 corresponds to an IC50 of \u2264500.",
+                    "description": "Threshold for binder/non-binder calling when using MHCflurry or MHCnuggets epitope prediction methods. The default value of 0.426 corresponds to an IC50 of ≤500.",
                     "minimum": 0,
                     "maximum": 1,
                     "hidden": true,
@@ -300,6 +285,39 @@
                     "fa_icon": "fas fa-cogs"
                 }
             }
+        },
+        "external_software": {
+            "title": "External software",
+            "type": "object",
+            "description": "External MHC binding prediction software that is not shipped with the pipeline.",
+            "fa_icon": "fas fa-toolbox",
+            "properties": {
+                "external_tools_meta": {
+                    "type": "string",
+                    "description": "Specifies the path to the JSON file with meta information on external prediction tools.",
+                    "hidden": true
+                },
+                "netmhc_system": {
+                    "type": "string",
+                    "default": "linux",
+                    "enum": ["linux", "darwin"],
+                    "description": "Specifies the operating system in use (Linux or Darwin). This is only necessary if conda is used."
+                },
+                "netmhcpan_path": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "pattern": "^\\S+\\.tar\\.gz$",
+                    "description": "To use the 'netmhcpan' tool, specify the path to the original software tarball for NetMHCpan 4.0 here."
+                },
+                "netmhciipan_path": {
+                    "type": "string",
+                    "format": "file-path",
+                    "exists": true,
+                    "pattern": "^\\S+\\.tar\\.gz$",
+                    "description": "To use the 'netmhciipan' tool, specify the path to the original software tarball for NetMHCIIpan 3.1 here."
+                }
+            }
         }
     },
     "allOf": [
@@ -314,6 +332,9 @@
         },
         {
             "$ref": "#/$defs/pipeline_options"
+        },
+        {
+            "$ref": "#/$defs/external_software"
         }
     ]
 }

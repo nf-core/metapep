@@ -5,9 +5,7 @@ import argparse
 import sys
 
 import pandas as pd
-from epytope.Core import Allele
-from epytope.EpitopePrediction import EpitopePredictorFactory
-
+import mhcgnomes
 
 def parse_args(args=None):
     description = "Reformat nf-core/metapep samplesheet file, check its contents and create the data tables."
@@ -63,14 +61,6 @@ def parse_args(args=None):
         help="Chosen method for epitope prediction",
     )
     parser.add_argument(
-        "-pmv",
-        "--pred_method_version",
-        required=True,
-        metavar="STRING",
-        type=str,
-        help="Chosen version of epitope prediction method",
-    )
-    parser.add_argument(
         "-pl",
         "--peptide_lengths",
         required=True,
@@ -88,6 +78,24 @@ def print_error(error, context="Line", context_str=""):
     print(error_str)
     sys.exit(1)
 
+# alleles format check; after this function all db_tables use the same allele names
+def normalize_allele(allele: str) -> str:
+    """Return canonical allele string using mhcgnomes; exit with error if parsing fails."""
+    allele = (allele or "").strip()
+
+    if not allele:
+        sys.exit("ERROR: Empty allele value encountered — please check your input samplesheet.")
+
+    parsed = mhcgnomes.parse(allele)
+    if parsed:
+        return parsed.to_string()
+
+    sys.exit(
+        "ERROR: Could not parse allele "
+        f"'{allele}' — invalid or unrecognized allele format.\n"
+        "Further information on supported alleles and peptide lengths:\n"
+        "  nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
+    )
 
 def process_samplesheet(args):
     """
@@ -203,45 +211,13 @@ def process_samplesheet(args):
     conditions[["condition_id", "condition_name", "microbiome_id"]].to_csv(args.conditions, sep="\t", index=False)
 
     # allele id - allele name
-    unique_alleles = {allele for allele_list in input_table["alleles"] for allele in allele_list.split(" ")}
-
-    # Check if alleles are supported by chosen predictor and check if tool generally supports chosen lengths
-
-    # TODO Parameter for prediction method version
-    predictor = EpitopePredictorFactory(args.prediction_method, version=args.pred_method_version)
-    for allele in unique_alleles:
-        if Allele(allele) not in predictor.supportedAlleles:
-            sys.exit(
-                "\n\n\n\nThe chosen allele: "
-                + allele
-                + " is not available for the chosen prediction method: "
-                + args.prediction_method
-                + ":"
-                + args.pred_method_version
-                + "\n\nFurther information on which allele is supported for "
-                + "which prediction method can be found when running: "
-                + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
-            )
-
-    # Check if peptide lengths are listed as supported for the allele model by epytope:
-    # Note in some cases for individual alleles certain lengths are not supported, which is not captured here
-    peptide_lengths = range(int(args.peptide_lengths[0]), int(args.peptide_lengths[1]) + 1)
-    checked_pep_lens = set(peptide_lengths)
-    for pep_len in peptide_lengths:
-        if pep_len in predictor.supportedLength:
-            checked_pep_lens.remove(pep_len)
-        if pep_len not in predictor.supportedLength:
-            sys.exit(
-                "\n\n\n\nThe chosen lengths: "
-                + ", ".join([str(i) for i in checked_pep_lens])
-                + " are not available for the chosen prediction method: "
-                + str(args.prediction_method)
-                + ":"
-                + str(args.pred_method_version)
-                + "\n\nFurther information on which peptide lengths are supported for "
-                + "which prediction method can be found when running: "
-                + "'nextflow run metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models"
-            )
+    raw_alleles = [
+        allele
+        for allele_list in input_table["alleles"].astype(str)
+        for allele in allele_list.split()
+    ]
+    normalized_alleles = [normalize_allele(a) for a in raw_alleles if a]
+    unique_alleles = sorted(set(normalized_alleles))
 
     alleles = pd.DataFrame({"allele_name": sorted(list(unique_alleles))})
     alleles["allele_id"] = range(len(alleles))
@@ -250,7 +226,7 @@ def process_samplesheet(args):
     # condition id - allele id
     conditions_alleles = pd.DataFrame(
         [
-            (row["condition"], allele_name)
+            (row["condition"], normalize_allele(allele_name))
             for _, row in input_table.iterrows()
             for allele_name in row["alleles"].split(" ")
         ],

@@ -23,7 +23,6 @@ process PREPARE_ENTITY_BINDING_RATIOS {
 
     script:
     def chunk_size                = params.downstream_chunk_size
-    def syfpeithi_score_threshold = params.syfpeithi_score_threshold
     def mhcf_mhcn_score_threshold = params.mhcflurry_mhcnuggets_score_threshold
     def mem_log_level             = params.memory_usage_log_deep ? "--mem_log_level_deep" : ""
     """
@@ -36,7 +35,6 @@ process PREPARE_ENTITY_BINDING_RATIOS {
                             --alleles "$alleles" \\
                             --method ${params.pred_method} \\
                             --chunk-size $chunk_size \\
-                            --syfpeithi_score_threshold $syfpeithi_score_threshold \\
                             --mhcf_mhcn_score_threshold $mhcf_mhcn_score_threshold \\
                             $mem_log_level \\
                             --outdir .
