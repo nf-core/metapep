@@ -47,6 +47,7 @@ def parse_args(args=None):
     parser.add_argument(
         "-pll", "--peptide_lengths", required=True, metavar="LIST", nargs="*", help="Peptide lengths as list."
     )
+
     return parser.parse_args(args)
 
 
@@ -55,7 +56,12 @@ def validate_letters(string, alphabet):
     for letter in string:
         if letter not in alphabet:
             print("ERROR: invalid input letter ", letter, ". The supported alphabet is ", alphabet, ".")
-            sys.exit(1)
+            # TODO: Maybe sys.exit(1)
+            return False
+    return True
+
+def is_valid_sequence(sequence, alphabet):
+    return all(letter in alphabet for letter in sequence)
 
 
 def gen_peptides(prot_seq, k, prefix):
@@ -94,6 +100,29 @@ def main(args=None):
         "V",
         "W",
         "Y",
+    ]
+
+    aa_list_extended = [
+        "A",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "K",
+        "L",
+        "M",
+        "N",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "V",
+        "W",
+        "Y",
         "B",
         "J",
         "O",
@@ -102,12 +131,20 @@ def main(args=None):
         "Z",
     ]
 
+
     protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
+
     # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
     protid_protseq_protlen["protein_id"] = pd.to_numeric(protid_protseq_protlen["protein_id"], downcast="unsigned")
-    # validate input AAs
+
+    # validate input AAs (Print number of proteins with invalid letters for debug log)
     protid_protseq_protlen["protein_sequence"] = protid_protseq_protlen["protein_sequence"].str.upper()
-    protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list)
+    initial_count = len(protid_protseq_protlen)
+    valid_proteins = protid_protseq_protlen[protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list_extended)]
+    filtered_count = len(valid_proteins)
+    print(f"Info: {filtered_count} valid proteins.")
+    print(f"Info: {initial_count - filtered_count} proteins have invalid amino acids.")
+
     # get protein lengths
     protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
     protid_protseq_protlen["protein_length"] = pd.to_numeric(
@@ -126,7 +163,7 @@ def main(args=None):
     peptide_lengths_int = [int(p_len) for p_len in args.peptide_lengths]
 
     ####################
-    # generate peptides
+    # generate peptides (Filter out all peptides with invalid letters)
     with gzip.open(args.peptides, "wt") as pep_handle:
         print_header = True
         id_counter = 0
@@ -146,6 +183,7 @@ def main(args=None):
                         (it.protein_id, pep)
                         for it in protid_protseq_protlen.itertuples()
                         for pep in gen_peptides(it.protein_sequence, k, prefix)
+                        if is_valid_sequence(pep, aa_list)
                     ],
                     columns=["protein_id", "peptide_sequence"],
                 )
