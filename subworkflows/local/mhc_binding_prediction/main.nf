@@ -10,7 +10,7 @@ include { NETMHCPAN                                  } from '../../../modules/lo
 include { NETMHCIIPAN                                } from '../../../modules/local/netmhciipan'
 include { UNPACK_NETMHC_SOFTWARE as NETMHCPAN_IMPORT;
         UNPACK_NETMHC_SOFTWARE as NETMHCIIPAN_IMPORT } from '../../../modules/local/unpack_netmhc_software'
-include { MERGE_PREDICTIONS; 
+include { MERGE_PREDICTIONS;
         MERGE_PREDICTIONS as MERGE_PREDICTIONS_SUBWORKFLOW } from '../../../modules/local/merge_predictions'
 
 // Input:

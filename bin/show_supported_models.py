@@ -16,7 +16,7 @@ def parse_args():
         help="Path to supported_alleles.json",
         required=True,
     )
-    
+
     return parser.parse_args()
 
 
@@ -28,7 +28,7 @@ supported = {
     },
     "mhcnuggets": {
         "version": "2.4.1",
-        "lengths": list(range(5, 16)) # 5-15 
+        "lengths": list(range(5, 16)) # 5-15
     },
     "mhcnuggetsii": {
         "version": "2.4.1",
@@ -48,7 +48,7 @@ def load_json(filepath):
         return json.load(f)
 
 def main():
-    args = parse_args() 
+    args = parse_args()
     # Load supported_alleles.json
     supported_alleles = load_json(args.json)
 
@@ -57,11 +57,11 @@ def main():
         if method not in supported:
             print(f" Skipping unknown method: {method}")
             continue
-        
+
         config = supported[method]
         version = config.get("version")
         lengths = config["lengths"]
-        
+
         # Write supported alleles
         if version:
             alleles_file = f"{method}.v{version}.supported_alleles.txt"
@@ -69,19 +69,19 @@ def main():
         else:
             alleles_file = f"{method}.supported_alleles.txt"
             lengths_file = f"{method}.supported_lengths.txt"
-        
+
         with open(alleles_file, "w") as output:
             for allele in sorted(alleles):
                 output.write(allele + "\n")
-        
+
         print(f" Created {alleles_file} ({len(alleles)} alleles)")
-        
+
         # Write supported lengths
         with open(lengths_file, "w") as output:
             for length in lengths:
                 output.write(str(length) + "\n")
-        
-        print(f" Created {lengths_file} ({len(lengths)} lengths)") 
+
+        print(f" Created {lengths_file} ({len(lengths)} lengths)")
     print("All model files created successfully!")
 
 if __name__ == "__main__":

@@ -179,26 +179,26 @@ workflow METAPEP {
                 // Parse header inline
                 def lines = txt.text.readLines()
                 def header = lines.isEmpty() ? '' : lines[0]
-                
+
                 if (!header.startsWith('#')) {
                     return tuple(base, txt, tsv, null)
                 }
-                
+
                 def parts = header.substring(1).split('#', 3)
                 def allele_name = parts[0]?.trim()
                 def allele_id = parts.size() > 1 ? parts[1]?.trim() : ''
-                
+
                 if (!allele_name || allele_name.equalsIgnoreCase('NA') || allele_name.equalsIgnoreCase('null')) {
                     return tuple(base, txt, tsv, null)
                 }
-                
+
                 def header_info = [allele_name: allele_name, allele_id: allele_id]
                 tuple(base, txt, tsv, header_info)
             }
             .filter { base, txt, tsv, header_info -> header_info != null }
             .map { base, txt, tsv, header_info ->
                 def mhc_class = params.pred_method in ['mhcnuggets', 'mhcflurry', 'netmhcpan'] ? 'I' : 'II'
-                
+
                 tuple(
                     [
                         id          : "${base}_allele_${header_info.allele_id}",

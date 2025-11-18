@@ -110,8 +110,8 @@ def write_chunks(data, alleles, max_task_per_allele, max_chunk_size, outdir, rem
                 if pbar:
                     pbar.update(len(write))
                 write[["peptide_id", "peptide_sequence"]].to_csv(outfile, sep="\t", index=False)
-            
-            # also write out sequence only file 
+
+            # also write out sequence only file
             write[["peptide_sequence"]].rename(columns={"peptide_sequence": "sequence"}) \
                                        .to_csv(base + ".tsv", sep="\t", index=False)
 

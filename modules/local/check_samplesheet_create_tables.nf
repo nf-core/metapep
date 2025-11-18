@@ -9,7 +9,7 @@ process CHECK_SAMPLESHEET_CREATE_TABLES {
 
     input:
     path samplesheet
-   // path supported_alleles_json
+    // path supported_alleles_json
 
     output:
     path "microbiomes.tsv"       , emit: microbiomes                  // microbiome_id, microbiome_path, microbiome_type, weights_path, microbiome_bare_id

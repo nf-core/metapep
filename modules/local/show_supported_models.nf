@@ -6,12 +6,12 @@ process SHOW_SUPPORTED_MODELS {
         'https://depot.galaxyproject.org/singularity/python:3.9' :
         'quay.io/biocontainers/python:3.9' }"
 
-    input: 
+    input:
     path supported_alleles_json
 
 
     output:
-    path "*.txt"       , emit: txt         
+    path "*.txt"       , emit: txt
     path "versions.yml", emit: versions
 
     when:
