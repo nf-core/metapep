@@ -105,7 +105,6 @@ def entrez_read_with_retry(handle, max_attempts=5, delay=5):
         except Exception as e:
             print(f"[ERROR] Unexpected error: {e}, retrying ... (attempt {attempt+1}/{max_attempts})")
             time.sleep(delay)
-    # wenn alles fehlschlägt, abbrechen
     sys.exit("Entrez.read() failed after multiple retries.")
 
 
