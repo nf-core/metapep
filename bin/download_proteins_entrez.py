@@ -65,7 +65,6 @@ def parse_args(args=None):
     )
     return parser.parse_args(args)
 
-
 # get assembly length ("total_length") from entrez
 def get_assembly_length(assemblyId):
     success = False
@@ -311,7 +310,7 @@ def main(args=None):
 
     if assemblies_without_sequences:
         print(f"Assemblies without nucleotide sequences: {assemblies_without_sequences}")
-        
+
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
 
