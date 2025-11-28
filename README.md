@@ -20,7 +20,6 @@
 
 ## Introduction-test
 
- 
 **nf-core/metapep** is a bioinformatics best-practice analysis pipeline for epitope prediction specifically designed for metagenomes. It integrates multiple types of input (proteins, taxa, assemblies and bins), generates peptides and predicts their MHC-/HLA-affinity.
 
 <p align="center">
