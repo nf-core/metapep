@@ -94,7 +94,7 @@ def normalize_allele(allele: str) -> str:
 
     if not allele:
         sys.exit("ERROR: Empty allele value encountered — please check your input samplesheet.")
-        
+
     parsed = mhcgnomes.parse(allele)
 
     if parsed:
@@ -116,15 +116,15 @@ def validate_alleles_and_lengths(unique_alleles, prediction_method, peptide_leng
     # Load supported alleles
     with open(supported_alleles_json, 'r') as f:
         supported_alleles_dict = json.load(f)
-    
+
     supported = set(supported_alleles_dict[prediction_method])
-    
+
     # Check alleles
     unsupported_alleles = []
     for allele in unique_alleles:
         if allele not in supported:
             unsupported_alleles.append(allele)
-    
+
     if unsupported_alleles:
         sys.exit(
             f"\n\nERROR: The following alleles are not supported by {prediction_method}:\n"
@@ -132,17 +132,17 @@ def validate_alleles_and_lengths(unique_alleles, prediction_method, peptide_leng
             f"Supported alleles for {prediction_method}: {len(supported)} alleles\n"
             f"Run with '--show_supported_models' to see all supported alleles.\n"
         )
-    
+
     # Validate peptide lengths
     min_len, max_len = peptide_lengths
-    
+
     # Define tool-specific length constraints
     length_constraints = {
         'mhcflurry': (8, 15),
         'mhcnuggets': (8, 15),
         'mhcnuggetsii': (9, 30),
     }
-    
+
     if prediction_method in length_constraints:
         tool_min, tool_max = length_constraints[prediction_method]
         if min_len < tool_min or max_len > tool_max:
@@ -150,7 +150,7 @@ def validate_alleles_and_lengths(unique_alleles, prediction_method, peptide_leng
                 f"\n\nERROR: {prediction_method} supports peptide lengths {tool_min}-{tool_max}, "
                 f"but you specified {min_len}-{max_len}\n"
             )
-    
+
     print(f" All {len(unique_alleles)} alleles are suported by {prediction_method}")
     print(f" Peptide lengths {min_len}-{max_len} are valid for {prediction_method}")
 
