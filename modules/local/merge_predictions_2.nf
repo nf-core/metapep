@@ -7,7 +7,7 @@ process MERGE_PREDICTIONS_2 {
         'biocontainers/pandas:1.5.2' }"
 
     input:
-    path predictions 
+    path predictions
     path peptide_map
     path allele_map
 
@@ -18,7 +18,7 @@ process MERGE_PREDICTIONS_2 {
     script:
     def chunk_size = params.prediction_chunk_size * params.pred_chunk_size_scaling
     """
-    
+
     concat_prediction.py \\
         -i ${predictions} \\
         -o predictions.tsv.gz \\

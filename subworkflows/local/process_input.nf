@@ -20,7 +20,7 @@ workflow PROCESS_INPUT {
 
     // for MHCFlurry, MHCnuggets and Netmhcpan assing the input lengths
     peptide_lengths = Channel.fromList( params.min_pep_len..params.max_pep_len )
-    
+
     CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes
         // Read microbiomes table
         .splitCsv(sep:'\t', header:true)

@@ -14,7 +14,7 @@ process MERGE_PREDICTIONS_BUFFER {
     path "predictions.buffer_*.tsv", emit: ch_predictions_merged_buffer
     path "versions.yml"            , emit: versions
 
-    script:  
+    script:
     def chunk_size = params.prediction_chunk_size * params.pred_chunk_size_scaling
     """
      [[ ${predictions[0]} =~ peptides_(.*)_allele_([0-9]+)_predictions.csv ]]

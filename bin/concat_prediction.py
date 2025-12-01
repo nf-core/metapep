@@ -54,10 +54,10 @@ def parse_args(args=None):
 
 def normalize_chunk(df, pepmap=None, allelemap=None, src_name=None):
     """Normalize prediction chunk to target schema -> columns: peptide_id, allele_id, sequence, allele, rank, prediction_score, binder, predictor"""
-    
+
     # Check if already normalized (has both peptide_id and allele_id columns with values)
     already_normalized = "peptide_id" in df.columns and "allele_id" in df.columns
-    
+
     if already_normalized:
         # Check if allele_id actually has values (not all empty)
         has_allele_values = df["allele_id"].notna().any()
@@ -70,27 +70,27 @@ def normalize_chunk(df, pepmap=None, allelemap=None, src_name=None):
             return df[target_cols]
         else:
             print(f" File has ID columns but they are empty, will remap", flush=True)
-    
+
     # Peptide ID mapping
     if pepmap is not None and ("peptide_id" not in df.columns or df["peptide_id"].isna().all()):
         if "sequence" not in df.columns:
             print(f"ERROR: 'sequence' column not found in {src_name}. Available columns: {df.columns.tolist()}", file=sys.stderr)
             sys.exit(1)
-            
+
         seq_col = "peptide_sequence" if "peptide_sequence" in pepmap.columns else "sequence"
-        
+
         # Drop peptide_id if it exists but is empty
         if "peptide_id" in df.columns:
             df = df.drop(columns=["peptide_id"])
-        
+
         df = df.merge(
-            pepmap[["peptide_id", seq_col]], 
-            left_on="sequence", 
-            right_on=seq_col, 
+            pepmap[["peptide_id", seq_col]],
+            left_on="sequence",
+            right_on=seq_col,
             how="left"
         ).drop(columns=[seq_col], errors="ignore")
-    
-    # Allele ID mapping 
+
+    # Allele ID mapping
     if allelemap is not None and ("allele_id" not in df.columns or df["allele_id"].isna().all()):
         # Find the allele name column in the mapping file
         allele_col_in_map = None
@@ -98,27 +98,27 @@ def normalize_chunk(df, pepmap=None, allelemap=None, src_name=None):
             if possible_col in allelemap.columns:
                 allele_col_in_map = possible_col
                 break
-        
+
         if allele_col_in_map is None:
             print(f"WARNING: No allele name column found in allelemap. Available columns: {allelemap.columns.tolist()}", file=sys.stderr)
         else:
             df_allele_col = "allele" if "allele" in df.columns else None
-            
+
             if df_allele_col:
                 print(f" Mapping alleles", file=sys.stderr)
-                
+
                 # Drop allele_id if it exists but is empty
                 if "allele_id" in df.columns:
                     df = df.drop(columns=["allele_id"])
-                
+
                 # Direct mapping
                 df = df.merge(
-                    allelemap[["allele_id", allele_col_in_map]], 
+                    allelemap[["allele_id", allele_col_in_map]],
                     left_on=df_allele_col,
                     right_on=allele_col_in_map,
                     how="left"
                 ).drop(columns=[allele_col_in_map], errors="ignore")
-                
+
                 # Check for unmapped alleles
                 unmapped = df[df["allele_id"].isna() & df[df_allele_col].notna()]
                 if len(unmapped) > 0:
@@ -130,12 +130,12 @@ def normalize_chunk(df, pepmap=None, allelemap=None, src_name=None):
     # Rename BA to prediction_score for downstream analysis
     if "BA" in df.columns:
         df = df.rename(columns={"BA": "prediction_score"})
-    
+
     # Ensure all target columns exist
     for c in target_cols:
         if c not in df.columns:
             df[c] = pd.NA
-    
+
     return df[target_cols]
 
 
@@ -154,12 +154,12 @@ def main(args=None):
     first_header = pd.DataFrame().columns
     for i, filename in enumerate(args.input):
         print("Processing file: ", filename, flush=True)
-        
+
         # Read input file chunk-wise
         with pd.read_csv(filename, sep=None, engine='python', chunksize=args.chunk_size) as reader:
             for j, csv_chunk in enumerate(reader):
                 print(" Chunk: ", j, flush=True)
-                
+
                 # Normalize chunk
                 csv_chunk = normalize_chunk(csv_chunk, pepmap, allelemap, filename)
                 if i == 0 and j == 0:
@@ -170,7 +170,7 @@ def main(args=None):
                     if j == 0 :
                         # Check if header of subsequent input files match header of first input file
                         # (column order must be the same)
-                    
+
                         if csv_chunk.columns.tolist() != first_header.tolist():
                             print(
                                 "ERROR - header of input file",
