@@ -62,7 +62,7 @@ jobs:
   nf-test:
     name: "${{ matrix.profile }} | ${{ matrix.NXF_VER }} | ${{ matrix.shard }}/${{ needs.nf-test-changes.outputs.total_shards }}"
     needs: [nf-test-changes]
-    if: ${{ needs.nf-test-changes.outputs.total_shards != '0' }}
+    if: ${{ needs.nf-test-changes.outputs.total_shards != '0' && (github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/metapep')) }}
     runs-on: # use self-hosted runners
       - runs-on=${{ github.run_id }}-nf-test
       - runner=4cpu-linux-x64
@@ -71,6 +71,84 @@ jobs:
       matrix:
         shard: ${{ fromJson(needs.nf-test-changes.outputs.shard) }}
         profile: [conda, docker, singularity]
+        test_name:
+          - "test"
+          - "test_model_information"
+          - "test_mouse_all_pep_lengths"
+          - "test_assembly_only"
+          - "test_bins_only"
+          - "test_coassembly"
+          - "test_mhcflurry"
+          - "test_mhcnuggets_1"
+          - "test_mhcnuggets_2"
+        isMain:
+          - ${{ github.base_ref == 'master' || github.base_ref == 'main' }}
+        # Exclude conda and singularity on dev
+        exclude:
+          - isMain: false
+            profile: "conda"
+          - isMain: false
+            profile: "singularity"
+        NXF_VER:
+          - "24.10.5"
+          - "latest-everything"
+    env:
+      NXF_ANSI_LOG: false
+      TOTAL_SHARDS: ${{ needs.nf-test-changes.outputs.total_shards }}
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Run nf-test
+        id: run_nf_test
+        uses: ./.github/actions/nf-test
+        continue-on-error: ${{ matrix.NXF_VER == 'latest-everything' }}
+        env:
+          NFT_WORKDIR: ${{ env.NFT_WORKDIR }}
+          NFT_DIFF: ${{ env.NFT_DIFF }}
+          NFT_DIFF_ARGS: ${{ env.NFT_DIFF_ARGS }}
+        with:
+          profile: ${{ matrix.profile }}
+          test_name: ${{ matrix.test_name }}
+          shard: ${{ matrix.shard }}
+          total_shards: ${{ env.TOTAL_SHARDS }}
+
+      - name: Report test status
+        if: ${{ always() }}
+        run: |
+          if [[ "${{ steps.run_nf_test.outcome }}" == "failure" ]]; then
+            echo "::error::Test with ${{ matrix.NXF_VER }} failed"
+            # Add to workflow summary
+            echo "## ❌ Test failed: ${{ matrix.profile }} | ${{ matrix.NXF_VER }} | Shard ${{ matrix.shard }}/${{ env.TOTAL_SHARDS }}" >> $GITHUB_STEP_SUMMARY
+            if [[ "${{ matrix.NXF_VER }}" == "latest-everything" ]]; then
+              echo "::warning::Test with latest-everything failed but will not cause workflow failure. Please check if the error is expected or if it needs fixing."
+            fi
+            if [[ "${{ matrix.NXF_VER }}" != "latest-everything" ]]; then
+              exit 1
+            fi
+          fi
+
+  # Only run on PRs from branches of nf-core/metapep repository or on push if this is the nf-core dev branch (merged PRs)
+  # (GitHub secrets are not accessible for PR workflows from forks)
+  nf-test-with-secrets:
+    name: "${{ matrix.profile }} | ${{ matrix.NXF_VER }} | ${{ matrix.shard }}/${{ needs.nf-test-changes.outputs.total_shards }}"
+    needs: [nf-test-changes]
+    if: ${{ needs.nf-test-changes.outputs.total_shards != '0' && (github.event.pull_request.head.repo.full_name == 'nf-core/metapep' || (github.event_name == 'push' && github.repository == 'nf-core/metapep')) }}
+    runs-on: # use self-hosted runners
+      - runs-on=${{ github.run_id }}-nf-test
+      - runner=4cpu-linux-x64
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJson(needs.nf-test-changes.outputs.shard) }}
+        profile: [conda, docker, singularity]
+        test_name:
+          - "test_all"
+          - "test_mouse"
+          - "test_taxa_only"
+          - "test_taxa_specific_assembly"
         isMain:
           - ${{ github.base_ref == 'master' || github.base_ref == 'main' }}
         # Exclude conda and singularity on dev
@@ -93,6 +171,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Set up Nextflow secrets for NCBI access
+      - name: Set Nextflow secrets
+        if: env.NCBI_EMAIL != '' && env.NCBI_KEY != ''
+        shell: bash
+        run: |
+          nextflow secrets set NCBI_EMAIL "$NCBI_EMAIL"
+          nextflow secrets set NCBI_KEY "$NCBI_KEY"
+
       - name: Run nf-test
         id: run_nf_test
         uses: ./.github/actions/nf-test
@@ -105,6 +191,7 @@ jobs:
           NCBI_KEY: ${{ secrets.NCBI_KEY }}
         with:
           profile: ${{ matrix.profile }}
+          test_name: ${{ matrix.test_name }}
           shard: ${{ matrix.shard }}
           total_shards: ${{ env.TOTAL_SHARDS }}
 
@@ -124,7 +211,7 @@ jobs:
           fi
 
   confirm-pass:
-    needs: [nf-test]
+    needs: [nf-test, nf-test-with-secrets]
     if: always()
     runs-on: # use self-hosted runners
       - runs-on=${{ github.run_id }}-confirm-pass

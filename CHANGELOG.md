@@ -12,6 +12,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 ### `Changed`
 
 - Updated template to [nf-core/tools](https://nf-co.re/tools) version 3.3.2
+- Split profiles in nf-test.yml into standard profiles without download and entrez download profiles
 
 ### `Fixed`
 
