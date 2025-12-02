@@ -1,7 +1,7 @@
 {
     "db_tables": {
         "content": [
-            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
+            "alleles.tsv:md5,aa70d022231c97269e6273b2f4ac46a6",
             "conditions_alleles.tsv:md5,9db7e0afc739b23c430877e336b0143f",
             "conditions.tsv:md5,a6fe5daaf11a90b61c83c9934969c52c",
             "entities_proteins.tsv:md5,2ba821a04755841dc6f116965f853f40",
@@ -13,23 +13,13 @@
             "proteins_peptides.tsv:md5,c2a16b2d30c9cf5ea52207dd799b4603",
             "peptides.tsv.gz:md5,dd0f94bea5079df8ef06895de255038b",
             "proteins.tsv.gz:md5,104b786dfa89e183a46e29f1f37f17de",
-            "stats.tsv:md5,832938885178928bdd1a8a23f075615b"
+            "stats.tsv:md5,0a738656330e78ef72b11f5546a78b63"
         ],
         "meta": {
             "nf-test": "0.9.2",
-            "nextflow": "25.04.7"
+            "nextflow": "25.10.0"
         },
-        "timestamp": "2025-10-22T09:48:47.250657209"
-    },
-    "logs": {
-        "content": [
-            "prediction_warnings.log:md5,d2bb11e8da2c2003b18054bb1e6843ca"
-        ],
-        "meta": {
-            "nf-test": "0.9.2",
-            "nextflow": "25.04.7"
-        },
-        "timestamp": "2025-10-22T09:48:47.384832632"
+        "timestamp": "2025-12-01T14:49:50.554300016"
     },
     "predictions.tsv.gz": {
         "content": [

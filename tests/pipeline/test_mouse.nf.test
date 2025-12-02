@@ -43,12 +43,12 @@ nextflow_pipeline {
                 { assert new File("$outputDir/entrez_data/proteins.entrez.tsv.gz").exists() },
                 { assert new File("$outputDir/entrez_data/taxa_assemblies.tsv").exists() },
 
-                { assert new File("$outputDir/figures/entity_binding_ratios.H2-Db.pdf").exists() },
-                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.H2-Db.pdf").exists() },
-                { assert new File("$outputDir/figures/prediction_score_distribution.H2-Db.pdf").exists() },
-                { assert new File("$outputDir/figures/entity_binding_ratios.H2-Ld.pdf").exists() },
-                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.H2-Ld.pdf").exists() },
-                { assert new File("$outputDir/figures/prediction_score_distribution.H2-Ld.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.H2-D_b.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.H2-D_b.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.H2-D_b.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.H2-L_d.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.H2-L_d.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.H2-L_d.pdf").exists() },
 
                 { assert snapshot(path("$outputDir/logs/prediction_warnings.log"),
                                 path("$outputDir/logs/WARNING_unify_peptide_lengths.log")).match("logs") },

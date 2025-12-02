@@ -23,10 +23,6 @@
         "timestamp": "2025-12-16T11:19:47.228313048"
     },
     "logs": {
-        "content": [
-            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
-            "SUCCEEDED_unify_peptide_lengths.log:md5,c27fb56e478b975c57c910011935dd55"
-        ],
         "meta": {
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
