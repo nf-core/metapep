@@ -10,12 +10,12 @@ import pandas as pd
 raw_prediction_cols = {"sequence", "allele", "predictor", "BA", "rank", "binder"}
 
 # Target schema after normalization
-target_cols = ["peptide_id", "allele_id", "sequence", "allele", "rank", "prediction_score", "binder", "predictor"]
+target_cols = ["peptide_id", "allele_id", "prediction_score", "rank"]
 
 
 def parse_args(args=None):
     """Parses the command line arguments specified by the user."""
-    parser = argparse.ArgumentParser(description="Concatenate CSV files into a normalized TSV.")
+    parser = argparse.ArgumentParser(description="Concatenate CSV files into a normalized TSV (predictions.tsv.gz).")
 
     # INPUT FILES
     parser.add_argument("-i", "--input", help="Path to input files.", type=str, required=True, nargs="+")
@@ -135,6 +135,9 @@ def normalize_chunk(df, pepmap=None, allelemap=None, src_name=None):
     for c in target_cols:
         if c not in df.columns:
             df[c] = pd.NA
+
+    # for safety reasons drop any unwanted columns
+    df = df.drop(columns=["predictor", "binder", "sequence", "allele"], errors="ignore")
 
     return df[target_cols]
 
