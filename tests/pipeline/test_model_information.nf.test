@@ -25,10 +25,10 @@ nextflow_pipeline {
                                 path("$outputDir/model_information/mhcnuggets.v2.4.1.supported_lengths.txt"),
                                 path("$outputDir/model_information/mhcnuggetsii.v2.4.1.supported_alleles.txt"),
                                 path("$outputDir/model_information/mhcnuggetsii.v2.4.1.supported_lengths.txt"),
-                                path("$outputDir/model_information/netmhcpan.supported_alleles.txt"),
-                                path("$outputDir/model_information/netmhcpan.supported_lengths.txt"),
-                                path("$outputDir/model_information/netmhciipan.supported_alleles.txt"),
-                                path("$outputDir/model_information/netmhciipan.supported_lengths.txt")).match("model_information") }
+                                path("$outputDir/model_information/netmhcpan.v4.1.supported_alleles.txt"),
+                                path("$outputDir/model_information/netmhcpan.v4.1.supported_lengths.txt"),
+                                path("$outputDir/model_information/netmhciipan.v4.3.supported_alleles.txt"),
+                                path("$outputDir/model_information/netmhciipan.v4.3.supported_lengths.txt")).match("model_information") }
             )
 
         }

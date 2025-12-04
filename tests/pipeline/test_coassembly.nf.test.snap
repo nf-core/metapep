@@ -1,7 +1,7 @@
 {
     "db_tables": {
         "content": [
-            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
+            "alleles.tsv:md5,aa70d022231c97269e6273b2f4ac46a6",
             "conditions_alleles.tsv:md5,ad6438cc0e62033f39629d7d002169b5",
             "conditions.tsv:md5,092aba068d94feb11b61a22d694359d7",
             "entities_proteins.tsv:md5,522e78ac27cbbc30e0a40fa316ee93c5",
@@ -27,6 +27,6 @@
             "nf-test": "0.8.4",
             "nextflow": "24.04.2"
         },
-        "timestamp": "2024-06-26T08:14:54+0000"
+        "timestamp": "2025-12-03T20:03:54.786075137"
     }
 }

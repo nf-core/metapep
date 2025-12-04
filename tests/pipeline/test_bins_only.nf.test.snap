@@ -1,7 +1,7 @@
 {
     "db_tables": {
         "content": [
-            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
+            "alleles.tsv:md5,aa70d022231c97269e6273b2f4ac46a6",
             "conditions_alleles.tsv:md5,9db7e0afc739b23c430877e336b0143f",
             "conditions.tsv:md5,5b04349198a406fc16760c7e8808bb23",
             "entities_proteins.tsv:md5,20e495ff06ccacb0f81dbd65e556fc83",
