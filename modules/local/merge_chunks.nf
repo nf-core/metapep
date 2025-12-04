@@ -1,4 +1,4 @@
-process MERGE_PREDICTIONS_2 {
+process MERGE_CHUNKS {
     label "process_long"
 
     conda "conda-forge::pandas=1.5.2"

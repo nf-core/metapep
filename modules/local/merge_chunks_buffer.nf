@@ -1,4 +1,4 @@
-process MERGE_PREDICTIONS_BUFFER {
+process MERGE_CHUNKS_BUFFER {
 
     conda "conda-forge::pandas=1.5.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

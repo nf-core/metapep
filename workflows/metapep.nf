@@ -25,8 +25,8 @@ include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_mi
 include { GENERATE_PEPTIDES                 } from '../modules/local/generate_peptides'
 include { COLLECT_STATS                     } from '../modules/local/collect_stats'
 include { SPLIT_PRED_TASKS                  } from '../modules/local/split_pred_tasks'
-include { MERGE_PREDICTIONS_BUFFER          } from '../modules/local/merge_predictions_buffer'
-include { MERGE_PREDICTIONS_2               } from '../modules/local/merge_predictions_2'
+include { MERGE_CHUNKS_BUFFER               } from '../modules/local/merge_chunks_buffer'
+include { MERGE_CHUNKS                      } from '../modules/local/merge_chunks'
 include { PREPARE_SCORE_DISTRIBUTION        } from '../modules/local/prepare_score_distribution'
 include { PLOT_SCORE_DISTRIBUTION           } from '../modules/local/plot_score_distribution'
 include { PREPARE_ENTITY_BINDING_RATIOS     } from '../modules/local/prepare_entity_binding_ratios'
@@ -240,22 +240,22 @@ workflow METAPEP {
             }.set { ch_pred_merge_input }
 
         // Process is only used when files exceed the buffer files parameter (default 1000) -> May generate issues for slurm if larger
-        MERGE_PREDICTIONS_BUFFER (
+        MERGE_CHUNKS_BUFFER (
             ch_pred_merge_input.buffer.buffer(size: params.pred_buffer_files, remainder: true),
             GENERATE_PEPTIDES.out.ch_peptides.first(),
             PROCESS_INPUT.out.ch_alleles.first()
         )
-        ch_versions = ch_versions.mix(MERGE_PREDICTIONS_BUFFER.out.versions)
+        ch_versions = ch_versions.mix(MERGE_CHUNKS_BUFFER.out.versions)
 
         // Mix the output of the merge predictions buffer channel and merge predictions channel (one of them will be empty)
-        ch_merge_predictions_input = MERGE_PREDICTIONS_BUFFER.out.ch_predictions_merged_buffer.mix(ch_pred_merge_input.unbuffered)
+        ch_merge_predictions_input = MERGE_CHUNKS_BUFFER.out.ch_predictions_merged_buffer.mix(ch_pred_merge_input.unbuffered)
 
-        MERGE_PREDICTIONS_2 (
+        MERGE_CHUNKS (
             ch_merge_predictions_input.collect(sort: { it.baseName }),
             GENERATE_PEPTIDES.out.ch_peptides.first(),
             PROCESS_INPUT.out.ch_alleles.first()
         )
-        ch_versions = ch_versions.mix(MERGE_PREDICTIONS_2.out.versions)
+        ch_versions = ch_versions.mix(MERGE_CHUNKS.out.versions)
 
         //
         // MODULE: Collect stats
@@ -268,7 +268,7 @@ workflow METAPEP {
             PROCESS_INPUT.out.ch_conditions,
             PROCESS_INPUT.out.ch_alleles,
             PROCESS_INPUT.out.ch_conditions_alleles,
-            MERGE_PREDICTIONS_2.out.ch_predictions
+            MERGE_CHUNKS.out.ch_predictions
         )
         ch_versions = ch_versions.mix(COLLECT_STATS.out.versions)
 
@@ -276,7 +276,7 @@ workflow METAPEP {
         // MODULE: Plot score distributions
         //
         PREPARE_SCORE_DISTRIBUTION (
-            MERGE_PREDICTIONS_2.out.ch_predictions,
+            MERGE_CHUNKS.out.ch_predictions,
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
@@ -297,7 +297,7 @@ workflow METAPEP {
         // MODULE: Plot entity binding ratios
         //
         PREPARE_ENTITY_BINDING_RATIOS (
-            MERGE_PREDICTIONS_2.out.ch_predictions,
+            MERGE_CHUNKS.out.ch_predictions,
             GENERATE_PEPTIDES.out.ch_proteins_peptides,
             GENERATE_PROTEIN_AND_ENTITY_IDS.out.ch_entities_proteins,
             FINALIZE_MICROBIOME_ENTITIES.out.ch_microbiomes_entities,
