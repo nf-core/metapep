@@ -49,6 +49,8 @@ As not all alleles are supported by all supported tools, the pipeline comes with
 
 `nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_supported_models`
 
+Furthermore, a curated list of supported alleles can be found under assets/supported_alleles.json.
+
 <details markdown="1">
 <summary>Output files</summary>
 
@@ -82,7 +84,7 @@ These contain the generated peptides, the corresponding epitope prediction score
   - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
   - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins. Because mhcflurry can just handle the basic AA alphabet (20AAs, no extended code), this file only contains peptides that match this restrictions. The generate_peptides.py removes all peptides containing extended AA codes.
   - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
-  - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
+  - `predictions.tsv.gz`: contains peptide_id, allele_id, prediction_score (epitope prediction score) and rank for all unique peptide - allele combinations.
 
 </details>
 
@@ -96,10 +98,16 @@ Additionally the pipeline reports some statistics on protein and peptide numbers
 
 </details>
 
-The epitope prediction scoring system and resulting prediction scores depend on the chosen prediction method (`--pred_method`).
 
-- [SYFPEITHI](http://www.syfpeithi.de/index.html): In SYFPEITHI the scoring is based on a position-specific scoring matrix (PSSM), which is built using known MHC binders. For each allele another matrix is used. For comparability the scores are normalized to the highest scoring ligand of each allele, resulting in scores between 0 and 1. Therefore, the final score represents how well a peptide is able to bind in comparison to all annotated binders of a specific allele. For downstream processes such as `prepare_entity_binding_ratios` peptides with a score of ≥0.5 are classified as binders.
-- [MHCflurry](https://pubmed.ncbi.nlm.nih.gov/29960884/) and [MCHnuggets](https://pubmed.ncbi.nlm.nih.gov/31871119/): The score is based on a affinity scoring representing an IC<sub>50</sub> (the concentration that leads to 50% inhibition of the binding of a standard reference peptide, note that lower IC<sub>50</sub> values indicate higher binding affinities). The affinity score is then log-transformed and converted to a scale from 0 to 1 by using the formula: <code>1-log<sub>50000</sub>(affinity score)</code>. For downstream processes such as `prepare_entity_binding_ratios` a threshold of ≥0.426 is used to classify binders, corresponding to an IC<sub>50</sub> of ≤500.
+The prediction results are given as allele-specific **Binding Affinity (prediction_score)** and **percentile ranks (rank)** per peptide. The computation of these values depends on the applied prediction method.
+Binding Affinity represents the predicted strength of the interaction between a peptide and an MHC molecule. It is derived from the predicted IC50 value (in nanomolar, nM) and normalized to a scale between 0 and 1 using the formula:
+
+$BA = 1 - \frac{\log_{10}(\text{aff})}{\log_{10}(50000)}$
+
+where aff is the predicted IC50 binding affinity. Lower IC50 values indicate stronger binding, with peptides having IC50 values below 500 nM typically considered strong binders.  For downstream processes such as `prepare_entity_binding_ratios` a threshold of ≥0.426 is used to classify binders, corresponding to an IC<sub>50</sub> of ≤500.
+
+Percentile rank (rank) indicates the relative binding strength of a peptide compared to a large set of random natural peptides. This measure is not affected by inherent biases of certain MHC molecules towards higher or lower mean predicted affinities. Strong binders are defined as having rank < 0.5, and weak binders with rank < 2. For example, a peptide with a rank of 0.1 is among the top 0.1% of best binders. This approach ensures a more consistent selection across different MHC alleles, as it accounts for variability in binding thresholds. **It is advised to select candidate binders based on rank rather than binding affinities**. 
+
 
 ## Intermediate results
 
@@ -144,16 +152,6 @@ Proteins are downloaded for input type `taxa` from Entrez.
 
 Proteins are predicted for input type assembly and bins.
 
-### Epitope prediction
-
-<details markdown="1">
-<summary>Output files</summary>
-
-- `logs/`
-  - `prediction_warnings.log`: contains warnings that occured during epitope prediction.
-  - `unify_peptide_lengths.log`: contains information about available prediction models and for analysis omitted peptide lengths.
-
-</details>
 
 ## Downstream visualisations
 

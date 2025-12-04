@@ -1,77 +1,79 @@
 // This can be pasted in dbdiagram.io to generate the datamodel graph
 // Tables
-Table microbiomes as m {
-    microbiome_id int [pk]
+Table microbiomes as m [headercolor: #EB801B] {
+    microbiome_id int 
     microbiome_path str
     microbiome_type enum
     microbiome_bare_id int
     }
 
-Table microbiome_entities as me {
-    entity_id int [pk]
-    microbiome_id int [pk]
+Table microbiome_entities as me [headercolor: #9B9CA4] {
+    entity_id int 
+    microbiome_id int 
     entity_weight float
 }
 
-Table entities as e{
-    entity_id int [pk]
+Table entities as e [headercolor: #EB801B] {
+    entity_id int 
     entity_name str
 }
 
-Table entities_proteins as ep {
-    entity_id int [pk]
-    protein_id int [pk]
+Table entities_proteins as ep [headercolor: #9B9CA4] {
+    entity_id int 
+    protein_id int 
 }
 
-Table proteins as p {
-    protein_id int [pk]
-    protein_sequence str [pk]
+Table proteins as p [headercolor: #EB801B] {
+    protein_id int 
+    protein_sequence str
 }
 
-Table proteins_peptides as pp {
-    protein_id int [pk]
-    peptide_id [pk]
+Table proteins_peptides as pp [headercolor: #9B9CA4] {
+    protein_id int 
+    peptide_id int 
     count int
 }
 
-Table peptides as pep {
-    peptide_id int [pk]
+Table peptides as pep [headercolor: #EB801B] {
+    peptide_id int 
     peptide_sequence str
 }
 
-Table predictions as pred {
-    peptide_id int [pk]
-    allele_id int [pk]
+Table predictions as pred [headercolor: #6724BB] {
+    peptide_id int 
+    allele_id int 
     prediction_score float
+    rank float
 }
 
-Table alleles as a {
-    allele_id int [pk]
+Table alleles as a [headercolor: #EB801B] {
+    allele_id int
     allele_name str
 }
 
-Table conditions_alleles as ca {
-    condition_id int [pk]
-    allele_id int [pk]
+Table conditions_alleles as ca [headercolor: #9B9CA4] {
+    condition_id int 
+    allele_id int 
 }
 
-Table conditions as c {
-    microbiome_id int [pk]
-    condition_id int [pk]
+Table conditions as c [headercolor: #EB801B] {
+    microbiome_id int 
+    condition_id int 
     condition_name str
 }
 
 
 // References
 // > many-to-one; < one-to-many; - one-to-one; <> many-to-many
-Ref: m.microbiome_id - me.microbiome_id
-Ref: me.entity_id - e.entity_id
-Ref: e.entity_id - ep.entity_id
-Ref: ep.protein_id - p.protein_id
-Ref: p.protein_id - pp.protein_id
-Ref: pp.peptide_id - pep.peptide_id
-Ref: pep.peptide_id - pred.peptide_id
-Ref: pred.allele_id - a.allele_id
-Ref: a.allele_id - ca.allele_id
-Ref: ca.condition_id - c.condition_id
-Ref: c.microbiome_id - m.microbiome_id
+Ref: "m"."microbiome_id" - "me"."microbiome_id" [color: #4B82B0]
+Ref: "me"."entity_id" - "e"."entity_id" [color: #4B82B0]
+Ref: "e"."entity_id" - "ep"."entity_id" [color: #4B82B0]
+Ref: "ep"."protein_id" - "p"."protein_id" [color: #4B82B0]
+Ref: "p"."protein_id" - "pp"."protein_id" [color: #4B82B0]
+Ref: "pp"."peptide_id" - "pep"."peptide_id" [color: #4B82B0]
+Ref: "pep"."peptide_id" - "pred"."peptide_id" [color: #4B82B0]
+Ref: "pred"."allele_id" - "a"."allele_id" [color: #4B82B0]
+Ref: "a"."allele_id" - "ca"."allele_id" [color: #4B82B0]
+Ref: "ca"."condition_id" - "c"."condition_id" [color: #4B82B0]
+Ref: "c"."microbiome_id" - "m"."microbiome_id" [color: #4B82B0]
+

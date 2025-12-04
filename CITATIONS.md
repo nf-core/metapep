@@ -18,10 +18,6 @@
 
   > Maglott D, Ostell J, Pruitt KD, Tatusova T. Entrez Gene: gene-centered information at NCBI. Nucleic Acids Res. 2005 Jan 1;33(Database issue):D54-8. doi: 10.1093/nar/gki031. Update in: Nucleic Acids Res. 2007 Jan;35(Database issue):D26-31. PMID: 15608257; PMCID: PMC539985.
 
-- [Epytope](https://academic.oup.com/bioinformatics/article/32/13/2044/1743767)
-
-  > Schubert, B., Walzer, M., Brachvogel, H-P., Sozolek, A., Mohr, C., and Kohlbacher, O. (2016). FRED 2 - An Immunoinformatics Framework for Python. Bioinformatics 2016; doi: 10.1093/bioinformatics/btw113
-
 - [MHCflurry](https://dx.doi.org/10.1016/j.cels.2018.05.014)
 
   > Timothy J. O’Donnell, Alex Rubinsteyn, Maria Bonsack, Angelika B. Riemer, Uri Laserson, Jeff Hammerbacher. MHC flurry: open-source class I MHC binding affinity prediction. Cell systems 7(1), 129-132 (2018). doi: 10.1016/j.cels.2018.05.014.
@@ -29,6 +25,13 @@
 - [MHCnuggets](https://dx.doi.org/10.1158/2326-6066.CIR-19-0464)
 
   > Xiaoshan M. Shao, Rohit Bhattacharya, Justin Huang, I.K. Ashok Sivakumar, Collin Tokheim, Lily Zheng, Dylan Hirsch, Benjamin Kaminow, Ashton Omdahl, Maria Bonsack, Angelika B. Riemer, Victor E. Velculescu, Valsamo Anagnostou, Kymberleigh A. Pagel and Rachel Karchin. High-throughput prediction of MHC class i and ii neoantigens with MHCnuggets. Cancer Immunology Research 8(3), 396-408 (2020). doi: 10.1158/2326-6066.CIR-19-0464.
+
+- [NetMHCpan-4.1](https://pubmed.ncbi.nlm.nih.gov/32406916/)
+
+  > Reynisson B, Alvarez B, Paul S, Peters B, Nielsen M. NetMHCpan-4.1 and NetMHCIIpan-4.0: improved predictions of MHC antigen presentation by concurrent motif deconvolution and integration of MS MHC eluted ligand data. Nucleic Acids Res. 2020 Jul 2;48(W1):W449-W454. doi: 10.1093/nar/gkaa379. PMID: 32406916; PMCID: PMC7319546.
+
+- [NetMHCIIpan-4.0](https://pubmed.ncbi.nlm.nih.gov/32406916/)
+  > Reynisson B, Alvarez B, Paul S, Peters B, Nielsen M. NetMHCpan-4.1 and NetMHCIIpan-4.0: improved predictions of MHC antigen presentation by concurrent motif deconvolution and integration of MS MHC eluted ligand data. Nucleic Acids Res. 2020 Jul 2;48(W1):W449-W454. doi: 10.1093/nar/gkaa379. PMID: 32406916; PMCID: PMC7319546.
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
@@ -40,9 +43,6 @@
 
   > Hyatt D, Chen GL, Locascio PF, Land ML, Larimer FW, Hauser LJ. Prodigal: prokaryotic gene recognition and translation initiation site identification. BMC Bioinformatics. 2010 Mar 8;11:119. doi: 10.1186/1471-2105-11-119. PMID: 20211023; PMCID: PMC2848648.
 
-- [SYFPEITHI](https://pubmed.ncbi.nlm.nih.gov/10602881/)
-
-  > Hans-Georg Rammensee, Jutta Bachmann, Niels Nikolaus Emmerich, Oskar Alexander Bachor, Stefan Stevanovic: SYFPEITHI: database for MHC ligands and peptide motifs. Immunogenetics (1999) 50: 213-219
 
 ## Python Packages
 

@@ -36,7 +36,7 @@ On release, automated continuous integration tests run the pipeline on a full-si
 2. Predict proteins for input type assembly or bins using [Prodigal](https://github.com/hyattpd/Prodigal).
 3. Generate peptides from proteins.
 4. Split peptide files into chunks for parallel prediction and report stats.
-5. Predict epitopes for given alleles and peptides using [SYFPEITHI](http://www.syfpeithi.de), [MHCflurry](https://github.com/openvax/mhcflurry) or [MHCnuggets](https://github.com/KarchinLab/mhcnuggets).
+5. Predict epitopes for given alleles and peptides using [MHCflurry](https://github.com/openvax/mhcflurry), [MHCnuggets](https://github.com/KarchinLab/mhcnuggets) or [NetMHCpan](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/).
 6. Produce plots.
 
 ## Usage

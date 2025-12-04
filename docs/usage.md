@@ -95,7 +95,7 @@ with:
 ```yaml title="params.yaml"
 input: './samplesheet.csv'
 outdir: './results/'
-pred_method: 'syfpeithi'
+pred_method: 'mhcflurry'
 <...>
 ```
 
@@ -105,7 +105,7 @@ You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-c
 
 The pipeline needs to handle large amounts of data, depending on the size and number of microbiomes the user has defined in the input. To handle these data the pipeline mainly uses python scripts and the python module pandas. As the data needs to be compared memory consumption is currently peaking at around 150 GB for the full-size test, but can easily be higher depending on the input.
 
-If the memory is still an issue one can try to reduce the chunk sizes for high memory consuming processes. The parameters are: `--chunk_size <INTEGER>` and the scaling factor `--chunk_size_scaling <INTEGER>` which are used for the preprocessing of the peptides prior to the epitope prediction in `SPLIT_PRED_TASKS` and the downstream processes `MERGE_PREDICTIONS`, `PREPARE_ENTITY_BINDING_RATIOS` and `PREPARE_SCORE_DISTRIBUTION`. For for the epitope prediction process `PREDICT_EPITOPES` the chunk size equals the unscaled parameter `--chunk_size <INTEGER>`.
+If the memory is still an issue one can try to reduce the chunk sizes for high memory consuming processes. The parameters are: `--chunk_size <INTEGER>` and the scaling factor `--chunk_size_scaling <INTEGER>` which are used for the preprocessing of the peptides prior to the epitope prediction in `SPLIT_PRED_TASKS` and the downstream processes `MERGE_CHUNKS`, `PREPARE_ENTITY_BINDING_RATIOS` and `PREPARE_SCORE_DISTRIBUTION`. For the epitope prediction process inside the subworkflow `MHC_BINDING_PREDICTION` the chunk size equals the unscaled parameter `--chunk_size <INTEGER>`.
 
 ### Supported allele models
 
@@ -117,7 +117,22 @@ nextflow run nf-core/metapep -profile <YOURPROFILE> --outdir <OUTDIR> --show_sup
 
 More on the output can be found at https://nf-co.re/metapep/output#supported-allele-models
 
-Moreover, the pipeline checks if a supported prediction model (combination of allele and peptide length) is available if a PSSMs method like SYFPEITHI is chosen and reduces the peptide lengths to a common denominator for further analysis if models are not available.
+### Running the pipeline with NetMHC
+
+The pipeline also aims to support the most recent NetMHCpan and NetMHCIIpan versions. If one of the external tools is specified, the path to the corresponding tarball has to be specified. See the [Download section](https://services.healthtech.dtu.dk/services/NetMHCpan-4.1/) of NetMHCpan. When using `conda`, the parameter `--netmhc_system` (if the default value `linux` is not applicable) must also be specified.
+
+A typical command is as follows:
+
+```bash
+nextflow run nf-core/epitopeprediction \
+  -profile docker \
+  --input ./samplesheet.csv \
+  --outdir ./results \
+  --pred_method netmhcpan \
+  --min_pep_len 8 \
+  --max_pep_len 12 \
+  --netmhcpan_path /path/to/netMHCpan-4.1b.Linux.tar.gz \
+```
 
 ### Updating the pipeline
 
