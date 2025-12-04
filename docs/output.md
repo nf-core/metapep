@@ -98,16 +98,14 @@ Additionally the pipeline reports some statistics on protein and peptide numbers
 
 </details>
 
-
 The prediction results are given as allele-specific **Binding Affinity (prediction_score)** and **percentile ranks (rank)** per peptide. The computation of these values depends on the applied prediction method.
 Binding Affinity represents the predicted strength of the interaction between a peptide and an MHC molecule. It is derived from the predicted IC50 value (in nanomolar, nM) and normalized to a scale between 0 and 1 using the formula:
 
 $BA = 1 - \frac{\log_{10}(\text{aff})}{\log_{10}(50000)}$
 
-where aff is the predicted IC50 binding affinity. Lower IC50 values indicate stronger binding, with peptides having IC50 values below 500 nM typically considered strong binders.  For downstream processes such as `prepare_entity_binding_ratios` a threshold of ≥0.426 is used to classify binders, corresponding to an IC<sub>50</sub> of ≤500.
+where aff is the predicted IC50 binding affinity. Lower IC50 values indicate stronger binding, with peptides having IC50 values below 500 nM typically considered strong binders. For downstream processes such as `prepare_entity_binding_ratios` a threshold of ≥0.426 is used to classify binders, corresponding to an IC<sub>50</sub> of ≤500.
 
-Percentile rank (rank) indicates the relative binding strength of a peptide compared to a large set of random natural peptides. This measure is not affected by inherent biases of certain MHC molecules towards higher or lower mean predicted affinities. Strong binders are defined as having rank < 0.5, and weak binders with rank < 2. For example, a peptide with a rank of 0.1 is among the top 0.1% of best binders. This approach ensures a more consistent selection across different MHC alleles, as it accounts for variability in binding thresholds. **It is advised to select candidate binders based on rank rather than binding affinities**. 
-
+Percentile rank (rank) indicates the relative binding strength of a peptide compared to a large set of random natural peptides. This measure is not affected by inherent biases of certain MHC molecules towards higher or lower mean predicted affinities. Strong binders are defined as having rank < 0.5, and weak binders with rank < 2. For example, a peptide with a rank of 0.1 is among the top 0.1% of best binders. This approach ensures a more consistent selection across different MHC alleles, as it accounts for variability in binding thresholds. **It is advised to select candidate binders based on rank rather than binding affinities**.
 
 ## Intermediate results
 
@@ -151,7 +149,6 @@ Proteins are downloaded for input type `taxa` from Entrez.
 </details>
 
 Proteins are predicted for input type assembly and bins.
-
 
 ## Downstream visualisations
 
