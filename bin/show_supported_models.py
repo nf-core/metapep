@@ -35,9 +35,11 @@ supported = {
         "lengths": list(range(5, 31))  # 9-30
     },
     "netmhcpan": {
+        "version": "4.1",
         "lengths": list(range(8, 15))  # 8-14
     },
     "netmhciipan": {
+        "version": "4.3",
         "lengths": list(range(9, 51))  # 9-50
     }
 }

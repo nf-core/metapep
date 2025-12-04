@@ -78,7 +78,7 @@ def print_error(error, context="Line", context_str=""):
     print(error_str)
     sys.exit(1)
 
-# alleles format check; after this function all db_tables use the same allele names
+# alleles format check
 def normalize_allele(allele: str) -> str:
     """Return canonical allele string using mhcgnomes; exit with error if parsing fails."""
     allele = (allele or "").strip()
