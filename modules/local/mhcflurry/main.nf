@@ -2,16 +2,10 @@ process MHCFLURRY {
     label 'process_single'
     tag "${meta.id}"
 
-
-    conda "bioconda::epytope=3.3.1"
+    conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/epytope:3.3.1--pyh7cba7a3_0' :
-        'biocontainers/epytope:3.3.1--pyh7cba7a3_0' }"
-
-    //conda "${moduleDir}/environment.yml"
-    //container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        //'https://depot.galaxyproject.org/singularity/mhcflurry:2.1.4--pyh7e72e81_1' :
-        //'quay.io/biocontainers/mhcflurry:2.1.4--pyh7e72e81_1' }"
+        'https://depot.galaxyproject.org/singularity/mhcflurry:2.1.4--pyh7e72e81_1' :
+        'quay.io/biocontainers/mhcflurry:2.1.4--pyh7e72e81_1' }"
 
     // MHCflurry downloads models always to ~/.local/share/mhcflurry
     containerOptions = (workflow.containerEngine == 'docker') ? '-u $(id -u) -e "HOME=${HOME}" -v /etc/passwd:/etc/passwd:ro -v /etc/shadow:/etc/shadow:ro -v /etc/group:/etc/group:ro -v $HOME:$HOME' : ''
@@ -34,11 +28,11 @@ process MHCFLURRY {
     # Create MHCflurry data directory to avoid permission issues
     mkdir -p mhcflurry-data
     export MHCFLURRY_DATA_DIR=./mhcflurry-data
-    export MHCFLURRY_DOWNLOADS_CURRENT_RELEASE=1.4.0
+    export MHCFLURRY_DOWNLOADS_CURRENT_RELEASE=2.2.0
 
     # Check if models are already available
     if ! mhcflurry-downloads info | grep -qE '\\bYES\\b'; then
-        mhcflurry-downloads fetch models_class1
+        mhcflurry-downloads fetch models_class1_presentation
     fi
 
     mhcflurry-predict \\
