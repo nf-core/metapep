@@ -16,6 +16,7 @@ nextflow_pipeline {
 
         then {
             assertAll(
+                { assert snapshot(path("$outputDir/db_tables/alleles.tsv").readLines()[0..2]).match() },
                 { assert workflow.success },
                 { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
                 { assert new File("$outputDir/pipeline_info/nf_core_metapep_software_mqc_versions.yml").exists() },

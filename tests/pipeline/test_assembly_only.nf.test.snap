@@ -13,13 +13,27 @@
             "proteins_peptides.tsv:md5,c2a16b2d30c9cf5ea52207dd799b4603",
             "peptides.tsv.gz:md5,dd0f94bea5079df8ef06895de255038b",
             "proteins.tsv.gz:md5,104b786dfa89e183a46e29f1f37f17de",
-            "predictions.tsv.gz:md5,cc2f2851690eb8f25f3fa251bb955274",
-            "stats.tsv:md5,0a738656330e78ef72b11f5546a78b63"
+            "predictions.tsv.gz:md5,da5b0fd784a5b9ad8d19117137ca41d3",
+            "stats.tsv:md5,fd367328ebee8cd3b9869ebd55dc88da"
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.10.0"
         },
-        "timestamp": "2025-12-04T08:09:36.105946273"
+        "timestamp": "2025-12-08T11:49:27.227746366"
+    },
+    "test assembly input": {
+        "content": [
+            [
+                "allele_id\tallele_name",
+                "0\tHLA-A*01:01",
+                "1\tHLA-B*07:02"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2025-12-08T11:49:26.95743285"
     }
 }

@@ -153,19 +153,31 @@ class PredictionResult:
             sys.exit(1)
 
     def _format_mhcflurry_prediction(self) -> pd.DataFrame:
-        """
-        Read in mhcflurry prediction output comprising the columns
-        `peptide,allele,mhcflurry_affinity,mhcflurry_affinity_percentile,mhcflurry_processing_score,
-        mhcflurry_presentation_score,mhcflurry_presentation_percentile`
-        """
         df = pd.read_csv(self.file_path)
-        # Convert IC50 to BA
-        df['BA'] = df['mhcflurry_affinity'].apply(Utils.ic50toBA)
-        # Harmonize df to desired output structure
-        df.rename(columns={'peptide': self.peptide_col_name, 'mhcflurry_presentation_percentile': 'rank'}, inplace=True)
-        df = df[[self.peptide_col_name, 'allele', 'rank', 'BA']]
-        df['binder'] = df['rank'] <= PredictorBindingThreshold.MHCFLURRY.value
-        df['predictor'] = self.predictor
+
+
+    # IC50 -> BA
+        df["BA"] = df['mhcflurry_prediction'].apply(Utils.ic50toBA)
+
+        df.rename(
+           columns={
+            "peptide": self.peptide_col_name,
+            # Präsentations-Rank-Spalte identifizieren:
+            "mhcflurry_presentation_percentile": "rank",
+            "presentation_percentile": "rank",
+            "affinity_percentile": "rank",  # falls du das nutzen willst
+            },
+            inplace=True,
+        )
+
+    # minimal: Sequenz, Allele, Rank, BA
+        if "rank" not in df.columns:
+        # notfalls Dummy-Rank, wenn dir das reicht
+           df["rank"] = float("nan")
+
+        df = df[[self.peptide_col_name, "allele", "rank", "BA"]]
+        df["binder"] = df["rank"] <= PredictorBindingThreshold.MHCFLURRY.value
+        df["predictor"] = self.predictor
 
         return df
 
