@@ -15,7 +15,7 @@ target_cols = ["peptide_id", "allele_id", "prediction_score", "rank"]
 
 def parse_args(args=None):
     """Parses the command line arguments specified by the user."""
-    parser = argparse.ArgumentParser(description="Concatenate CSV files into a normalized TSV (predictions.tsv.gz).")
+    parser = argparse.ArgumentParser(description="Concatenate CSV files into a normalized TSV file.")
 
     # INPUT FILES
     parser.add_argument("-i", "--input", help="Path to input files.", type=str, required=True, nargs="+")
