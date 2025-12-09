@@ -36,7 +36,7 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
                                 path("$outputDir/db_tables/predictions.tsv.gz"),
                                 path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
-                  { assert lines[0].toString() =~ /20495\t0\t0\.03987943418324\t99\.28660326086955/ },
+                { assert lines[0].toString() =~ /20495\t0\t0\.03987943418324\t99\.28660326086955/ },
                 { assert lines[1].toString() =~ /51999\t0\t0\.0563255500048397\t99\.28660326086955/ },
                 { assert lines[2].toString() =~ /26069\t0\t0\.0718147523701191\t62\.74467391304348/ },
                 { assert lines[3].toString() =~ /2331\t0\t0\.0388434529304504\t99\.28660326086955/ },
