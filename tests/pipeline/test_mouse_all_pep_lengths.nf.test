@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_mouse_all_pep_lengths"
     tag "pipeline"
+    tag "WITHOUT_NCBI"
 
     test("test mouse assembly allowing all peptide lengths") {
 

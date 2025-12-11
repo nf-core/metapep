@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_all"
     tag "pipeline"
+    tag "WITH_NCBI"
 
     test("test all input path including protein downloads") {
 

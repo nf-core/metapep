@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_coassembly"
     tag "pipeline"
+    tag "WITHOUT_NCBI"
 
     test("test coassembly input") {
 

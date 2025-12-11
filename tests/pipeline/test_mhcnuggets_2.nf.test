@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_mhcnuggets_2"
     tag "pipeline"
+    tag "WITHOUT_NCBI"
 
     test("test mhcnuggets hla type 2 prediction") {
 
