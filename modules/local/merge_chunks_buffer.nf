@@ -7,8 +7,8 @@ process MERGE_CHUNKS_BUFFER {
 
     input:
     path    predictions
-    path    PEPTIDE_MAP
-    path    ALLELE_MAP
+    path    peptide_map
+    path    allele_map
 
     output:
     path "predictions.buffer_*.tsv", emit: ch_predictions_merged_buffer
@@ -23,10 +23,10 @@ process MERGE_CHUNKS_BUFFER {
 
     concat_prediction.py \\
       -i $predictions \\
-      -c ${chunk_size} \\
+      -c $chunk_size \\
       -o predictions.buffer_\${uname}.tsv \\
-      --pepmap "${PEPTIDE_MAP}" \\
-      --allelemap "${ALLELE_MAP}"
+      --pepmap "$peptide_map" \\
+      --allelemap "$allele_map"
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

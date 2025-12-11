@@ -20,11 +20,11 @@ process MERGE_CHUNKS {
     """
 
     concat_prediction.py \\
-        -i ${predictions} \\
+        -i $predictions \\
         -o predictions.tsv.gz \\
-        -c ${chunk_size} \\
-        --pepmap "${peptide_map}" \\
-        --allelemap "${allele_map}"
+        -c $chunk_size \\
+        --peptides "${peptide_map}" \\
+        --alleles "${allele_map}"
 
     cat <<-END_VERSIONS > versions.yml
 "${task.process}":
