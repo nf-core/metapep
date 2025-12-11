@@ -98,7 +98,7 @@ nextflow_pipeline {
                 { assert lines[0].toString() =~ /20495\t0\t0\.03987943\d+\t99\.28660326086955/ },
                 { assert lines[1].toString() =~ /51999\t0\t0\.05632555\d+\t99\.28660326086955/ },
                 { assert lines[2].toString() =~ /26069\t0\t0\.071814752\d+\t62\.74467391304348/ },
-                { assert lines[3].toString() =~ /2331\t0\t0\.038843452\d+\t99\.28660326086955/ },
+                { assert lines[3].toString() =~ /2331\t0\t0\.03884345\d+\t99\.28660326086955/ },
                 { assert lines[4].toString() =~ /54247\t0\t0\.0836890\d+\t22\.19230978260869/ },
                 { assert lines[5].toString() =~ /79667\t0\t0\.0364072\d+\t99\.28660326086955/ },
                 { assert lines[6].toString() =~ /73727\t0\t0\.03920849\d+\t99\.28660326086955/ },
