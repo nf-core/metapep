@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_mouse"
     tag "pipeline"
+    tag "WITH_NCBI"
 
     test("test mouse alleles within download path (allele prediction reduction)") {
 

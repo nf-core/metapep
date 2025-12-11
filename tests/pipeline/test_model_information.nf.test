@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_model_information"
     tag "pipeline"
+    tag "WITHOUT_NCBI"
 
     test("test model information subbranch") {
 
