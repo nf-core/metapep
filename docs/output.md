@@ -80,7 +80,7 @@ These contain the generated peptides, the corresponding epitope prediction score
   - `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
   - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
   - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
-  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins.
+  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins. Because mhcflurry can just handle the basic AA alphabet (20AAs, no extended code), this file only contains peptides that match this restrictions. The generate_peptides.py filters out all peptides with invalid letters, i.e. containing extended AA codes.
   - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
   - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
 
@@ -126,7 +126,7 @@ The following intermediate results are generated and written to the output direc
   - `taxa_assemblies.tsv`: matches taxon id to assembly id and can be used as input if only taxon_id was chosen for previously (merge with abundances as required).
 
 - `logs/`
-  - `download_proteins.log`: Contains info about the Entrez download of proteins, chosen taxon_ids and specific assembly_ids
+  - `download_proteins.log`: Contains info about the Entrez download of proteins, chosen taxon_ids and specific assembly_ids. During the Entrez retrieval of assemblies, some assembly records may not contain nucleotide sequence links (i.e., missing or empty LinkSetDb/Link entries). These assemblies are skipped silently, and no fallback or alternative assembly for the same taxon is selected automatically. Users should check logs/download_proteins.log to verify whether assemblies were skipped due to missing information.
   </details>
 
 Proteins are downloaded for input type `taxa` from Entrez.
