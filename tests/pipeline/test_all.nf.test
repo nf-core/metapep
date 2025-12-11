@@ -5,7 +5,6 @@ nextflow_pipeline {
     profile "test_all"
     tag "pipeline"
     tag "WITH_NCBI"
-
     test("test all input path including protein downloads") {
 
         when {
