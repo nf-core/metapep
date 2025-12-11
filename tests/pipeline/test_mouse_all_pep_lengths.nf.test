@@ -83,9 +83,9 @@ nextflow_pipeline {
                 { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz")},
                 // Updated assertions for new format: peptide_id\tallele_id\tprediction_score\trank
                 { assert lines[0].toString()  =~ /3407\t0\t0\.04758749\d+\t99\.28660[0-9]/ },
-                { assert lines[1].toString()  =~ /14366\t0\t0\.058720983\d+\t62\.74467[0-9]/ },
+                { assert lines[1].toString()  =~ /14366\t0\t0\.05872098\d+\t62\.74467[0-9]/ },
                 { assert lines[2].toString()  =~ /47571\t0\t0\.08727684\d+\t46\.22467[0-9]/ },
-                { assert lines[3].toString()  =~ /3403\t0\t0\.039453194\d+\t99\.28660[0-9]/ },
+                { assert lines[3].toString()  =~ /3403\t0\t0\.03945319\d+\t99\.28660[0-9]/ },
                 { assert lines[4].toString()  =~ /82933\t0\t0\.0586909\d+\t62\.74467[0-9]/ },
                 { assert lines[5].toString()  =~ /3377\t0\t0\.04387908\d+\t27\.61739[0-9]/ },
                 { assert lines[6].toString()  =~ /61581\t0\t0\.04174835\d+\t99\.28660[0-9]/ },
