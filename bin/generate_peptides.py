@@ -51,7 +51,7 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-# Validate letters of input protein sequences to avoid unnoticed loss of input k-mers
+# Validate letters of input protein sequences to avoid unnoticed loss of input proteins
 def validate_letters(string, alphabet):
     for letter in string:
         if letter not in alphabet:
@@ -143,7 +143,7 @@ def main(args=None):
     valid_proteins = protid_protseq_protlen[protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list_extended)]
     filtered_count = len(valid_proteins)
     print(f"Info: {filtered_count} valid proteins.")
-    print(f"Info: {initial_count - filtered_count} proteins have invalid amino acids.")
+    print(f"Info: {initial_count - filtered_count} proteins have invalid amino acids based on extended AA codes.")
 
     # get protein lengths
     protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
@@ -163,7 +163,7 @@ def main(args=None):
     peptide_lengths_int = [int(p_len) for p_len in args.peptide_lengths]
 
     ####################
-    # generate peptides (Filter out all peptides with invalid letters)
+    # generate peptides (Filter out all peptides with invalid letters, i.e. containing extended AA codes)
     with gzip.open(args.peptides, "wt") as pep_handle:
         print_header = True
         id_counter = 0
