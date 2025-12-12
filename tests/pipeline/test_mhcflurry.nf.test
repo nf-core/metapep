@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_mhcflurry"
     tag "pipeline"
+    tag "WITHOUT_NCBI"
 
     test("test mhcflurry prediction") {
 

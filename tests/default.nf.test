@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test"
     tag "pipeline"
+    tag "WITHOUT_NCBI"
 
     test("test assembly and bin input") {
 

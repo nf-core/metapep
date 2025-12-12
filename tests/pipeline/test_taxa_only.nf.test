@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_taxa_only"
     tag "pipeline"
+    tag "WITH_NCBI"
 
     test("test taxa input") {
 

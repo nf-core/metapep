@@ -4,6 +4,7 @@ nextflow_pipeline {
     script "main.nf"
     profile "test_taxa_specific_assembly"
     tag "pipeline"
+    tag "WITH_NCBI"
 
     test("test taxa input with assembly id") {
 
