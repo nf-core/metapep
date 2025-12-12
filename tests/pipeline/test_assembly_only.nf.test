@@ -17,7 +17,7 @@ nextflow_pipeline {
 
         then {
             def lines = path("$outputDir/db_tables/predictions.tsv.gz").linesGzip[777..787]
-            assertAll( 
+            assertAll(
                 { assert snapshot(path("$outputDir/db_tables/alleles.tsv").readLines()[0..2]).match() },
                 { assert workflow.success },
                 { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
