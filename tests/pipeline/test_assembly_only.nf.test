@@ -39,7 +39,7 @@ nextflow_pipeline {
                 //{ assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip[777..877]).match("predictions.tsv.gz") },
                 { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz")},
                 // Updated assertions for new format: peptide_id\tallele_id\tprediction_score\trank
-                // Test for matching line content based on regex. 
+                // Test for matching line content based on regex.
                 { assert lines[0].toString() =~ /22572\t0\t0.2037315464675148\t0.977[0-9]/ },
                 { assert lines[1].toString() =~ /21682\t0\t0.2052795152594907\t0.303[0-9]/ },
                 { assert lines[2].toString() =~ /53180\t0\t0.2049733422686495\t0.689[0-9]/ },
