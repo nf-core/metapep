@@ -32,5 +32,4 @@ process MERGE_CHUNKS {
     pandas: \$(python -c "import pandas; print(pandas.__version__)")
 END_VERSIONS
     """
-
 }
