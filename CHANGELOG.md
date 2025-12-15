@@ -21,6 +21,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 ### `Dependencies`
 
 ### `Deprecated`
+
 - "test_mhcnuggets_1" is no longer used
 
 ## v1.0.0 - nf-core/metapep "Golden Megalodon" - [2024-11-22]
