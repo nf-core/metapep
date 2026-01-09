@@ -27,8 +27,7 @@
     "logs": {
         "content": [
             "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
-            "WARNING_unify_peptide_lengths.log:md5,c554eace446f21ad0c7990c92554edb0",
-            "download_proteins.log:md5,2df710939b3d7a2bbcb3c962817b8538"
+            "WARNING_unify_peptide_lengths.log:md5,c554eace446f21ad0c7990c92554edb0"
         ],
         "meta": {
             "nf-test": "0.9.2",
