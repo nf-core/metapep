@@ -78,7 +78,7 @@ AA_EXTENDED = [
 ]
 
 def validate_protein_sequence(sequence, protein_id):
-    
+
     invalid_positions = []
 
     for idx, letter in enumerate(sequence.upper(), start=1):
