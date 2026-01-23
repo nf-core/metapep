@@ -47,15 +47,12 @@ def parse_args(args=None):
     parser.add_argument(
         "-pll", "--peptide_lengths", required=True, metavar="LIST", nargs="*", help="Peptide lengths as list."
     )
+
     return parser.parse_args(args)
 
 
-# Validate letters of input protein sequences to avoid unnoticed loss of input k-mers
-def validate_letters(string, alphabet):
-    for letter in string:
-        if letter not in alphabet:
-            print("ERROR: invalid input letter ", letter, ". The supported alphabet is ", alphabet, ".")
-            sys.exit(1)
+def is_valid_sequence(sequence, alphabet):
+    return all(letter in alphabet for letter in sequence)
 
 
 def gen_peptides(prot_seq, k, prefix):
@@ -72,7 +69,6 @@ def main(args=None):
     # Generate peptides in chunks based on initial AA to reduce memory usage
     # valid amino acid codes:
     # 20 standard ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
-    # and extended codes ('B', 'J', 'O', 'U', 'X', 'Z')
     aa_list = [
         "A",
         "C",
@@ -94,25 +90,22 @@ def main(args=None):
         "V",
         "W",
         "Y",
-        "B",
-        "J",
-        "O",
-        "U",
-        "X",
-        "Z",
     ]
 
+
     protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
+
     # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
     protid_protseq_protlen["protein_id"] = pd.to_numeric(protid_protseq_protlen["protein_id"], downcast="unsigned")
-    # validate input AAs
+
+    # Convert protein sequences to uppercase for consistency
     protid_protseq_protlen["protein_sequence"] = protid_protseq_protlen["protein_sequence"].str.upper()
-    protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list)
+
+    print(f"Info: Loaded {len(protid_protseq_protlen)} proteins from input file.")
+
     # get protein lengths
     protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
-    protid_protseq_protlen["protein_length"] = pd.to_numeric(
-        protid_protseq_protlen["protein_length"], downcast="unsigned"
-    )
+    protid_protseq_protlen["protein_length"] = pd.to_numeric(protid_protseq_protlen["protein_length"], downcast="unsigned")
 
     print("\nInfo: protid_protseq_protlen", flush=True)
     protid_protseq_protlen.info(verbose=False, memory_usage=print_mem)
@@ -126,7 +119,7 @@ def main(args=None):
     peptide_lengths_int = [int(p_len) for p_len in args.peptide_lengths]
 
     ####################
-    # generate peptides
+    # generate peptides (Filter out all peptides containing extended AA codes)
     with gzip.open(args.peptides, "wt") as pep_handle:
         print_header = True
         id_counter = 0
@@ -146,6 +139,7 @@ def main(args=None):
                         (it.protein_id, pep)
                         for it in protid_protseq_protlen.itertuples()
                         for pep in gen_peptides(it.protein_sequence, k, prefix)
+                        if is_valid_sequence(pep, aa_list)
                     ],
                     columns=["protein_id", "peptide_sequence"],
                 )

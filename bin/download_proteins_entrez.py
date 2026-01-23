@@ -11,7 +11,9 @@ import time
 import xml.etree.ElementTree as ET
 from collections import defaultdict
 from urllib.error import HTTPError
+from http.client import IncompleteRead
 
+from Bio.Entrez.Parser import CorruptedXMLError
 from Bio import Entrez, SeqIO
 
 def parse_args(args=None):
@@ -63,6 +65,32 @@ def parse_args(args=None):
     )
     return parser.parse_args(args)
 
+# Extended amino acid alphabet for protein validation
+# 20 standard amino acids + 6 extended codes (B, J, O, U, X, Z)
+AA_EXTENDED = [
+    "A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y",
+    "B",  # Aspartic acid or Asparagine
+    "J",  # Leucine or Isoleucine
+    "O",  # Pyrrolysine
+    "U",  # Selenocysteine
+    "X",  # Unknown
+    "Z"   # Glutamic acid or Glutamine
+]
+
+def validate_protein_sequence(sequence, protein_id):
+
+    invalid_positions = []
+
+    for idx, letter in enumerate(sequence.upper(), start=1):
+        if letter not in AA_EXTENDED:
+            invalid_positions.append((idx, letter))
+
+    if len(invalid_positions) > 0:
+        positions_str = ", ".join(f"{pos}('{letter}')" for pos, letter in invalid_positions)
+        print(f"[WARNING] Protein {protein_id}: {len(invalid_positions)} invalid letters at positions: {positions_str}. Protein skipped.")
+        return False
+
+    return True
 
 # get assembly length ("total_length") from entrez
 def get_assembly_length(assemblyId):
@@ -86,6 +114,25 @@ def get_assembly_length(assemblyId):
 
     root = ET.fromstring("<root>" + str(assembly_stats["DocumentSummarySet"]["DocumentSummary"][0]["Meta"]) + "</root>")
     return int(root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text)
+
+# Helperfunction for robust NCBI access
+def entrez_read_with_retry(handle, max_attempts=5, delay=5):
+    for attempt in range(max_attempts):
+        try:
+            return Entrez.read(handle)
+        except (IncompleteRead, CorruptedXMLError) as e:
+            print(f"[WARNING] Entrez.read() failed (attempt {attempt+1}/{max_attempts}): {e}")
+            time.sleep(delay)
+        except HTTPError as err:
+            if 500 <= err.code <= 599:
+                print(f"[WARNING] HTTPError {err.code}, retrying ... (attempt {attempt+1}/{max_attempts})")
+                time.sleep(delay)
+            else:
+                raise
+        except Exception as e:
+            print(f"[ERROR] Unexpected error: {e}, retrying ... (attempt {attempt+1}/{max_attempts})")
+            time.sleep(delay)
+    sys.exit("Entrez.read() failed after multiple retries.")
 
 
 def main(args=None):
@@ -158,7 +205,7 @@ def main(args=None):
     for attempt in range(3):
         try:
             with Entrez.efetch(db="taxonomy", id=taxIds) as entrez_handle:
-                record = Entrez.read(entrez_handle)
+                record = entrez_read_with_retry(entrez_handle)
                 if len(record) == len(taxIds):
                     for taxid, rec in zip(taxIds, record):
                         rank = rec["Rank"]
@@ -194,7 +241,7 @@ def main(args=None):
             with Entrez.elink(
                 dbfrom="taxonomy", db="assembly", LinkName="taxonomy_assembly", id=taxIds_without_assemblyID
             ) as entrez_handle:
-                assembly_results = Entrez.read(entrez_handle)
+                assembly_results = entrez_read_with_retry(entrez_handle)
             time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
@@ -237,7 +284,7 @@ def main(args=None):
     ####################################################################################################
     # 3) (selected) assembly -> nucleotide sequences
 
-    assemblyIds = dict_taxId_assemblyId.values()
+    assemblyIds = list(dict_taxId_assemblyId.values())
     print("# selected assemblies: ", len(assemblyIds))
     print("for each assembly get nucloetide sequence IDs...")
 
@@ -247,7 +294,7 @@ def main(args=None):
             with Entrez.elink(
                 dbfrom="assembly", db="nuccore", LinkName="assembly_nuccore_refseq", id=assemblyIds
             ) as entrez_handle:
-                nucleotide_results = Entrez.read(entrez_handle)
+                nucleotide_results = entrez_read_with_retry(entrez_handle)
             time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
@@ -263,10 +310,32 @@ def main(args=None):
 
     ### for each assembly get list of sequence ids
     dict_seqId_assemblyIds = defaultdict(lambda: [])
+
+    assemblies_without_sequences = []
+
     for assembly_record in nucleotide_results:
+        # Check for existence of needed entrys
+        if "IdList" not in assembly_record or not assembly_record["IdList"]:
+            print("Warning: assembly_record missing 'IdList' or 'IdList' is empty, skipping:", assembly_record)
+            continue
         assemblyId = assembly_record["IdList"][0]
-        for record in assembly_record["LinkSetDb"][0]["Link"]:
-            dict_seqId_assemblyIds[record["Id"]].append(assemblyId)
+        if "LinkSetDb" not in assembly_record or not assembly_record["LinkSetDb"]:
+            print(f"Warning: assemblyId {assemblyId} has no 'LinkSetDb', skipping")
+            assemblies_without_sequences.append(assemblyId)
+            continue
+        link_db = assembly_record["LinkSetDb"][0]
+        if "Link" not in link_db or not link_db["Link"]:
+            print(f"Warning: assemblyId {assemblyId} has no 'Link' in 'LinkSetDb', skipping")
+            assemblies_without_sequences.append(assemblyId)
+            continue
+
+        for record in link_db["Link"]:
+            seq_id = record.get("Id")
+            if seq_id:  # Only add if seq_id exists
+                dict_seqId_assemblyIds[seq_id].append(assemblyId)
+
+    if assemblies_without_sequences:
+        print(f"Assemblies without nucleotide sequences: {assemblies_without_sequences}")
 
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
@@ -281,7 +350,7 @@ def main(args=None):
             with Entrez.elink(
                 dbfrom="nuccore", db="protein", LinkName="nuccore_protein", id=list(dict_seqId_assemblyIds.keys())
             ) as entrez_handle:
-                protein_results = Entrez.read(entrez_handle)
+                protein_results = entrez_read_with_retry(entrez_handle)
             time.sleep(1)  # avoid getting blocked by ncbi
             success = True
             break
@@ -331,8 +400,13 @@ def main(args=None):
     print(f"Generated {len(prot_id_chunks)} chunks and start processing:")
 
     protein_summaries = []
+    # Statistics for protein validation
+    total_proteins_downloaded = 0
+    valid_proteins_written = 0
+    invalid_proteins_skipped = 0
+
     # first retrieve mapping for protein UIDs and accession versions
-    for prot_id_chunk in prot_id_chunks:
+    for i, prot_id_chunk in enumerate(prot_id_chunks):
         print(f"Process chunk with {len(prot_id_chunk)} protein_ids:")
         success = False
         for attempt in range(3):
@@ -358,11 +432,19 @@ def main(args=None):
         success = False
         for attempt in range(3):
             try:
+                mode = "wt" if i == 0 else "at" # Set append mode for each following chunk to dont overwrite previous
                 with Entrez.efetch(db="protein", rettype="fasta", retmode="text", id=prot_id_chunk) as entrez_handle:
-                    with gzip.open(args.proteins, "wt") as out_handle:
-                        print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
+                    with gzip.open(args.proteins, mode) as out_handle:
+                        if i == 0:
+                            print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
                         for record in SeqIO.parse(entrez_handle, "fasta"):
-                            print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
+                            total_proteins_downloaded += 1
+                            # Validate protein sequence against extended amino acid alphabet
+                            if validate_protein_sequence(str(record.seq), record.id):
+                                print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
+                                valid_proteins_written += 1
+                            else:
+                                invalid_proteins_skipped += 1
                 time.sleep(1)  # avoid getting blocked by ncbi
                 success = True
                 break
@@ -377,6 +459,15 @@ def main(args=None):
             sys.exit("Entrez efetch download failed!")
 
         print(f"Downloaded a total of {len(protein_summaries)} protein summaries and their respective sequences.")
+
+    # Print validation summary
+    print("\nProtein Validation Summary:")
+    print(f"Total proteins downloaded from NCBI:     {total_proteins_downloaded}")
+    print(f"Valid proteins written to file:          {valid_proteins_written}")
+    print(f"Invalid proteins filtered out:           {invalid_proteins_skipped}")
+    if total_proteins_downloaded > 0:
+        validation_rate = (valid_proteins_written / total_proteins_downloaded) * 100
+        print(f"Validation success rate:                 {validation_rate:.2f}%")
 
     dict_protein_uid_acc = {}
     for protein_summary in protein_summaries:
