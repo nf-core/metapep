@@ -78,9 +78,9 @@ These contain the generated peptides, the corresponding epitope prediction score
   - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type, weights_path and microbiome_bare_id for all unique microbiomes (combination of path, type and weights).
   - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
   - `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
-  - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins.
+  - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins (that are validated based on the extended AA alphatbet).
   - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
-  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins. Because mhcflurry can just handle the basic AA alphabet (20AAs, no extended code), this file only contains peptides that match this restrictions. The generate_peptides.py filters out all peptides with invalid letters, i.e. containing extended AA codes.
+  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins. Because mhcflurry can just handle the basic AA alphabet (20AAs, no extended code), this file only contains peptides that match this restrictions. The generate_peptides.py filters out all peptides containing extended AA codes.
   - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
   - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
 

@@ -65,6 +65,33 @@ def parse_args(args=None):
     )
     return parser.parse_args(args)
 
+# Extended amino acid alphabet for protein validation
+# 20 standard amino acids + 6 extended codes (B, J, O, U, X, Z)
+AA_EXTENDED = [
+    "A", "C", "D", "E", "F", "G", "H", "I", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "V", "W", "Y",
+    "B",  # Aspartic acid or Asparagine
+    "J",  # Leucine or Isoleucine
+    "O",  # Pyrrolysine
+    "U",  # Selenocysteine
+    "X",  # Unknown
+    "Z"   # Glutamic acid or Glutamine
+]
+
+def validate_protein_sequence(sequence, protein_id):
+    
+    invalid_positions = []
+
+    for idx, letter in enumerate(sequence.upper(), start=1):
+        if letter not in AA_EXTENDED:
+            invalid_positions.append((idx, letter))
+
+    if len(invalid_positions) > 0:
+        positions_str = ", ".join(f"{pos}('{letter}')" for pos, letter in invalid_positions)
+        print(f"[WARNING] Protein {protein_id}: {len(invalid_positions)} invalid letters at positions: {positions_str}. Protein skipped.")
+        return False
+
+    return True
+
 # get assembly length ("total_length") from entrez
 def get_assembly_length(assemblyId):
     success = False
@@ -373,6 +400,11 @@ def main(args=None):
     print(f"Generated {len(prot_id_chunks)} chunks and start processing:")
 
     protein_summaries = []
+    # Statistics for protein validation
+    total_proteins_downloaded = 0
+    valid_proteins_written = 0
+    invalid_proteins_skipped = 0
+
     # first retrieve mapping for protein UIDs and accession versions
     for i, prot_id_chunk in enumerate(prot_id_chunks):
         print(f"Process chunk with {len(prot_id_chunk)} protein_ids:")
@@ -406,7 +438,13 @@ def main(args=None):
                         if i == 0:
                             print("protein_tmp_id", "protein_sequence", sep="\t", file=out_handle)
                         for record in SeqIO.parse(entrez_handle, "fasta"):
-                            print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
+                            total_proteins_downloaded += 1
+                            # Validate protein sequence against extended amino acid alphabet
+                            if validate_protein_sequence(str(record.seq), record.id):
+                                print(record.id, record.seq, sep="\t", file=out_handle, flush=True)
+                                valid_proteins_written += 1
+                            else:
+                                invalid_proteins_skipped += 1
                 time.sleep(1)  # avoid getting blocked by ncbi
                 success = True
                 break
@@ -421,6 +459,15 @@ def main(args=None):
             sys.exit("Entrez efetch download failed!")
 
         print(f"Downloaded a total of {len(protein_summaries)} protein summaries and their respective sequences.")
+
+    # Print validation summary
+    print("\nProtein Validation Summary:")
+    print(f"Total proteins downloaded from NCBI:     {total_proteins_downloaded}")
+    print(f"Valid proteins written to file:          {valid_proteins_written}")
+    print(f"Invalid proteins filtered out:           {invalid_proteins_skipped}")
+    if total_proteins_downloaded > 0:
+        validation_rate = (valid_proteins_written / total_proteins_downloaded) * 100
+        print(f"Validation success rate:                 {validation_rate:.2f}%")
 
     dict_protein_uid_acc = {}
     for protein_summary in protein_summaries:

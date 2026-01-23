@@ -51,15 +51,6 @@ def parse_args(args=None):
     return parser.parse_args(args)
 
 
-# Validate letters of input protein sequences to avoid unnoticed loss of input proteins
-def validate_letters(string, alphabet):
-    for letter in string:
-        if letter not in alphabet:
-            print("ERROR: invalid input letter ", letter, ". The supported alphabet is ", alphabet, ".")
-            # TODO: Maybe sys.exit(1)
-            return False
-    return True
-
 def is_valid_sequence(sequence, alphabet):
     return all(letter in alphabet for letter in sequence)
 
@@ -78,7 +69,6 @@ def main(args=None):
     # Generate peptides in chunks based on initial AA to reduce memory usage
     # valid amino acid codes:
     # 20 standard ('A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'Y')
-    # and extended codes ('B', 'J', 'O', 'U', 'X', 'Z')
     aa_list = [
         "A",
         "C",
@@ -102,54 +92,20 @@ def main(args=None):
         "Y",
     ]
 
-    aa_list_extended = [
-        "A",
-        "C",
-        "D",
-        "E",
-        "F",
-        "G",
-        "H",
-        "I",
-        "K",
-        "L",
-        "M",
-        "N",
-        "P",
-        "Q",
-        "R",
-        "S",
-        "T",
-        "V",
-        "W",
-        "Y",
-        "B",
-        "J",
-        "O",
-        "U",
-        "X",
-        "Z",
-    ]
-
 
     protid_protseq_protlen = pd.read_csv(args.proteins, sep="\t")
 
     # downcast df columns where possible (i.e. that will not be used as index for downstream joining)
     protid_protseq_protlen["protein_id"] = pd.to_numeric(protid_protseq_protlen["protein_id"], downcast="unsigned")
 
-    # validate input AAs (Print number of proteins with invalid letters for debug log)
+    # Convert protein sequences to uppercase for consistency
     protid_protseq_protlen["protein_sequence"] = protid_protseq_protlen["protein_sequence"].str.upper()
-    initial_count = len(protid_protseq_protlen)
-    valid_proteins = protid_protseq_protlen[protid_protseq_protlen["protein_sequence"].apply(validate_letters, alphabet=aa_list_extended)]
-    filtered_count = len(valid_proteins)
-    print(f"Info: {filtered_count} valid proteins.")
-    print(f"Info: {initial_count - filtered_count} proteins have invalid amino acids based on extended AA codes.")
+
+    print(f"Info: Loaded {len(protid_protseq_protlen)} proteins from input file.")
 
     # get protein lengths
     protid_protseq_protlen["protein_length"] = protid_protseq_protlen["protein_sequence"].apply(len)
-    protid_protseq_protlen["protein_length"] = pd.to_numeric(
-        protid_protseq_protlen["protein_length"], downcast="unsigned"
-    )
+    protid_protseq_protlen["protein_length"] = pd.to_numeric(protid_protseq_protlen["protein_length"], downcast="unsigned")
 
     print("\nInfo: protid_protseq_protlen", flush=True)
     protid_protseq_protlen.info(verbose=False, memory_usage=print_mem)
@@ -163,7 +119,7 @@ def main(args=None):
     peptide_lengths_int = [int(p_len) for p_len in args.peptide_lengths]
 
     ####################
-    # generate peptides (Filter out all peptides with invalid letters, i.e. containing extended AA codes)
+    # generate peptides (Filter out all peptides containing extended AA codes)
     with gzip.open(args.peptides, "wt") as pep_handle:
         print_header = True
         id_counter = 0
