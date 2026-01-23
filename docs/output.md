@@ -80,7 +80,7 @@ These contain the generated peptides, the corresponding epitope prediction score
   - `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
   - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins (that are validated based on the extended AA alphatbet).
   - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
-  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins. Because mhcflurry can just handle the basic AA alphabet (20AAs, no extended code), this file only contains peptides that match this restrictions. The generate_peptides.py filters out all peptides containing extended AA codes.
+  - `peptides.tsv.gz`: contains peptide_id and peptide_sequence for all unique peptides. Peptides are generated for downloaded or predicted proteins. Because mhcflurry can just handle the basic AA alphabet (20AAs, no extended code), this file only contains peptides that match this restrictions. The generate_peptides.py removes all peptides containing extended AA codes.
   - `proteins_peptides.tsv`: matches peptides to proteins. Contains protein_id, peptide_id and count (number of occurences of peptide in respective protein) for all unique protein - peptide combinations.
   - `predictions.tsv.gz`: contains peptide_id, prediction_score (epitope prediction score) and allele_id for all unique peptide - allele combinations.
 
