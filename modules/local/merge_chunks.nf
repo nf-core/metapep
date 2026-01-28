@@ -8,8 +8,8 @@ process MERGE_CHUNKS {
 
     input:
     path predictions
-    path peptide_map
-    path allele_map
+    path peptides
+    path alleles
 
     output:
     path "predictions.tsv.gz"     , emit: ch_predictions
@@ -23,8 +23,8 @@ process MERGE_CHUNKS {
         -i $predictions \\
         -o predictions.tsv.gz \\
         -c $chunk_size \\
-        --peptides "${peptide_map}" \\
-        --alleles "${allele_map}"
+        --peptides "$peptides" \\
+        --alleles "$alleles"
 
     cat <<-END_VERSIONS > versions.yml
 "${task.process}":

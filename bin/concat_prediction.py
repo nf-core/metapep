@@ -36,23 +36,21 @@ def parse_args(args=None):
         "--peptides",
         help="Path to peptides.tsv.gz for mapping sequence to peptide_id.",
         type=str,
-        required=False,
-        default=None,
+        required=True,
     )
 
     parser.add_argument(
         "--alleles",
         help="Path to alleles.tsv for mapping allele name to allele_id.",
         type=str,
-        required=False,
-        default=None,
+        required=True,
     )
 
     return parser.parse_args(args)
 
 
-def normalize_chunk(df, peptides=None, alleles=None, src_name=None):
-    """Normalize prediction chunk to target schema -> columns: peptide_id, allele_id, sequence, allele, rank, prediction_score, binder, predictor"""
+def normalize_chunk(df, peptides, alleles, src_name=None):
+    """Normalize prediction chunk to target schema -> columns: peptide_id, allele_id, rank, prediction_score"""
 
     # Check if already normalized (has both peptide_id and allele_id columns with values)
     already_normalized = "peptide_id" in df.columns and "allele_id" in df.columns
@@ -71,16 +69,12 @@ def normalize_chunk(df, peptides=None, alleles=None, src_name=None):
             print(f" File has ID columns but they are empty, will remap", flush=True)
 
     # Peptide ID mapping
-    if peptides is not None and ("peptide_id" not in df.columns or df["peptide_id"].isna().all()):
+    if "peptide_id" not in df.columns or df["peptide_id"].isna().all():
         if "sequence" not in df.columns:
             print(f"ERROR: 'sequence' column not found in {src_name}. Available columns: {df.columns.tolist()}", file=sys.stderr)
             sys.exit(1)
 
-        seq_col = "peptide_sequence" if "peptide_sequence" in peptides.columns else "sequence"
-
-        # Drop peptide_id if it exists but is empty
-        if "peptide_id" in df.columns:
-            df = df.drop(columns=["peptide_id"])
+        seq_col = "peptide_sequence"
 
         df = df.merge(
             peptides[["peptide_id", seq_col]],
@@ -90,41 +84,27 @@ def normalize_chunk(df, peptides=None, alleles=None, src_name=None):
         ).drop(columns=[seq_col], errors="ignore")
 
     # Allele ID mapping
-    if alleles is not None and ("allele_id" not in df.columns or df["allele_id"].isna().all()):
-        # Find the allele name column in the mapping file
-        allele_col_in_map = None
-        for possible_col in ["allele_name", "allele"]:
-            if possible_col in alleles.columns:
-                allele_col_in_map = possible_col
-                break
+    if "allele_id" not in df.columns or df["allele_id"].isna().all():
+        df_allele_col = "allele" if "allele" in df.columns else None
 
-        if allele_col_in_map is None:
-            print(f"WARNING: No allele name column found in alleles. Available columns: {alleles.columns.tolist()}", file=sys.stderr)
-        else:
-            df_allele_col = "allele" if "allele" in df.columns else None
+        if df_allele_col:
+            print(f" Mapping alleles", flush=True)
 
-            if df_allele_col:
-                print(f" Mapping alleles", file=sys.stderr)
+            # Direct mapping
+            df = df.merge(
+                alleles[["allele_id", "allele_name"]],
+                left_on=df_allele_col,
+                right_on="allele_name",
+                how="left"
+            ).drop(columns=["allele_name"], errors="ignore")
 
-                # Drop allele_id if it exists but is empty
-                if "allele_id" in df.columns:
-                    df = df.drop(columns=["allele_id"])
-
-                # Direct mapping
-                df = df.merge(
-                    alleles[["allele_id", allele_col_in_map]],
-                    left_on=df_allele_col,
-                    right_on=allele_col_in_map,
-                    how="left"
-                ).drop(columns=[allele_col_in_map], errors="ignore")
-
-                # Check for unmapped alleles
-                unmapped = df[df["allele_id"].isna() & df[df_allele_col].notna()]
-                if len(unmapped) > 0:
-                    unique_unmapped = unmapped[df_allele_col].unique()
-                    print(f"WARNING: {len(unmapped)} rows have unmapped alleles.", file=sys.stderr)
-                    print(f"  Unmapped alleles: {unique_unmapped.tolist()}", file=sys.stderr)
-                    print(f"  Available in mapping: {alleles[allele_col_in_map].unique().tolist()}", file=sys.stderr)
+            # Check for unmapped alleles
+            unmapped = df[df["allele_id"].isna() & df[df_allele_col].notna()]
+            if len(unmapped) > 0:
+                unique_unmapped = unmapped[df_allele_col].unique()
+                print(f"WARNING: {len(unmapped)} rows have unmapped alleles.", file=sys.stderr)
+                print(f"  Unmapped alleles: {unique_unmapped.tolist()}", file=sys.stderr)
+                print(f"  Available in mapping: {alleles['allele_name'].unique().tolist()}", file=sys.stderr)
 
     # Rename BA to prediction_score for downstream analysis
     if "BA" in df.columns:
@@ -145,13 +125,12 @@ def main(args=None):
     args = parse_args(args)
 
     # Load mapping files
-    peptides = pd.read_csv(args.peptides, sep="\t", compression="infer") if args.peptides else None
-    alleles = pd.read_csv(args.alleles, sep="\t", compression="infer") if args.alleles else None
+    peptides = pd.read_csv(args.peptides, sep="\t", compression="infer")
+    alleles = pd.read_csv(args.alleles, sep="\t", compression="infer")
 
-    if alleles is not None:
-        print(f"Loaded allele mapping with {len(alleles)} entries", flush=True)
-        allele_col = "allele_name" if "allele_name" in alleles.columns else "allele"
-        print(f"Alleles in mapping: {alleles[allele_col].unique().tolist()}", flush=True)
+    print(f"Loaded peptide mapping with {len(peptides)} entries", flush=True)
+    print(f"Loaded allele mapping with {len(alleles)} entries", flush=True)
+    print(f"Alleles in mapping: {alleles['allele_name'].unique().tolist()}", flush=True)
 
     first_header = pd.DataFrame().columns
     for i, filename in enumerate(args.input):
