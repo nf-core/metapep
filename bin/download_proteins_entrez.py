@@ -278,11 +278,11 @@ def main(args=None):
             dict_taxId_assemblyId[taxId] = ranked[0]
     # Merge input assembly ids with fetched assembly ids for taxids
     dict_taxId_assemblyId = dict_taxId_assemblyId | input_taxids_assemblyids
-    # taxa_assemblies.tsv is written after fallback resolution below
 
     ####################################################################################################
     # 3) (selected) assembly -> nucleotide sequences
 
+    # TODO: Why which assembly was put out until here?
     assemblyIds = list(dict_taxId_assemblyId.values())
     print("# selected assemblies: ", len(assemblyIds))
     print("for each assembly get nucloetide sequence IDs...")
@@ -312,6 +312,7 @@ def main(args=None):
 
     assemblies_without_sequences = []
 
+    # TODO: Add taxonIDs in prints
     for assembly_record in nucleotide_results:
         # Check for existence of needed entrys
         if "IdList" not in assembly_record or not assembly_record["IdList"]:
@@ -342,6 +343,7 @@ def main(args=None):
     taxa_no_valid_assembly = set()
     failed_assemblies = list(assemblies_without_sequences)
 
+    # TODO: Make print more intuitive
     while failed_assemblies:
         next_candidates = []
         for assemblyId in failed_assemblies:
@@ -413,10 +415,12 @@ def main(args=None):
         print(f"Taxa without valid assembly after fallback: {taxa_no_valid_assembly}")
 
     # write taxId - assemblyId out (after fallback resolution so file reflects final selection)
+    # TODO: Taxons without valid assembly shouldt not be in this list. taske the latest/really selected ones for downstream
     print("taxon_id", "assembly_id", sep="\t", file=args.taxa_assemblies, flush=True)
     for taxId in dict_taxId_assemblyId.keys():
         print(taxId, dict_taxId_assemblyId[taxId], sep="\t", file=args.taxa_assemblies, flush=True)
 
+    # TODO: Write based on how many assemblies they are created
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
 
