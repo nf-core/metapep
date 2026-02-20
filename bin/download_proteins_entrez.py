@@ -264,6 +264,7 @@ def main(args=None):
 
     print("get assembly lengths and select largest assembly for each taxon ...")
     dict_taxId_assemblyId = {}
+    dict_taxId_assemblyIds_ranked = {}  # all candidates per auto-selected taxon, sorted by length desc
     for tax_record in assembly_results:
         taxId = tax_record["IdList"][0]
         if len(tax_record["LinkSetDb"]) > 0:
@@ -271,15 +272,13 @@ def main(args=None):
             ids = [assembly_record["Id"] for assembly_record in tax_record["LinkSetDb"][0]["Link"]]
             # get corresponding lengths
             lengths = [get_assembly_length(id) for id in ids]
-            # get id for largest assembly
-            selected_assemblyId = ids[lengths.index(max(lengths))]
-            dict_taxId_assemblyId[taxId] = selected_assemblyId
+            # rank all assemblies by length (largest first) and keep full list for fallback
+            ranked = [id for _, id in sorted(zip(lengths, ids), reverse=True)]
+            dict_taxId_assemblyIds_ranked[taxId] = ranked
+            dict_taxId_assemblyId[taxId] = ranked[0]
     # Merge input assembly ids with fetched assembly ids for taxids
     dict_taxId_assemblyId = dict_taxId_assemblyId | input_taxids_assemblyids
-    # write taxId - assemblyId out
-    print("taxon_id", "assembly_id", sep="\t", file=args.taxa_assemblies, flush=True)
-    for taxId in dict_taxId_assemblyId.keys():
-        print(taxId, dict_taxId_assemblyId[taxId], sep="\t", file=args.taxa_assemblies, flush=True)
+    # taxa_assemblies.tsv is written after fallback resolution below
 
     ####################################################################################################
     # 3) (selected) assembly -> nucleotide sequences
@@ -336,6 +335,87 @@ def main(args=None):
 
     if assemblies_without_sequences:
         print(f"Assemblies without nucleotide sequences: {assemblies_without_sequences}")
+
+    # fallback: for assemblies without nucleotide sequences, try next ranked candidate
+    dict_assemblyId_taxId_tmp = {v: k for k, v in dict_taxId_assemblyId.items()}
+    dict_taxId_candidate_idx = {taxId: 0 for taxId in dict_taxId_assemblyIds_ranked}
+    taxa_no_valid_assembly = set()
+    failed_assemblies = list(assemblies_without_sequences)
+
+    while failed_assemblies:
+        next_candidates = []
+        for assemblyId in failed_assemblies:
+            taxId = dict_assemblyId_taxId_tmp.get(assemblyId)
+            if taxId is None:
+                continue
+            if taxId not in dict_taxId_assemblyIds_ranked:
+                print(f"Warning: pre-specified assemblyId {assemblyId} for taxon {taxId} has no nucleotide sequences, no fallback available")
+                taxa_no_valid_assembly.add(taxId)
+                continue
+            idx = dict_taxId_candidate_idx[taxId]
+            ranked = dict_taxId_assemblyIds_ranked[taxId]
+            if idx + 1 >= len(ranked):
+                print(f"Warning: all assemblies exhausted for taxon {taxId}, no proteins will be downloaded")
+                taxa_no_valid_assembly.add(taxId)
+            else:
+                dict_taxId_candidate_idx[taxId] = idx + 1
+                next_id = ranked[idx + 1]
+                dict_taxId_assemblyId[taxId] = next_id
+                del dict_assemblyId_taxId_tmp[ranked[idx]]
+                dict_assemblyId_taxId_tmp[next_id] = taxId
+                next_candidates.append(next_id)
+                print(f"taxon {taxId}: assembly {ranked[idx]} has no nucleotide sequences, trying fallback {next_id} ({idx+2}/{len(ranked)})")
+
+        if not next_candidates:
+            break
+
+        print("retry nucleotide sequences for fallback assemblies ...")
+        success = False
+        for attempt in range(3):
+            try:
+                with Entrez.elink(
+                    dbfrom="assembly", db="nuccore", LinkName="assembly_nuccore_refseq", id=next_candidates
+                ) as entrez_handle:
+                    fallback_results = entrez_read_with_retry(entrez_handle)
+                time.sleep(1)  # avoid getting blocked by ncbi
+                success = True
+                break
+            except HTTPError as err:
+                if 500 <= err.code <= 599:
+                    print("Received error from server %s" % err)
+                    print("Attempt %i of 3" % attempt)
+                    time.sleep(10)
+                else:
+                    raise
+        if not success:
+            sys.exit("Entrez elink download failed!")
+
+        failed_assemblies = []
+        for assembly_record in fallback_results:
+            if "IdList" not in assembly_record or not assembly_record["IdList"]:
+                continue
+            assemblyId = assembly_record["IdList"][0]
+            if "LinkSetDb" not in assembly_record or not assembly_record["LinkSetDb"]:
+                print(f"Warning: assemblyId {assemblyId} has no 'LinkSetDb', skipping")
+                failed_assemblies.append(assemblyId)
+                continue
+            link_db = assembly_record["LinkSetDb"][0]
+            if "Link" not in link_db or not link_db["Link"]:
+                print(f"Warning: assemblyId {assemblyId} has no 'Link' in 'LinkSetDb', skipping")
+                failed_assemblies.append(assemblyId)
+                continue
+            for record in link_db["Link"]:
+                seq_id = record.get("Id")
+                if seq_id:  # Only add if seq_id exists
+                    dict_seqId_assemblyIds[seq_id].append(assemblyId)
+
+    if taxa_no_valid_assembly:
+        print(f"Taxa without valid assembly after fallback: {taxa_no_valid_assembly}")
+
+    # write taxId - assemblyId out (after fallback resolution so file reflects final selection)
+    print("taxon_id", "assembly_id", sep="\t", file=args.taxa_assemblies, flush=True)
+    for taxId in dict_taxId_assemblyId.keys():
+        print(taxId, dict_taxId_assemblyId[taxId], sep="\t", file=args.taxa_assemblies, flush=True)
 
     print("# nucleotide sequences (unique): ", len(dict_seqId_assemblyIds.keys()))
     # -> # contigs
@@ -481,7 +561,7 @@ def main(args=None):
     print("protein_tmp_id", "entity_name", sep="\t", file=args.entities_proteins)
     dict_assemblyId_taxId = {v: k for k, v in dict_taxId_assemblyId.items()}
     if len(dict_assemblyId_taxId) != len(dict_taxId_assemblyId):
-        sys.exit("Creation of dict_assemblyId_taxId failed!")
+        print("Warning: dict_assemblyId_taxId is not a 1:1 mapping of dict_taxId_assemblyId (some assemblies may be shared between taxa)")
 
     for proteinId in proteinIds:
         accVersion = dict_protein_uid_acc[proteinId]
