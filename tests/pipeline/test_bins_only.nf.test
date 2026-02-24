@@ -32,7 +32,8 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/peptides.tsv.gz"),
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
                                 path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
-                { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz")},
+                // { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz")},
+                { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip[777..877]).match("predictions.tsv.gz") },
                 // Updated assertions for new format: peptide_id\tallele_id\tprediction_score\trank
                 { assert lines[0].toString() =~ /5156763\t0\.0\t0\.2050367048576128\t0\.619[0-9]?/ },
                 { assert lines[1].toString() =~ /2132753\t0\.0\t0\.2046712268349901\t0\.871[0-9]?/ },
