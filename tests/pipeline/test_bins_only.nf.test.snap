@@ -13,13 +13,22 @@
             "proteins_peptides.tsv:md5,81fb694d56ab70e88bcbac4d8e819c63",
             "peptides.tsv.gz:md5,268c3d4c4bedad1d80fa0d27393128d0",
             "proteins.tsv.gz:md5,1ae4d6be0e8bc4beb3d225aed3379d1c",
-            "predictions.tsv.gz:md5,16b74e54dba5bc87142e1697813cf451",
             "stats.tsv:md5,213ed5695969ccf25a54dab1ed032feb"
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.10.0"
         },
-        "timestamp": "2026-02-23T01:23:51.915801825"
+        "timestamp": "2026-02-24T19:33:43.58967346"
+    },
+    "predictions.tsv.gz": {
+        "content": [
+            10638927
+        ],
+        "meta": {
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
+        },
+        "timestamp": "2026-02-24T19:33:48.990447969"
     }
 }
