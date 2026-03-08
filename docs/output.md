@@ -123,7 +123,7 @@ The following intermediate results are generated and written to the output direc
   - `entities_proteins.entrez.tsv`: matches temporary protein id given by Entrez to entities. Contains protein_tmp_id and entity_name.
   - `microbiomes_entities.entrez.tsv`: matches entities (taxa) and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for unique microbiome - entity combinations downloaded from Entrez.
   - `proteins.entrez.tsv.gz`: contains protein_tmp_id (protein id given by Entrez) and protein_sequence for all proteins downloaded from Entrez.
-  - `taxa_assemblies.tsv`: matches taxon id to assembly id and can be used as input if only taxon_id was chosen for previously (merge with abundances as required).
+  - `taxa_assemblies.tsv`: matches taxon id to assembly id and can be used as input if only taxon_id was chosen for previously (merge with abundances as required). Just contains taxa with an valid assembly.
 
 - `logs/`
   - `download_proteins.log`: Contains info about the Entrez download of proteins, chosen taxon_ids and specific assembly_ids. During the Entrez retrieval of assemblies, some assembly records may not contain nucleotide sequence links (i.e., missing or empty LinkSetDb/Link entries). These assemblies are skipped silently, and no fallback or alternative assembly for the same taxon is selected automatically. Users should check logs/download_proteins.log to verify whether assemblies were skipped due to missing information.
