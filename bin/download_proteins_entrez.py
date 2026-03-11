@@ -224,8 +224,7 @@ def main(args=None):
     if not success:
         sys.exit("Entrez efetch download failed!")
 
-    print("Taxids succeeded strain level check.")
-    print()
+    print("Taxids succeeded strain level check.\n")
     ####################################################################################################
     # 1) for each taxId -> get all assembly IDs // skip if assemblyID is given in input
     print("# taxa: ", len(taxIds))
@@ -287,8 +286,7 @@ def main(args=None):
         source = "user-specified" if taxId in input_taxids_assemblyids else "auto-selected (largest)"
         print(f"  taxon {taxId} -> assembly {assemblyId} ({source})")
     assemblyIds = list(dict_taxId_assemblyId.values())
-    print("# selected assemblies: ", len(assemblyIds))
-    print()
+    print(f"# selected assemblies: {len(assemblyIds)}\n")
     print("for each assembly get nucloetide sequence IDs...")
 
     success = False
@@ -415,7 +413,6 @@ def main(args=None):
 
     if taxa_no_valid_assembly:
         print(f"  [WARNING] Summary: {len(taxa_no_valid_assembly)} taxa excluded from downstream (no valid assembly found): {sorted(taxa_no_valid_assembly)}")
-    print()
     # write taxId - assemblyId out (after fallback resolution, taxa without valid assembly excluded)
     print("taxon_id", "assembly_id", sep="\t", file=args.taxa_assemblies, flush=True)
     for taxId in dict_taxId_assemblyId.keys():
@@ -431,10 +428,9 @@ def main(args=None):
     for aId, count in assembly_seq_counts.items():
         taxId = dict_assemblyId_taxId_tmp.get(aId, "?")
         print(f"  taxon {taxId} / assembly {aId}: {count} sequences")
-    print()
     ####################################################################################################
     # 4) nucelotide sequences -> proteins
-    print("for each nucleotide sequence get proteins ...")
+    print("\nfor each nucleotide sequence get proteins ...")
 
     success = False
     for attempt in range(3):
@@ -471,8 +467,7 @@ def main(args=None):
 
     proteinIds = sorted(list(dict_proteinId_assemblyIds.keys()))
 
-    print("# proteins (unique): ", len(proteinIds))
-    print()
+    print(f"# proteins (unique): {len(proteinIds)}\n")
     ####################################################################################################
     # 5) download protein FASTAs, convert to TSV
     print("Downloading proteins ...")
