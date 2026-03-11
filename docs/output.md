@@ -126,7 +126,7 @@ The following intermediate results are generated and written to the output direc
   - `taxa_assemblies.tsv`: matches taxon id to assembly id and can be used as input if only taxon_id was chosen for previously (merge with abundances as required). Just contains taxa with an valid assembly.
 
 - `logs/`
-  - `download_proteins.log`: Contains info about the Entrez download of proteins, chosen taxon_ids and specific assembly_ids. During the Entrez retrieval of assemblies, some assembly records may not contain nucleotide sequence links (i.e., missing or empty LinkSetDb/Link entries). These assemblies are skipped silently, and no fallback or alternative assembly for the same taxon is selected automatically. Users should check logs/download_proteins.log to verify whether assemblies were skipped due to missing information.
+  - `download_proteins.log`: Contains info about the Entrez download of proteins, chosen taxon_ids and specific assembly_ids. During the Entrez retrieval of assemblies, some assembly records may not contain nucleotide sequence links (i.e., missing or empty LinkSetDb/Link entries). The pipeline automatically falls back to the next ranked candidate assembly and retries until a valid assembly is found or all candidates for that taxon are exhausted. Taxa for which no valid assembly was found are excluded from downstream analysis and reported as warnings. Users should check `logs/download_proteins.log` to verify which assemblies were selected and whether any taxa were excluded.
   </details>
 
 Proteins are downloaded for input type `taxa` from Entrez.
