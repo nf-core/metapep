@@ -412,7 +412,7 @@ def main(args=None):
                     dict_seqId_assemblyIds[seq_id].append(assemblyId)
 
     if taxa_no_valid_assembly:
-        print(f"  [WARNING] Summary: {len(taxa_no_valid_assembly)} taxa excluded from downstream (no valid assembly found): {sorted(taxa_no_valid_assembly)}")
+        print(f"  [WARNING] Summary: {len(taxa_no_valid_assembly)} taxa excluded from downstream (no valid assembly found): {sorted(taxa_no_valid_assembly)}. Check logs/download_proteins.log.")
     # write taxId - assemblyId out (after fallback resolution, taxa without valid assembly excluded)
     print("taxon_id", "assembly_id", sep="\t", file=args.taxa_assemblies, flush=True)
     for taxId in dict_taxId_assemblyId.keys():
