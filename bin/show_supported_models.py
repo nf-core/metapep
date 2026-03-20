@@ -32,7 +32,7 @@ supported = {
     },
     "mhcnuggetsii": {
         "version": "2.4.1",
-        "lengths": list(range(5, 31))  # 9-30
+        "lengths": list(range(5, 31))  # 5-30
     },
     "netmhcpan": {
         "version": "4.1",

@@ -34,7 +34,7 @@ include { PLOT_ENTITY_BINDING_RATIOS        } from '../modules/local/plot_entity
 
 include { PROCESS_INPUT                     } from '../subworkflows/local/process_input'
 
-// Subworkflow (implemented from nf-core/epitopeprediction)
+// Subworkflow (implemented from nf-core/epitopeprediction - release version 3.1.0)
 include { MHC_BINDING_PREDICTION            } from '../subworkflows/local/mhc_binding_prediction'
 
 /*
