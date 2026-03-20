@@ -124,7 +124,7 @@ The pipeline also aims to support the most recent NetMHCpan and NetMHCIIpan vers
 A typical command is as follows:
 
 ```bash
-nextflow run nf-core/epitopeprediction \
+nextflow run nf-core/metapep \
   -profile docker \
   --input ./samplesheet.csv \
   --outdir ./results \
