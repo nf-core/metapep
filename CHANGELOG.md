@@ -13,7 +13,7 @@ Initial release of nf-core/metapep, created with the [nf-core](https://nf-co.re/
 
 - Updated template to [nf-core/tools](https://nf-co.re/tools) version 3.3.2
 - Split profiles in nf-test.yml into standard profiles without download and entrez download profiles
--  [#170](https://github.com/nf-core/metapep/pull/170): Prediction method for all tests - except "test_mouse" and "test_mouse_all_pep_lengths" - is Mhcnuggets
+- [#170](https://github.com/nf-core/metapep/pull/170): Prediction method for all tests - except "test_mouse" and "test_mouse_all_pep_lengths" - is Mhcnuggets
 - Mhcflurry is used for "test_mouse" and "test_mouse_all_pep_lengths"
 
 ### `Fixed`
