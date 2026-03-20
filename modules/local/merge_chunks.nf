@@ -1,4 +1,4 @@
-process MERGE_PREDICTIONS {
+process MERGE_CHUNKS {
     label "process_long"
 
     conda "conda-forge::pandas=1.5.2"
@@ -6,26 +6,30 @@ process MERGE_PREDICTIONS {
         'https://depot.galaxyproject.org/singularity/pandas:1.5.2' :
         'biocontainers/pandas:1.5.2' }"
 
-
     input:
     path predictions
-    path prediction_warnings
+    path peptides
+    path alleles
 
     output:
     path "predictions.tsv.gz"     , emit: ch_predictions
-    path "prediction_warnings.log", emit: ch_prediction_warnings
     path "versions.yml"           , emit: versions
 
     script:
     def chunk_size = params.prediction_chunk_size * params.pred_chunk_size_scaling
     """
-    concat_tsv.py -i $predictions -c $chunk_size -o predictions.tsv.gz
-    sort -u $prediction_warnings > prediction_warnings.log
+
+    concat_prediction.py \\
+        -i $predictions \\
+        -o predictions.tsv.gz \\
+        -c $chunk_size \\
+        --peptides "$peptides" \\
+        --alleles "$alleles"
 
     cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-        pandas: \$(python -c "import pandas; print(pandas.__version__)")
-    END_VERSIONS
+"${task.process}":
+    python: \$(python --version | sed 's/Python //g')
+    pandas: \$(python -c "import pandas; print(pandas.__version__)")
+END_VERSIONS
     """
 }

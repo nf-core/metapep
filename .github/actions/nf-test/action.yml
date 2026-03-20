@@ -71,7 +71,6 @@ runs:
       run: |
         nextflow secrets set NCBI_EMAIL "$NCBI_EMAIL"
         nextflow secrets set NCBI_KEY "$NCBI_KEY"
-
     - name: Run nf-test
       shell: bash
       env:

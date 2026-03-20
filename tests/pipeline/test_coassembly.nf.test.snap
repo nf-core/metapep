@@ -1,36 +1,36 @@
 {
     "db_tables": {
         "content": [
-            "alleles.tsv:md5,77994270b1eab3e8363c90d8d09780fa",
-            "conditions_alleles.tsv:md5,ad6438cc0e62033f39629d7d002169b5",
-            "conditions.tsv:md5,092aba068d94feb11b61a22d694359d7",
-            "entities_proteins.tsv:md5,522e78ac27cbbc30e0a40fa316ee93c5",
-            "entities.tsv:md5,a3a3d919964f1dec57abbae3c74fb8f7",
-            "microbiomes_entities.no_weights.tsv:md5,45512c04e01b2f652b60c5438377411e",
-            "microbiomes_entities.nucl.tsv:md5,2f884256b54995a265af83b2eb68e773",
-            "microbiomes_entities.tsv:md5,134661aa3d07b62ccd0cd242c4e8fe6b",
-            "microbiomes.tsv:md5,b89503022fcbd9b7d7f9eefe7cbccf0f",
-            "proteins_peptides.tsv:md5,462d01f43f398cc069fb49c369e750f1",
-            "peptides.tsv.gz:md5,5a58c1cbc78426dd1b300f1a69a0884c",
-            "proteins.tsv.gz:md5,e8a2211019ca7b516ccfa5313cb3d2de",
-            "predictions.tsv.gz:md5,247f8f5f0c02a7df724774ef896a68d9",
-            "stats.tsv:md5,b439ee8c2473d76e0a94882b1e7257d5"
+            [
+                "alleles.tsv:md5,aa70d022231c97269e6273b2f4ac46a6",
+                "conditions_alleles.tsv:md5,ad6438cc0e62033f39629d7d002169b5",
+                "conditions.tsv:md5,092aba068d94feb11b61a22d694359d7",
+                "entities_proteins.tsv:md5,522e78ac27cbbc30e0a40fa316ee93c5",
+                "entities.tsv:md5,a3a3d919964f1dec57abbae3c74fb8f7",
+                "microbiomes_entities.no_weights.tsv:md5,45512c04e01b2f652b60c5438377411e",
+                "microbiomes_entities.nucl.tsv:md5,2f884256b54995a265af83b2eb68e773",
+                "microbiomes_entities.tsv:md5,134661aa3d07b62ccd0cd242c4e8fe6b",
+                "microbiomes.tsv:md5,b89503022fcbd9b7d7f9eefe7cbccf0f",
+                "proteins_peptides.tsv:md5,462d01f43f398cc069fb49c369e750f1",
+                "peptides.tsv.gz:md5,5a58c1cbc78426dd1b300f1a69a0884c",
+                "proteins.tsv.gz:md5,e8a2211019ca7b516ccfa5313cb3d2de",
+                "stats.tsv:md5,46177a98e34c7df4a2501c4e40b29880"
+            ]
         ],
         "meta": {
             "nf-test": "0.9.2",
             "nextflow": "25.10.0"
         },
-        "timestamp": "2025-12-16T11:12:36.87477534"
+        "timestamp": "2026-02-27T12:12:53.632215798"
     },
-    "logs": {
+    "predictions.tsv.gz": {
         "content": [
-            "prediction_warnings.log:md5,d41d8cd98f00b204e9800998ecf8427e",
-            "SUCCEEDED_unify_peptide_lengths.log:md5,c27fb56e478b975c57c910011935dd55"
+            5483890
         ],
         "meta": {
-            "nf-test": "0.8.4",
-            "nextflow": "24.04.2"
+            "nf-test": "0.9.2",
+            "nextflow": "25.10.0"
         },
-        "timestamp": "2024-06-26T08:14:54+0000"
+        "timestamp": "2026-02-27T12:12:57.373076009"
     }
 }

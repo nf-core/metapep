@@ -19,14 +19,53 @@ nextflow_pipeline {
                 { assert workflow.success },
                 { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
                 { assert new File("$outputDir/pipeline_info/nf_core_metapep_software_mqc_versions.yml").exists() },
-                { assert snapshot(path("$outputDir/model_information/mhcflurry.v1.4.3.supported_alleles.txt"),
-                                path("$outputDir/model_information/mhcflurry.v1.4.3.supported_lengths.txt"),
-                                path("$outputDir/model_information/mhcnuggets-class-1.v2.3.2.supported_alleles.txt"),
-                                path("$outputDir/model_information/mhcnuggets-class-1.v2.3.2.supported_lengths.txt"),
-                                path("$outputDir/model_information/mhcnuggets-class-2.v2.3.2.supported_alleles.txt"),
-                                path("$outputDir/model_information/mhcnuggets-class-2.v2.3.2.supported_lengths.txt"),
-                                path("$outputDir/model_information/syfpeithi.v1.0.supported_alleles.txt"),
-                                path("$outputDir/model_information/syfpeithi.v1.0.supported_lengths.txt")).match("model_information") }
+                { assert snapshot(path("$outputDir/model_information/mhcflurry.v2.1.4.supported_alleles.txt"),
+                                path("$outputDir/model_information/mhcflurry.v2.1.4.supported_lengths.txt"),
+                                path("$outputDir/model_information/mhcnuggets.v2.4.1.supported_alleles.txt"),
+                                path("$outputDir/model_information/mhcnuggets.v2.4.1.supported_lengths.txt"),
+                                path("$outputDir/model_information/mhcnuggetsii.v2.4.1.supported_alleles.txt"),
+                                path("$outputDir/model_information/mhcnuggetsii.v2.4.1.supported_lengths.txt"),
+                                path("$outputDir/model_information/netmhcpan.v4.1.supported_alleles.txt"),
+                                path("$outputDir/model_information/netmhcpan.v4.1.supported_lengths.txt"),
+                                path("$outputDir/model_information/netmhciipan.v4.3.supported_alleles.txt"),
+                                path("$outputDir/model_information/netmhciipan.v4.3.supported_lengths.txt")).match("model_information") }
+            )
+
+        }
+
+    }
+
+}
+nextflow_pipeline {
+
+    name "Test Workflow METAPEP main.nf - test_model_information"
+    script "main.nf"
+    profile "test_model_information"
+    tag "pipeline"
+
+    test("test model information subbranch") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            assertAll(
+                { assert workflow.success },
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_metapep_software_mqc_versions.yml").exists() },
+                { assert snapshot(path("$outputDir/model_information/mhcflurry.v2.1.4.supported_alleles.txt"),
+                                path("$outputDir/model_information/mhcflurry.v2.1.4.supported_lengths.txt"),
+                                path("$outputDir/model_information/mhcnuggets.v2.4.1.supported_alleles.txt"),
+                                path("$outputDir/model_information/mhcnuggets.v2.4.1.supported_lengths.txt"),
+                                path("$outputDir/model_information/mhcnuggetsii.v2.4.1.supported_alleles.txt"),
+                                path("$outputDir/model_information/mhcnuggetsii.v2.4.1.supported_lengths.txt"),
+                                path("$outputDir/model_information/netmhcpan.v4.1.supported_alleles.txt"),
+                                path("$outputDir/model_information/netmhcpan.v4.1.supported_lengths.txt"),
+                                path("$outputDir/model_information/netmhciipan.v4.3.supported_alleles.txt"),
+                                path("$outputDir/model_information/netmhciipan.v4.3.supported_lengths.txt")).match("model_information") }
             )
 
         }

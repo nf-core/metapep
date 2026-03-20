@@ -102,14 +102,20 @@ def write_chunks(data, alleles, max_task_per_allele, max_chunk_size, outdir, rem
     for start in range(0, len(data), max_chunk_size):
         # if not handling remainder: only write out full chunks here
         if remainder or len(data) - start >= max_chunk_size:
-            with open(os.path.join(outdir, "peptides_" + str(globals()["cur_chunk"]).rjust(5, "0") + ".txt"), "w") as outfile:
+            base = os.path.join(outdir, "peptides_" + str(globals()["cur_chunk"]).rjust(5, "0"))
+            with open(base + ".txt", "w") as outfile:
                 print(f"#{allele_name}#{data.iloc[0].allele_id}", file=outfile)
                 write = data.iloc[start : start + max_chunk_size]
                 written = written.append(data.index[start : start + max_chunk_size])
                 if pbar:
                     pbar.update(len(write))
                 write[["peptide_id", "peptide_sequence"]].to_csv(outfile, sep="\t", index=False)
-                globals()["cur_chunk"] = globals()["cur_chunk"] + 1
+
+            # also write out sequence only file
+            write[["peptide_sequence"]].rename(columns={"peptide_sequence": "sequence"}) \
+                                       .to_csv(base + ".tsv", sep="\t", index=False)
+
+            globals()["cur_chunk"] = globals()["cur_chunk"] + 1
 
     # delete chunks that were written out already
     data.drop(written, inplace=True)

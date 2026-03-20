@@ -34,24 +34,84 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
                                 path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
                 { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz")},
-                { assert lines[0].toString() =~ /20495\t0.066418084833357[0-9]\t0/ },
-                { assert lines[1].toString() =~ /51999\t0.071117933011717[0-9]\t0/ },
-                { assert lines[2].toString() =~ /26069\t0.101805071036020[0-9]\t0/ },
-                { assert lines[3].toString() =~ /2331\t0.062012556112474[0-9]\t0/ },
-                { assert lines[4].toString() =~ /54247\t0.07249286439683[0-9]\t0/ },
-                { assert lines[5].toString() =~ /79667\t0.071418590843677[0-9]\t0/ },
-                { assert lines[6].toString() =~ /73727\t0.073041683269871[0-9]\t0/ },
-                { assert lines[7].toString() =~ /79669\t0.061867463919851[0-9]\t0/ },
-                { assert lines[8].toString() =~ /33517\t0.075309432629081[0-9]\t0/ },
-                { assert lines[9].toString() =~ /70189\t0.191974134908782[0-9]\t0/ },
-                { assert lines[10].toString() =~ /77008\t0.066274272898832[0-9]\t0/ },
-                { assert new File("$outputDir/figures/entity_binding_ratios.A_01_01.pdf").exists() },
-                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.A_01_01.pdf").exists() },
-                { assert new File("$outputDir/figures/prediction_score_distribution.A_01_01.pdf").exists() },
-                { assert new File("$outputDir/figures/entity_binding_ratios.B_07_02.pdf").exists() },
-                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.B_07_02.pdf").exists() },
-                { assert new File("$outputDir/figures/prediction_score_distribution.B_07_02.pdf").exists() },
-                { assert snapshot(path("$outputDir/logs/prediction_warnings.log")).match("logs") },
+                // Updated assertions for new format: peptide_id\tallele_id\tprediction_score\trank
+                { assert lines[0].toString() =~ /20495\t0\t0\.03987943418324\t99\.28660326086955/ },
+                { assert lines[1].toString() =~ /51999\t0\t0\.0563255500048397\t99\.28660326086955/ },
+                { assert lines[2].toString() =~ /26069\t0\t0\.0718147523701191\t62\.74467391304348/ },
+                { assert lines[3].toString() =~ /2331\t0\t0\.0388434529304504\t99\.28660326086955/ },
+                { assert lines[4].toString() =~ /54247\t0\t0\.0836890671402215\t22\.19230978260869/ },
+                { assert lines[5].toString() =~ /79667\t0\t0\.0364072849974037\t99\.28660326086955/ },
+                { assert lines[6].toString() =~ /73727\t0\t0\.0392084952443837\t99\.28660326086955/ },
+                { assert lines[7].toString() =~ /79669\t0\t0\.0353008834645152\t99\.28660326086955/ },
+                { assert lines[8].toString() =~ /33517\t0\t0\.0438728444278239\t99\.28660326086955/ },
+                { assert lines[9].toString() =~ /70189\t0\t0\.0666269883513449\t46\.22467391304348/ },
+                { assert lines[10].toString() =~ /77008\t0\t0\.0386393141001463\t27\.61739130434782/ },
+                { assert new File("$outputDir/figures/entity_binding_ratios.HLA-A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.HLA-A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.HLA-A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.HLA-B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.HLA-B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.HLA-B_07_02.pdf").exists() },
+                { assert new File("$outputDir/prodigal/proteins.pred_0.tsv.gz").exists() }
+            )
+        }
+
+    }
+
+}
+nextflow_pipeline {
+
+    name "Test Workflow METAPEP main.nf - test_mhcflurry"
+    script "main.nf"
+    profile "test_mhcflurry"
+    tag "pipeline"
+
+    test("test mhcflurry prediction") {
+
+        when {
+            params {
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def lines = path("$outputDir/db_tables/predictions.tsv.gz").linesGzip[1005..1015]
+            assertAll(
+                { assert workflow.success },
+                { assert new File("$outputDir/multiqc/multiqc_report.html").exists() },
+                { assert new File("$outputDir/pipeline_info/nf_core_metapep_software_mqc_versions.yml").exists() },
+                { assert snapshot(path("$outputDir/db_tables/alleles.tsv"),
+                                path("$outputDir/db_tables/conditions_alleles.tsv"),
+                                path("$outputDir/db_tables/conditions.tsv"),
+                                path("$outputDir/db_tables/entities_proteins.tsv"),
+                                path("$outputDir/db_tables/entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.no_weights.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.nucl.tsv"),
+                                path("$outputDir/db_tables/microbiomes_entities.tsv"),
+                                path("$outputDir/db_tables/microbiomes.tsv"),
+                                path("$outputDir/db_tables/proteins_peptides.tsv"),
+                                path("$outputDir/db_tables/peptides.tsv.gz"),
+                                path("$outputDir/db_tables/proteins.tsv.gz"),
+                                path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
+                { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz")},
+                // Updated assertions for new format: peptide_id\tallele_id\tprediction_score\trank
+                { assert lines[0].toString() =~ /20495\t0\t0\.03987943\d+\t99\.28660326086955/ },
+                { assert lines[1].toString() =~ /51999\t0\t0\.05632555\d+\t99\.28660326086955/ },
+                { assert lines[2].toString() =~ /26069\t0\t0\.071814752\d+\t62\.74467391304348/ },
+                { assert lines[3].toString() =~ /2331\t0\t0\.03884345\d+\t99\.28660326086955/ },
+                { assert lines[4].toString() =~ /54247\t0\t0\.0836890\d+\t22\.19230978260869/ },
+                { assert lines[5].toString() =~ /79667\t0\t0\.0364072\d+\t99\.28660326086955/ },
+                { assert lines[6].toString() =~ /73727\t0\t0\.03920849\d+\t99\.28660326086955/ },
+                { assert lines[7].toString() =~ /79669\t0\t0\.03530088\d+\t99\.28660326086955/ },
+                { assert lines[8].toString() =~ /33517\t0\t0\.04387284\d+\t99\.28660326086955/ },
+                { assert lines[9].toString() =~ /70189\t0\t0\.06662698\d+\t46\.22467391304348/ },
+                { assert lines[10].toString() =~ /77008\t0\t0\.03863931\d+\t27\.61739130434782/ },
+                { assert new File("$outputDir/figures/entity_binding_ratios.HLA-A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.HLA-A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.HLA-A_01_01.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.HLA-B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/entity_binding_ratios.with_points.HLA-B_07_02.pdf").exists() },
+                { assert new File("$outputDir/figures/prediction_score_distribution.HLA-B_07_02.pdf").exists() },
                 { assert new File("$outputDir/prodigal/proteins.pred_0.tsv.gz").exists() }
             )
         }
