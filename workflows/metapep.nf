@@ -84,6 +84,14 @@ workflow METAPEP {
         )
         ch_versions = ch_versions.mix(DOWNLOAD_PROTEINS.out.versions)
 
+        DOWNLOAD_PROTEINS.out.log.subscribe { log_file ->
+            log_file.eachLine { line ->
+                if (line.contains("[WARNING] Summary:")) {
+                    log.warn(line.trim())
+                }
+            }
+        }
+
         //
         // MODULE: Predict proteins from nucleotides
         //
