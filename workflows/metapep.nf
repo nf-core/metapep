@@ -19,6 +19,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_meta
 include { SHOW_SUPPORTED_MODELS             } from '../modules/local/show_supported_models'
 include { DOWNLOAD_PROTEINS                 } from '../modules/local/download_proteins'
 include { CREATE_PROTEIN_TSV                } from '../modules/local/create_protein_tsv'
+include { CREATE_PROTEIN_TSV as CREATE_PROTEIN_TSV_DIRECT } from '../modules/local/create_protein_tsv'
 include { ASSIGN_NUCL_ENTITY_WEIGHTS        } from '../modules/local/assign_nucl_entity_weights'
 include { GENERATE_PROTEIN_AND_ENTITY_IDS   } from '../modules/local/generate_protein_and_entity_ids'
 include { FINALIZE_MICROBIOME_ENTITIES      } from '../modules/local/finalize_microbiome_entities'
@@ -107,6 +108,14 @@ workflow METAPEP {
         ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV.out.versions)
 
         //
+        // MODULE: Convert direct protein FASTA input to TSV (no Prodigal step)
+        //
+        CREATE_PROTEIN_TSV_DIRECT (
+            PROCESS_INPUT.out.ch_proteins_input
+        )
+        ch_versions = ch_versions.mix(CREATE_PROTEIN_TSV_DIRECT.out.versions)
+
+        //
         // MODULE: Assign entity weights (Nucleotide Input)
         //
         ASSIGN_NUCL_ENTITY_WEIGHTS (
@@ -120,7 +129,9 @@ workflow METAPEP {
         //
         // concat files and assign new, unique ids for all proteins (from different sources)
         // Sort predicted protein input for GENERATE_PROTEIN_AND_ENTITY_IDS to ensure deterministic id assignments
-        ch_pred_proteins_sorted = CREATE_PROTEIN_TSV.out.ch_pred_proteins.toSortedList( { a, b -> a[0].id <=> b[0].id } ).flatMap()
+        ch_pred_proteins_sorted = CREATE_PROTEIN_TSV.out.ch_pred_proteins
+            .mix(CREATE_PROTEIN_TSV_DIRECT.out.ch_pred_proteins)
+            .toSortedList( { a, b -> a[0].id <=> b[0].id } ).flatMap()
 
         GENERATE_PROTEIN_AND_ENTITY_IDS (
             PROCESS_INPUT.out.ch_microbiomes,

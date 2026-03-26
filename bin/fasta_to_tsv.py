@@ -16,7 +16,8 @@ parser.add_argument(
 args = parser.parse_args()
 
 records_out = []
-with gzip.open(args.input, "rt") as handle:
+opener = gzip.open if str(args.input).endswith('.gz') else open
+with opener(args.input, "rt") as handle:
     for record in SeqIO.parse(handle, "fasta"):
         if args.remove_asterisk and record.seq[-1] == "*":
             records_out.append([str(record.id),"\t",str(record.seq[:-1]),"\n"])

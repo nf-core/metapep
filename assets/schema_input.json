@@ -14,8 +14,8 @@
             },
             "type": {
                 "type": "string",
-                "enum": ["bins", "assembly", "taxa"],
-                "errorMessage": "Microbiome type must be provided and needs to be either 'bins', 'assembly' or 'taxa'"
+                "enum": ["bins", "assembly", "taxa", "proteins"],
+                "errorMessage": "Microbiome type must be provided and needs to be either 'bins', 'assembly', 'taxa' or 'proteins'"
             },
             "microbiome_path": {
                 "type": "string",
