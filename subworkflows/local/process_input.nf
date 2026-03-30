@@ -54,12 +54,12 @@ workflow PROCESS_INPUT {
         ch_taxa_input.dump(tag:"taxa")
 
         // PROTEINS — direct protein FASTA input, no Prodigal step needed
-        // Treated like a single bin: bin_basename = FASTA filename (without extension) = entity name
+        // Each protein sequence in the FASTA becomes its own entity (handled by __ISPROTEINS__ sentinel)
         ch_microbiomes_branch.proteins
             .map { row ->
                     def meta = [:]
                     meta.id = row.microbiome_bare_id
-                    meta.bin_basename = row.microbiome_path.name - fasta_suffix
+                    meta.bin_basename = "__ISPROTEINS__"
                     return [ meta, row.microbiome_path ]
                 }
             .set { ch_proteins_input }
