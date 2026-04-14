@@ -1,2 +1,0 @@
-condition,type,microbiome_path,alleles,weights_path
-mock_proteins,proteins,/mnt/lustre/groups/nahnsen/nahkr293/metapep/_to_move/mock_proteins.fasta,A*01:01,
