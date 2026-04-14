@@ -42,7 +42,7 @@ The output data tables can additionally be used by the user for further custom a
 - Gray: associations (n to m relations)
 - Purple: Epitope prediction output
 
-Entities correspond to taxa, MAGs/bins, assembly contigs or protein FASTAs (for input type proteins).
+Entities correspond to taxa, MAGs/bins, assembly contigs or protein sequences.
 
 ### Supported Allele Models
 
