@@ -35,7 +35,6 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/entities.tsv"),
                                 path("$outputDir/db_tables/microbiomes_entities.no_weights.tsv"),
                                 path("$outputDir/db_tables/microbiomes_entities.tsv"),
-                                path("$outputDir/db_tables/microbiomes.tsv"),
                                 path("$outputDir/db_tables/proteins_peptides.tsv"),
                                 path("$outputDir/db_tables/peptides.tsv.gz"),
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
