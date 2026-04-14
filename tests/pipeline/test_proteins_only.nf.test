@@ -11,6 +11,15 @@ nextflow_pipeline {
         when {
             params {
                 outdir = "$outputDir"
+                // Local workaround: write samplesheet with absolute path so nf-schema can find the file
+                // regardless of the temp CWD that nf-test uses.
+                // TODO: remove once test data is uploaded to nf-core/test-datasets (metapep branch)
+                //       and replace with: input = params.pipelines_testdata_base_path + 'metapep/samplesheets/v1.0/samplesheet.proteins_only.csv'
+                input = {
+                    def ss = new File("${projectDir}/_to_move/samplesheet.proteins_only.local.csv")
+                    ss.text = "condition,type,microbiome_path,alleles,weights_path\nmock_proteins,proteins,${projectDir}/_to_move/mock_proteins.fasta,A*01:01,\n"
+                    ss.absolutePath
+                }()
             }
         }
 
@@ -32,8 +41,8 @@ nextflow_pipeline {
                                 path("$outputDir/db_tables/proteins.tsv.gz"),
                                 path("$outputDir/db_tables/stats.tsv")).match("db_tables") },
                 { assert snapshot(path("$outputDir/db_tables/predictions.tsv.gz").linesGzip.size()).match("predictions.tsv.gz") },
-                // Verify entity name is derived from the FASTA filename (mock_proteins)
-                { assert path("$outputDir/db_tables/entities.tsv").readLines().any { it.contains("mock_proteins") } },
+                // Verify entity names are derived from FASTA record IDs (one entity per protein sequence)
+                { assert path("$outputDir/db_tables/entities.tsv").readLines().any { it.contains("mock_prot_") } },
                 { assert new File("$outputDir/figures/entity_binding_ratios.HLA-A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/entity_binding_ratios.with_points.HLA-A_01_01.pdf").exists() },
                 { assert new File("$outputDir/figures/prediction_score_distribution.HLA-A_01_01.pdf").exists() }

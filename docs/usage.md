@@ -63,9 +63,9 @@ If taxids without assembly ids were chosen as input, the pipeline results can be
 
 ### Input type proteins
 
-The input type proteins allows the user to directly provide a protein FASTA file per condition, skipping the protein prediction step. Each FASTA file is treated as a single entity, named after the file (without extension).
+The input type proteins allows the user to directly provide a protein FASTA file per condition, skipping the protein prediction step. Each protein sequence in the FASTA file becomes its own entity, named after the FASTA record ID.
 
-The microbiome path corresponds to a protein FASTA file (`.fa`, `.fa.gz`, `.fasta`, `.fasta.gz`). All protein sequences in the file are attributed to this one entity.
+The microbiome path corresponds to a protein FASTA file (`.fa`, `.fa.gz`, `.fasta`, `.fasta.gz`).
 
 ## Running the pipeline
 
