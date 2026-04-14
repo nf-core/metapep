@@ -1,0 +1,2 @@
+condition,type,microbiome_path,alleles,weights_path
+mock_proteins,proteins,_to_move/mock_proteins.fasta,A*01:01,
