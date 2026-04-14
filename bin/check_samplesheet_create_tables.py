@@ -112,14 +112,6 @@ def process_samplesheet(args):
 
     # check if microbiome_path file extensions are valid
     for type, fname in zip(input_table["type"], input_table["microbiome_path"]):
-        if type not in ["taxa", "assembly", "bins", "proteins"]:
-            print_error(
-                "Invalid type '"
-                + type
-                + "' specified in "
-                + args.input.name
-                + ". Valid types are 'taxa', 'bins', 'assembly' and 'proteins'."
-            )
         if type == "taxa" and not fname.lower().endswith(".tsv"):
             print_error(
                 "In "
