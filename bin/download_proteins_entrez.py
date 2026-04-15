@@ -112,7 +112,11 @@ def get_assembly_length(assemblyId):
     if not success:
         sys.exit("Entrez efetch download failed!")
 
-    root = ET.fromstring("<root>" + str(assembly_stats["DocumentSummarySet"]["DocumentSummary"][0]["Meta"]) + "</root>")
+    doc_summaries = assembly_stats["DocumentSummarySet"]["DocumentSummary"]
+    if len(doc_summaries) == 0:
+        print(f"[WARNING] Assembly {assemblyId}: no DocumentSummary returned by NCBI (suppressed/withdrawn?). Skipping.")
+        return None
+    root = ET.fromstring("<root>" + str(doc_summaries[0]["Meta"]) + "</root>")
     return int(root.find("./Stats/Stat[@category='total_length'][@sequence_tag='all']").text)
 
 # Helperfunction for robust NCBI access
@@ -269,8 +273,13 @@ def main(args=None):
         if len(tax_record["LinkSetDb"]) > 0:
             # get all assembly ids
             ids = [assembly_record["Id"] for assembly_record in tax_record["LinkSetDb"][0]["Link"]]
-            # get corresponding lengths
-            lengths = [get_assembly_length(id) for id in ids]
+            # get corresponding lengths, filtering out suppressed/withdrawn assemblies (None)
+            length_pairs = [(get_assembly_length(id), id) for id in ids]
+            length_pairs = [(l, id) for l, id in length_pairs if l is not None]
+            if not length_pairs:
+                print(f"[WARNING] Taxon {taxId}: all linked assemblies are suppressed/withdrawn. Skipping taxon.")
+                continue
+            lengths, ids = zip(*length_pairs)
             # rank all assemblies by length (largest first) and keep full list for fallback
             ranked = [id for _, id in sorted(zip(lengths, ids), reverse=True)]
             dict_taxId_assemblyIds_ranked[taxId] = ranked

@@ -15,6 +15,7 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 - [Process input](#metapep-data-model) - Create tables according to the relational data model and checks validity of the samplesheet.
 - [Download proteins](#download-proteins) - Download proteins for input type taxa from Entrez.
 - [Prodigal](#prodigal) - Predict proteins for input type assembly or bins.
+- [Convert proteins](#convert-proteins) - Convert protein FASTA to internal format for input type proteins (no gene prediction needed).
 - [Generate peptides](#main-pipeline-output) - Generate peptides from proteins.
 - [Report stats](#main-pipeline-output) - Report some statistics on proteins and peptides.
 - [Epitope prediction](#main-pipeline-output) - Predict epitopes for given alleles and peptides.
@@ -41,7 +42,7 @@ The output data tables can additionally be used by the user for further custom a
 - Gray: associations (n to m relations)
 - Purple: Epitope prediction output
 
-Entities correspond to taxa, MAGs/bins, assembly contigs or proteins (if provided as input).
+Entities correspond to taxa, MAGs/bins, assembly contigs or protein sequences.
 
 ### Supported Allele Models
 
@@ -78,7 +79,7 @@ These contain the generated peptides, the corresponding epitope prediction score
   - `alleles.tsv`: contains allele_id and allele_name for all unique alleles used for epitope prediction.
   - `conditions_alleles.tsv`: matches alleles to conditions. Contains condition_id and allele_id for all unique condition - allele combinations.
   - `microbiomes.tsv`: contains microbiome_id, microbiome_path, microbiome_type, weights_path and microbiome_bare_id for all unique microbiomes (combination of path, type and weights).
-  - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins) or a taxon (for input type taxa).
+  - `entities.tsv`: contains entity_id and entity_name for all unique entities. An entity can be a contig (for input type assembly and bins), a taxon (for input type taxa) or a protein FASTA file (for input type proteins).
   - `microbiomes_entities.tsv`: matches entities and their weights to microbiomes. Contains microbiome_id, entity_id and entity_weight for all unique microbiome - entity combinations.
   - `proteins.tsv.gz`: contains protein_id (new unique id), protein_orig_id and protein_sequence for all unique proteins (that are validated based on the extended AA alphatbet).
   - `entities_proteins.tsv`: matches proteins to entities. Contains entity_id and protein_id for all unique entity - protein combinations.
@@ -151,6 +152,10 @@ Proteins are downloaded for input type `taxa` from Entrez.
 
 Proteins are predicted for input type assembly and bins.
 
+### Convert proteins
+
+Proteins are used directly for input type `proteins`. No intermediate output files are generated to the output directory — the conversion to internal TSV format is a pipeline-internal step.
+
 ## Downstream visualisations
 
 The pipeline generates some basic visualisations comparing the results for the different conditions.
@@ -160,7 +165,7 @@ The pipeline generates some basic visualisations comparing the results for the d
 
 - `figures/`
   - `entity_binding_ratios.*.pdf`: plots the entity binding ratio per allele. Contains box plots showing the binding ratios per condition and entity. The binding rate is calculated per entity as number of binders divided by total number of peptides. Multiple occurrences of peptides within one protein are not counted.
-  - `entity_binding_ratios.with_points.*.pdf`: plots the entity binding ratio per allele. Contains box plots showing the binding ratios per condition and entity. Each point corresponds to one entity (contig, MAG or taxon, depending on input type).
+  - `entity_binding_ratios.with_points.*.pdf`: plots the entity binding ratio per allele. Contains box plots showing the binding ratios per condition and entity. Each point corresponds to one entity (contig, MAG, taxon or protein FASTA, depending on input type).
   - `entity_binding_ratios/`
     - `entity_binding_ratios.allele_*.tsv`: data tables for plotting the entity binding ratios per allele. Contain condition_name, binding_rate and entity_weight.
   - `prediction_score_distribution.*.pdf`: plots the score distribution per allele. Contains weighted violin plots showing the distribution of prediction scores per condition.

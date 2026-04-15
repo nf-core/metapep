@@ -26,15 +26,16 @@ cond_1,taxa,testdata/taxids.txt,A*01:01,
 cond_2,taxa,testdata/taxids.tiny.txt,A*01:01 B*07:02,
 cond_3,taxa,testdata/taxids.tiny.txt,A*01:01,
 cond_4,assembly,testdata/test_minigut.contigs.fa.gz,A*01:01,testdata/test_minigut.contig_weights.tsv
+cond_5,proteins,testdata/mock_proteins.fasta,A*01:01,
 ```
 
-| Column            | Description                                                                                                                                                                                                |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `condition`       | The condition name for this entry. Conditions have to be unique and describe a combination of a microbiome, alleles and weights.                                                                           |
-| `type`            | Input type, can be one of "assembly", "bins" or "taxa".                                                                                                                                                    |
-| `microbiome_path` | Full path to microbiome file, the format of which can vary with type: fasta, folder, compressed folder or tsv file for taxon ids (taxon_id ["\\t" assembly_ids "\\t" abundance]).                          |
-| `alleles`         | List of alleles to predict epitopes for.                                                                                                                                                                   |
-| `weights_path`    | Full path to a tab-separated file contataining weights. Currently allowed are contig weights for input types assembly and bins. Please use "contig_name" or "bin_basename" and "weight" as column headers. |
+| Column            | Description                                                                                                                                                                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `condition`       | The condition name for this entry. Conditions have to be unique and describe a combination of a microbiome, alleles and weights.                                                                                                         |
+| `type`            | Input type, can be one of "assembly", "bins", "taxa" or "proteins".                                                                                                                                                                      |
+| `microbiome_path` | Full path to microbiome file, the format of which can vary with type: nucleotide fasta or folder/compressed folder (assembly/bins), protein fasta (proteins), or tsv file for taxon ids (taxon_id ["\\t" assembly_ids "\\t" abundance]). |
+| `alleles`         | List of alleles to predict epitopes for.                                                                                                                                                                                                 |
+| `weights_path`    | Full path to a tab-separated file contataining weights. Currently allowed are contig weights for input types assembly and bins. Please use "contig_name" or "bin_basename" and "weight" as column headers.                               |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
@@ -59,6 +60,12 @@ If taxids without assembly ids were chosen as input, the pipeline results can be
 | `taxon_id`    | Chosen Taxids for the microbiome condition (Must be on strain level). |
 | `assembly_id` | Specific assembly id for a strain level taxid.                        |
 | `abundance`   | Abundance of strain level taxid and/or assembly id.                   |
+
+### Input type proteins
+
+The input type proteins allows the user to directly provide a protein FASTA file per condition, skipping the protein prediction step. Each protein sequence in the FASTA file becomes its own entity, named after the FASTA record ID.
+
+The microbiome path corresponds to a protein FASTA file (`.fa`, `.fa.gz`, `.fasta`, `.fasta.gz`).
 
 ## Running the pipeline
 

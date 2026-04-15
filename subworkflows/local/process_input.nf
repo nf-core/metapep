@@ -40,6 +40,9 @@ workflow PROCESS_INPUT {
         }
         .set{ ch_microbiomes_branch }
 
+        // The file ending we expect for FASTA files (used by proteins and bins sections)
+        fasta_suffix = ~/(?i)[.]fa(sta)?(.gz)?$/
+
         // TAXA
         ch_microbiomes_branch.taxa
             .map { row ->
@@ -49,6 +52,18 @@ workflow PROCESS_INPUT {
                 }
             .set { ch_taxa_input }
         ch_taxa_input.dump(tag:"taxa")
+
+        // PROTEINS — direct protein FASTA input, no Prodigal step needed
+        // Each protein sequence in the FASTA becomes its own entity (handled by __ISPROTEINS__ sentinel)
+        ch_microbiomes_branch.proteins
+            .map { row ->
+                    def meta = [:]
+                    meta.id = row.microbiome_bare_id
+                    meta.bin_basename = "__ISPROTEINS__"
+                    return [ meta, row.microbiome_path ]
+                }
+            .set { ch_proteins_input }
+        ch_proteins_input.dump(tag:"proteins")
 
         // ASSEMBLY
         // Using the microbiome_bare_id to handle co-assembled input
@@ -74,9 +89,6 @@ workflow PROCESS_INPUT {
                     other: true
                 }
             .set{ ch_microbiomes_bins }
-
-        // The file ending we expect for FASTA files
-        fasta_suffix = ~/(?i)[.]fa(sta)?(.gz)?$/
 
         // BINS - LOCAL FOLDERS
         ch_microbiomes_bins.folders
@@ -156,6 +168,7 @@ workflow PROCESS_INPUT {
     emit:
     peptide_lengths         = peptide_lengths.collect()
     ch_taxa_input
+    ch_proteins_input
     ch_nucl_input
     ch_weights
     ch_microbiomes          = CHECK_SAMPLESHEET_CREATE_TABLES.out.microbiomes

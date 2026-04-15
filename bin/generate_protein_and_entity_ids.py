@@ -138,6 +138,9 @@ def main(args=None):
                     if bin_basename == "__ISASSEMBLY__":
                         # retrieve 'entity_name' from 'protein_tmp_id' prefix
                         proteins["entity_name"] = proteins["protein_tmp_id"].map(lambda x: "_".join(x.split("_")[:-1]))
+                    elif bin_basename == "__ISPROTEINS__":
+                        # each protein sequence is its own entity
+                        proteins["entity_name"] = proteins["protein_tmp_id"]
                     else:
                         proteins["entity_name"] = bin_basename
 
